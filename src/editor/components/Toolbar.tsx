@@ -1,14 +1,19 @@
-import React, { useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useCallback, useRef } from 'react'
 import styled from '@emotion/styled'
-
-import { RootState } from '../../store'
-
-import { clear, load, undo, redo } from '../editorSlice'
 
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { Button } from '../../app/components/Button'
 import { Label } from '../../app/components/Label'
+
+interface Props {
+  content: string
+  pastLength: number
+  futureLength: number
+  onNew: () => void
+  onOpen: (text: string) => void
+  onUndo: () => void
+  onRedo: () => void
+}
 
 const ToolbarContainer = styled.div(({ theme }) => ({
   display: 'flex',
@@ -47,26 +52,28 @@ const HiddenInput = styled.input`
   display: none;
 `
 
-const Toolbar: React.FC = () => {
-  const dispatch = useDispatch()
-  const content = useSelector((state: RootState) => state.editor.present)
-  const pastLength = useSelector((state: RootState) => state.editor.past.length)
-  const futureLength = useSelector(
-    (state: RootState) => state.editor.future.length,
-  )
+const Toolbar: React.FC<Props> = ({
+  content,
+  pastLength,
+  futureLength,
+  onNew,
+  onOpen,
+  onUndo,
+  onRedo,
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleNew = () => {
+  const handleNew = useCallback(() => {
     if (
       content &&
       !window.confirm('Discard current content and create a new document?')
     ) {
       return
     }
-    dispatch(clear())
-  }
+    onNew()
+  }, [content, onNew])
 
-  const handleOpen = () => {
+  const handleOpen = useCallback(() => {
     if (
       content &&
       !window.confirm('Discard current content and open a new file?')
@@ -74,24 +81,28 @@ const Toolbar: React.FC = () => {
       return
     }
     fileInputRef.current?.click()
-  }
+  }, [content])
 
-  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        const text = ev.target?.result
-        if (typeof text === 'string') {
-          dispatch(load(text))
+  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> =
+    useCallback(
+      (e) => {
+        const file = e.target.files?.[0]
+        if (file) {
+          const reader = new FileReader()
+          reader.onload = (ev) => {
+            const text = ev.target?.result
+            if (typeof text === 'string') {
+              onOpen(text)
+            }
+          }
+          reader.readAsText(file)
         }
-      }
-      reader.readAsText(file)
-    }
-    e.target.value = ''
-  }
+        e.target.value = ''
+      },
+      [onOpen],
+    )
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const blob = new Blob([content], { type: 'text/markdown' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -99,7 +110,7 @@ const Toolbar: React.FC = () => {
     a.download = 'document.md'
     a.click()
     URL.revokeObjectURL(url)
-  }
+  }, [content])
 
   return (
     <ToolbarContainer id="toolbar">
@@ -126,14 +137,14 @@ const Toolbar: React.FC = () => {
           />
           <Button
             label="Undo"
-            onClick={() => dispatch(undo())}
+            onClick={onUndo}
             disabled={!pastLength}
             variant="text"
             size="tiny"
           />
           <Button
             label="Redo"
-            onClick={() => dispatch(redo())}
+            onClick={onRedo}
             disabled={!futureLength}
             variant="text"
             size="tiny"

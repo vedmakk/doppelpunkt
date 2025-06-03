@@ -6,10 +6,11 @@ import styled from '@emotion/styled'
 import 'prismjs/components/prism-markdown'
 
 import { useTheme } from '@emotion/react'
-import { useDispatch } from 'react-redux'
 
-import { useEditorText } from '../hooks'
-import { setText } from '../editorSlice'
+interface Props {
+  content: string
+  onContentChange: (content: string) => void
+}
 
 const EditorContainer = styled.div(({ theme }) => ({
   position: 'relative',
@@ -34,19 +35,16 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   },
 }))
 
-const MarkdownEditor: React.FC = () => {
+const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
   const theme = useTheme()
 
   const containerRef = useRef<HTMLDivElement>(null)
-
-  const dispatch = useDispatch()
-  const content = useEditorText()
 
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
 
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && content === '') {
       const textarea = containerRef.current.querySelector('textarea')
       if (textarea) (textarea as HTMLTextAreaElement).focus()
     }
@@ -69,7 +67,7 @@ const MarkdownEditor: React.FC = () => {
         <CodeEditor
           className="code-editor"
           value={content}
-          onValueChange={(value) => dispatch(setText(value))}
+          onValueChange={onContentChange}
           highlight={highlight}
           padding={75} // 20mm at 96dpi
           autoFocus

@@ -1,6 +1,10 @@
 import { useAppSelector } from '../store'
 
-import { selectEditorText } from './selectors'
+import {
+  selectEditorText,
+  selectFutureLength,
+  selectPastLength,
+} from './selectors'
 
 import { tutorial, TUTORIAL_PLACEHOLDER } from './tutorial'
 
@@ -13,3 +17,7 @@ export const useEditorText = () => {
 
   return text
 }
+
+export const usePastLength = () => useAppSelector(selectPastLength)
+
+export const useFutureLength = () => useAppSelector(selectFutureLength)

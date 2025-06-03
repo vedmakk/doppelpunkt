@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import Toolbar from '../../editor/components/Toolbar'
-import MarkdownEditor from '../../editor/components/MarkdownEditor'
+
+import Toolbar from '../../editor/containers/Toolbar'
+import MarkdownEditor from '../../editor/containers/MarkdownEditor'
 
 const AppContainer = styled.div`
   display: flex;
