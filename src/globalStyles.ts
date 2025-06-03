@@ -1,4 +1,4 @@
-import { css } from '@emotion/react';
+import { css } from '@emotion/react'
 
 export const globalStyles = css`
   * {
@@ -10,4 +10,4 @@ export const globalStyles = css`
     font-family: system-ui, sans-serif;
     background: #fafafa;
   }
-`;
+`
