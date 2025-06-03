@@ -22,6 +22,11 @@ const EditorContainer = styled.div`
 `
 
 const CodeEditor = styled(Editor)`
+  background: #fff;
+  max-width: 794px; /* A4 width at 96dpi: 210mm ≈ 794px */
+  min-height: calc(100vh - 50px);
+  margin: 0 auto;
+  white-space: pre-wrap;
   & textarea {
     outline: none;
   }
@@ -41,12 +46,7 @@ const MarkdownEditor: React.FC = () => {
         value={content}
         onValueChange={(value) => dispatch(setText(value))}
         highlight={highlight}
-        padding={10}
-        style={{
-          minHeight: 'calc(100vh - 50px)',
-          background: '#fff',
-          whiteSpace: 'pre-wrap',
-        }}
+        padding={75} // 20mm at 96dpi
       />
     </EditorContainer>
   )

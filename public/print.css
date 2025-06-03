@@ -17,8 +17,13 @@
   #root > div,
   .editor-container,
   .code-editor {
+    max-width: auto !important;
     height: auto !important;
     min-height: auto !important;
     overflow: visible !important;
+    background: none !important;
+    & > pre {
+      padding: 0 !important;
+    }
   }
 }
