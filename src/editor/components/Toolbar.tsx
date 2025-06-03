@@ -142,7 +142,7 @@ const Toolbar: React.FC = () => {
       </ToolbarSide>
       <ToolbarCenter>
         <Label size="small">
-          doppelpunkt
+          doppelp
           <span
             css={(theme) => ({
               color: theme.colors.primary,
@@ -151,6 +151,7 @@ const Toolbar: React.FC = () => {
           >
             :
           </span>
+          nkt
         </Label>
       </ToolbarCenter>
       <ToolbarSide>

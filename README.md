@@ -1,0 +1,57 @@
+# doppelp:nkt – Minimal Markdown Editor
+
+A simple, minimalistic Markdown editor with live syntax-aware rendering. Inspired by the writing experiences in apps like **Things**.
+
+## ✨ Features
+
+📝 **Markdown Input & Output**  
+Text input and rendered output are the same — rendered with syntax-aware highlighting while preserving raw Markdown syntax.
+
+➕ **New File**  
+Empties the editor content. Prompts confirmation if unsaved text exists.
+
+📂 **Open File**  
+Load a local `.md` file into the editor.
+
+💾 **Export**  
+Save the current editor content as a `.md` file.
+
+🖨️ **Print-Ready**  
+Includes `print.css` for consistent printed output (or **PDF export** via Print).
+
+💡 **Persistent Sessions**  
+Text is auto-saved in **LocalStorage** between sessions.
+
+↩️↪️ **Undo/Redo**  
+Supports full undo/redo history for text changes.
+
+## 🧰 Tech Stack
+
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Vite.js](https://vitejs.dev/)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [@emotion/react](https://emotion.sh/docs/introduction)
+
+### Libraries Used
+
+- [react-simple-code-editor](https://react-simple-code-editor.github.io/react-simple-code-editor/)
+- [prismjs](https://prismjs.com) – For syntax highlighting
+
+## 📦 Getting Started
+
+```bash
+# Clone the repo
+...
+
+# Install dependencies
+bun install
+
+# Start development server
+bun run dev
+```
+
+## 📜 License
+
+MIT — use freely, modify openly, and share widely.
+See the [LICENSE](LICENSE) file for details.
