@@ -11,4 +11,14 @@
   #toolbar {
     display: none;
   }
+
+  html,
+  body,
+  #root > div,
+  .editor-container,
+  .code-editor {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
 }

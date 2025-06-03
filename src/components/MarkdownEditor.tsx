@@ -30,8 +30,8 @@ const MarkdownEditor: React.FC = () => {
     Prism.highlight(code, Prism.languages.markdown, 'markdown');
 
   return (
-    <EditorContainer>
-      <CodeEditor
+    <EditorContainer className="editor-container">
+      <CodeEditor className="code-editor"
         value={content}
         onValueChange={(value) => dispatch(setText(value))}
         highlight={highlight}
