@@ -1,0 +1,140 @@
+import { createSelector } from '@reduxjs/toolkit'
+
+import { RootState } from '../store'
+
+const SPACING_UNIT = 8
+const ANIMATION_DURATION_SHORT = 0.1
+const ANIMATION_DURATION_LONG = 0.4
+const CONTENT_WIDTH = 890 // Content wrapper
+const CONTENT_MARGIN = 4 * SPACING_UNIT
+const CONTENT_MARGIN_MAX = 105
+const CONTENT_INNER_WIDTH = 605 // Actual content width
+
+const breakpoints = {
+  sm: '@media screen and (min-width: 0px)',
+  md: '@media screen and (min-width: 768px)',
+  // 890px (content width) + 2 * 20px (padding left+right) = 930px
+  minContent: `@media screen and (min-width: ${CONTENT_WIDTH + 2 * CONTENT_MARGIN}px)`,
+  lg: '@media screen and (min-width: 1024px)',
+  // 890px (content width) + 2 * 105px (padding left+right) = 1100px
+  maxContent: `@media screen and (min-width: ${CONTENT_WIDTH + 2 * CONTENT_MARGIN_MAX}px)`,
+  xl: '@media screen and (min-width: 1440px)',
+}
+
+interface BaseTheme {
+  breakpoints: {
+    sm: string
+    md: string
+    minContent: string
+    lg: string
+    maxContent: string
+    xl: string
+  }
+  animations: {
+    interaction: string
+    transition: string
+    stepsDuration: string
+    tickStepsDuration: string
+  }
+  interactions: {
+    hoverScale: number
+    activeScale: number
+    hoverOpacity: number
+    activeOpacity: number
+  }
+  spacing: (multiplier: number) => string
+  layout: {
+    contentWidth: string
+    contentMargin: string
+    contentMarginMax: string
+    contentInnerWidth: string
+  }
+}
+
+export type CustomTheme = BaseTheme & {
+  mode: 'light' | 'dark'
+  colors: {
+    primary: string
+    secondary: string
+    title: string
+    text: string
+    link: string
+    backdrop: string
+    paper: string
+    background: string
+    shadow: string
+    modalBackdrop: string
+  }
+  opacity: {
+    disabled: number
+  }
+}
+
+const BASE_THEME: BaseTheme = {
+  breakpoints,
+  animations: {
+    interaction: `${ANIMATION_DURATION_SHORT}s ease-in-out`,
+    transition: `${ANIMATION_DURATION_LONG}s ease-in-out`,
+    stepsDuration: `${ANIMATION_DURATION_LONG}s`,
+    tickStepsDuration: `${ANIMATION_DURATION_SHORT * 2}s`,
+  },
+  interactions: {
+    hoverScale: 1.05,
+    activeScale: 0.97,
+    hoverOpacity: 1,
+    activeOpacity: 0.8,
+  },
+  spacing: (multiplier: number) => `${multiplier * SPACING_UNIT}px`,
+  layout: {
+    contentWidth: `${CONTENT_WIDTH}px`,
+    contentMargin: `0 ${CONTENT_MARGIN}px`,
+    contentMarginMax: `0 0 0 ${CONTENT_MARGIN_MAX}px`,
+    contentInnerWidth: `${CONTENT_INNER_WIDTH}px`,
+  },
+}
+
+const LIGHT_THEME: CustomTheme = {
+  ...BASE_THEME,
+  mode: 'light',
+  colors: {
+    primary: 'rgba(156, 109, 255, 1)',
+    secondary: 'rgba(55, 55, 55, 0.5)',
+    title: 'rgba(55, 55, 55, 1)',
+    text: 'rgba(55, 55, 55, 1)',
+    link: 'rgba(55, 55, 55, 1)',
+    backdrop: 'rgba(0, 0, 0, 0.03)',
+    paper: 'rgba(156, 109, 255, 0.1)',
+    background: 'rgba(255, 255, 255, 1)',
+    shadow: 'rgba(0, 0, 0, 0.1)',
+    modalBackdrop: 'rgba(255, 255, 255, 0.8)',
+  },
+  opacity: {
+    disabled: 0.5,
+  },
+}
+
+const DARK_THEME: CustomTheme = {
+  ...BASE_THEME,
+  mode: 'dark',
+  colors: {
+    primary: 'rgba(156, 109, 255, 1)', // Keeping primary color unchanged
+    secondary: 'rgba(200, 200, 200, 0.5)',
+    title: 'rgba(255, 255, 255, 1)',
+    text: 'rgba(255, 255, 255, 0.87)', // Text is generally lighter in dark themes
+    link: 'rgba(255, 255, 255, 0.87)', // Same as text
+    backdrop: 'rgba(255, 255, 255, 0.1)', // A lighter backdrop for dark theme
+    paper: 'rgba(156, 109, 255, 0.2)', // A slightly more prominent shade for paper in dark theme
+    background: 'rgba(34, 34, 34, 1)', // Dark grey background color
+    shadow: 'rgba(255, 255, 255, 0.05)',
+    modalBackdrop: 'rgba(34, 34, 34, 0.9)',
+  },
+  opacity: {
+    disabled: 0.5,
+  },
+}
+
+export const selectTheme = (s: RootState) => s.theme
+
+export const selectCustomTheme = createSelector(selectTheme, (theme) =>
+  theme === 'light' ? LIGHT_THEME : DARK_THEME,
+)

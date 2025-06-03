@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import Toolbar from './components/Toolbar'
-import MarkdownEditor from './components/MarkdownEditor'
+import Toolbar from '../../editor/components/Toolbar'
+import MarkdownEditor from '../../editor/components/MarkdownEditor'
 
 const AppContainer = styled.div`
   display: flex;
@@ -9,11 +9,9 @@ const AppContainer = styled.div`
   height: 100vh;
 `
 
-const App: React.FC = () => (
+export const App: React.FC = () => (
   <AppContainer>
     <Toolbar />
     <MarkdownEditor />
   </AppContainer>
 )
-
-export default App

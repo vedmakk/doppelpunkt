@@ -1,23 +1,29 @@
 import React, { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from '@emotion/styled'
-import { clear, load, undo, redo } from '../features/editorSlice'
-import { RootState } from '../store'
 
-const ToolbarContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 8px;
-  position: relative;
-`
+import { RootState } from '../../store'
+
+import { clear, load, undo, redo } from '../editorSlice'
+
+import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
+import { Button } from '../../app/components/Button'
+import { Label } from '../../app/components/Label'
+
+const ToolbarContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  background: theme.colors.background,
+  borderBottom: `1px solid ${theme.colors.shadow}`,
+  padding: theme.spacing(2),
+  position: 'relative',
+  transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
+}))
 
 const ToolbarSide = styled.div`
   display: flex;
   align-items: center;
-  min-width: 120px;
 `
 
 const ToolbarCenter = styled.div`
@@ -32,25 +38,10 @@ const ToolbarCenter = styled.div`
   user-select: none;
 `
 
-const ToolbarItemContainer = styled.div`
-  display: flex;
-  gap: 8px;
-`
-
-const Button = styled.button`
-  padding: 4px 8px;
-  background: #f0f0f0;
-  border: 1px solid #d0d0d0;
-  border-radius: 4px;
-  cursor: pointer;
-  &:hover:not([disabled]) {
-    background: #e0e0e0;
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`
+const ToolbarItemContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(2),
+}))
 
 const HiddenInput = styled.input`
   display: none;
@@ -114,36 +105,57 @@ const Toolbar: React.FC = () => {
     <ToolbarContainer id="toolbar">
       <ToolbarSide>
         <ToolbarItemContainer>
-          <Button onClick={handleNew}>New</Button>
-          <Button onClick={handleOpen}>Open</Button>
+          <Button label="New" onClick={handleNew} variant="text" size="tiny" />
+          <Button
+            label="Open"
+            onClick={handleOpen}
+            variant="text"
+            size="tiny"
+          />
           <HiddenInput
             type="file"
             accept=".md"
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          <Button onClick={handleExport}>Export</Button>
-          <Button onClick={() => dispatch(undo())} disabled={!pastLength}>
-            Undo
-          </Button>
-          <Button onClick={() => dispatch(redo())} disabled={!futureLength}>
-            Redo
-          </Button>
+          <Button
+            label="Export"
+            onClick={handleExport}
+            variant="text"
+            size="tiny"
+          />
+          <Button
+            label="Undo"
+            onClick={() => dispatch(undo())}
+            disabled={!pastLength}
+            variant="text"
+            size="tiny"
+          />
+          <Button
+            label="Redo"
+            onClick={() => dispatch(redo())}
+            disabled={!futureLength}
+            variant="text"
+            size="tiny"
+          />
         </ToolbarItemContainer>
       </ToolbarSide>
       <ToolbarCenter>
-        <span css={{ fontWeight: '500' }}>
-          Doppelpunkt
+        <Label size="small">
+          doppelpunkt
           <span
-            css={{
-              color: 'red',
-            }}
+            css={(theme) => ({
+              color: theme.colors.primary,
+              transition: `color ${theme.animations.transition}`,
+            })}
           >
             :
           </span>
-        </span>
+        </Label>
       </ToolbarCenter>
-      <ToolbarSide />
+      <ToolbarSide>
+        <ThemeSwitch size={32} />
+      </ToolbarSide>
     </ToolbarContainer>
   )
 }
