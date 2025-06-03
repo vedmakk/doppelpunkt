@@ -1,3 +1,5 @@
+export const TUTORIAL_PLACEHOLDER = '/help'
+
 export const tutorial = `# 👋 Welcome to **doppelp:nkt**
 
 A **minimalist**, **distraction-free** Markdown editor – ready the moment you open it.
@@ -20,6 +22,9 @@ Want a clean, printable version? Use your browser’s **Print** function (\`Cmd+
 ### 🆕 Start fresh  
 Click **New** to clear the editor.  
 *(Don’t worry – it’ll ask before wiping anything unsaved.)*
+
+### 📚 Tutorial
+In a blank document, type \`/help\` to open this tutorial again.
 
 ---
 

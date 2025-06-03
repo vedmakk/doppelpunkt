@@ -6,10 +6,9 @@ import styled from '@emotion/styled'
 import 'prismjs/components/prism-markdown'
 
 import { useTheme } from '@emotion/react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-import { RootState } from '../../store'
-
+import { useEditorText } from '../hooks'
 import { setText } from '../editorSlice'
 
 const EditorContainer = styled.div(({ theme }) => ({
@@ -41,7 +40,7 @@ const MarkdownEditor: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const dispatch = useDispatch()
-  const content = useSelector((state: RootState) => state.editor.present)
+  const content = useEditorText()
 
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')

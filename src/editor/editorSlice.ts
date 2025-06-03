@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { tutorial } from './tutorial'
+import { TUTORIAL_PLACEHOLDER } from './tutorial'
 
 interface EditorState {
   past: string[]
@@ -8,7 +8,7 @@ interface EditorState {
   future: string[]
 }
 
-const initialContent = localStorage.getItem('markdown') || tutorial
+const initialContent = localStorage.getItem('markdown') || TUTORIAL_PLACEHOLDER
 
 const initialState: EditorState = {
   past: [],
