@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "format": "prettier --write .",
     "test": "bun test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
     "react": "^19.1.0",
