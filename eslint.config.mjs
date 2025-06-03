@@ -9,6 +9,8 @@ import { FlatCompat } from '@eslint/eslintrc'
 import prettier from 'eslint-plugin-prettier'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
+import * as emotion from '@emotion/eslint-plugin'
+import { fixupPluginRules } from '@eslint/compat'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -39,11 +41,18 @@ export default defineConfig([
       prettier: prettier,
       react: react,
       'react-hooks': reactHooks,
+      '@emotion': fixupPluginRules(emotion),
+    },
+
+    settings: {
+      react: {
+        version: 'detect',
+      },
     },
 
     languageOptions: {
       globals: {
-        ...globals.node,
+        ...globals.browser,
       },
 
       parser: tsParser,
@@ -54,6 +63,7 @@ export default defineConfig([
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-function': 'off',
+      'react/no-unknown-property': ['error', { ignore: ['css'] }],
     },
   },
 ])

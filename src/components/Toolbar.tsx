@@ -6,10 +6,35 @@ import { RootState } from '../store'
 
 const ToolbarContainer = styled.div`
   display: flex;
-  gap: 8px;
-  padding: 8px;
+  justify-content: space-between;
+  align-items: center;
   background: #fff;
   border-bottom: 1px solid #e0e0e0;
+  padding: 8px;
+  position: relative;
+`
+
+const ToolbarSide = styled.div`
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+`
+
+const ToolbarCenter = styled.div`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  pointer-events: none;
+  user-select: none;
+`
+
+const ToolbarItemContainer = styled.div`
+  display: flex;
+  gap: 8px;
 `
 
 const Button = styled.button`
@@ -87,21 +112,38 @@ const Toolbar: React.FC = () => {
 
   return (
     <ToolbarContainer id="toolbar">
-      <Button onClick={handleNew}>New</Button>
-      <Button onClick={handleOpen}>Open</Button>
-      <HiddenInput
-        type="file"
-        accept=".md"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-      />
-      <Button onClick={handleExport}>Export</Button>
-      <Button onClick={() => dispatch(undo())} disabled={!pastLength}>
-        Undo
-      </Button>
-      <Button onClick={() => dispatch(redo())} disabled={!futureLength}>
-        Redo
-      </Button>
+      <ToolbarSide>
+        <ToolbarItemContainer>
+          <Button onClick={handleNew}>New</Button>
+          <Button onClick={handleOpen}>Open</Button>
+          <HiddenInput
+            type="file"
+            accept=".md"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+          <Button onClick={handleExport}>Export</Button>
+          <Button onClick={() => dispatch(undo())} disabled={!pastLength}>
+            Undo
+          </Button>
+          <Button onClick={() => dispatch(redo())} disabled={!futureLength}>
+            Redo
+          </Button>
+        </ToolbarItemContainer>
+      </ToolbarSide>
+      <ToolbarCenter>
+        <span css={{ fontWeight: '500' }}>
+          Doppelpunkt
+          <span
+            css={{
+              color: 'red',
+            }}
+          >
+            :
+          </span>
+        </span>
+      </ToolbarCenter>
+      <ToolbarSide />
     </ToolbarContainer>
   )
 }
