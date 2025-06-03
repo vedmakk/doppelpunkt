@@ -34,19 +34,29 @@ const HiddenInput = styled.input`
 const Toolbar: React.FC = () => {
   const dispatch = useDispatch();
   const content = useSelector((state: RootState) => state.editor.present);
-  const pastLength = useSelector((state: RootState) => state.editor.past.length);
-  const futureLength = useSelector((state: RootState) => state.editor.future.length);
+  const pastLength = useSelector(
+    (state: RootState) => state.editor.past.length
+  );
+  const futureLength = useSelector(
+    (state: RootState) => state.editor.future.length
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleNew = () => {
-    if (content && !window.confirm('Discard current content and create a new document?')) {
+    if (
+      content &&
+      !window.confirm('Discard current content and create a new document?')
+    ) {
       return;
     }
     dispatch(clear());
   };
 
   const handleOpen = () => {
-    if (content && !window.confirm('Discard current content and open a new file?')) {
+    if (
+      content &&
+      !window.confirm('Discard current content and open a new file?')
+    ) {
       return;
     }
     fileInputRef.current?.click();
@@ -78,10 +88,15 @@ const Toolbar: React.FC = () => {
   };
 
   return (
-    <ToolbarContainer>
+    <ToolbarContainer id="toolbar">
       <Button onClick={handleNew}>New</Button>
       <Button onClick={handleOpen}>Open</Button>
-      <HiddenInput type="file" accept=".md" ref={fileInputRef} onChange={handleFileChange} />
+      <HiddenInput
+        type="file"
+        accept=".md"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+      />
       <Button onClick={handleExport}>Export</Button>
       <Button onClick={() => dispatch(undo())} disabled={!pastLength}>
         Undo
