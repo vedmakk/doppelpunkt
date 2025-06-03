@@ -3,14 +3,14 @@ import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
 
+import 'prismjs/components/prism-markdown'
+
+import { useTheme } from '@emotion/react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { RootState } from '../../store'
 
 import { setText } from '../editorSlice'
-
-import 'prismjs/components/prism-markdown'
-//import 'prismjs/themes/prism-tomorrow.css';
 
 const EditorContainer = styled.div(({ theme }) => ({
   position: 'relative',
@@ -36,6 +36,8 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
 }))
 
 const MarkdownEditor: React.FC = () => {
+  const theme = useTheme()
+
   const dispatch = useDispatch()
   const content = useSelector((state: RootState) => state.editor.present)
 
@@ -43,16 +45,29 @@ const MarkdownEditor: React.FC = () => {
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
 
   return (
-    <EditorContainer className="editor-container">
-      <CodeEditor
-        className="code-editor"
-        value={content}
-        onValueChange={(value) => dispatch(setText(value))}
-        highlight={highlight}
-        padding={75} // 20mm at 96dpi
-        autoFocus
-      />
-    </EditorContainer>
+    <>
+      {theme.mode === 'dark' ? (
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/prismjs/themes/prism-tomorrow.css"
+        />
+      ) : (
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/prismjs/themes/prism.css"
+        />
+      )}
+      <EditorContainer className="editor-container">
+        <CodeEditor
+          className="code-editor"
+          value={content}
+          onValueChange={(value) => dispatch(setText(value))}
+          highlight={highlight}
+          padding={75} // 20mm at 96dpi
+          autoFocus
+        />
+      </EditorContainer>
+    </>
   )
 }
 
