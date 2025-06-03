@@ -1,6 +1,8 @@
 # doppelp:nkt – Minimal Markdown Editor
 
-A simple, minimalistic Markdown editor with live syntax-aware rendering. Inspired by the writing experiences in apps like **Things**.
+A **minimalist**, **distraction-free** Markdown editor – ready the moment you open it. With live syntax-aware rendering, inspired by the writing experiences in apps like **Things**.
+
+👉 Just start writing at [doppelpunkt.io](https://doppelpunkt.io) – no sign-up required.
 
 ## ✨ Features
 
