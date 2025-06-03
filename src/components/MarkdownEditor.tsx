@@ -47,6 +47,7 @@ const MarkdownEditor: React.FC = () => {
         onValueChange={(value) => dispatch(setText(value))}
         highlight={highlight}
         padding={75} // 20mm at 96dpi
+        autoFocus
       />
     </EditorContainer>
   )
