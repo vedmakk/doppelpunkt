@@ -2,10 +2,15 @@ import React from 'react';
 import Editor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import styled from '@emotion/styled';
+
 import { useDispatch, useSelector } from 'react-redux';
-import { setText } from '../features/editorSlice';
+
 import { RootState } from '../store';
+
+import { setText } from '../features/editorSlice';
+
 import 'prismjs/components/prism-markdown';
+//import 'prismjs/themes/prism-tomorrow.css';
 
 const EditorContainer = styled.div`
   position: relative;
@@ -31,7 +36,8 @@ const MarkdownEditor: React.FC = () => {
 
   return (
     <EditorContainer className="editor-container">
-      <CodeEditor className="code-editor"
+      <CodeEditor
+        className="code-editor"
         value={content}
         onValueChange={(value) => dispatch(setText(value))}
         highlight={highlight}
