@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
@@ -38,11 +38,20 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
 const MarkdownEditor: React.FC = () => {
   const theme = useTheme()
 
+  const containerRef = useRef<HTMLDivElement>(null)
+
   const dispatch = useDispatch()
   const content = useSelector((state: RootState) => state.editor.present)
 
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const textarea = containerRef.current.querySelector('textarea')
+      if (textarea) (textarea as HTMLTextAreaElement).focus()
+    }
+  }, [content])
 
   return (
     <>
@@ -57,7 +66,7 @@ const MarkdownEditor: React.FC = () => {
           href="https://unpkg.com/prismjs/themes/prism.css"
         />
       )}
-      <EditorContainer className="editor-container">
+      <EditorContainer className="editor-container" ref={containerRef}>
         <CodeEditor
           className="code-editor"
           value={content}
