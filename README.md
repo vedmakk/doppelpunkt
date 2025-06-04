@@ -19,7 +19,7 @@ Load a local `.md` file into the editor.
 Save the current editor content as a `.md` file.
 
 🖨️ **Print-Ready**  
-Includes `print.css` for consistent printed output (or **PDF export** via Print).
+Includes `print.css` for consistent printed output (or **PDF export** via Print). Make sure to select `Print backgrounds` in the print dialog when in dark mode.
 
 💡 **Persistent Sessions**  
 Text is auto-saved in **LocalStorage** between sessions.

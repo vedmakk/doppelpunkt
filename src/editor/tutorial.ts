@@ -17,7 +17,9 @@ Click **Open** to load a \`.md\` file from your computer.
 Click **Export** to download your text as a \`.md\` file – no fuss.
 
 ### 🖨️ Print or Save as PDF  
-Want a clean, printable version? Use your browser’s **Print** function (\`Cmd+P\` / \`Ctrl+P\`) – styles included!
+Want a clean, printable version? Use your browser's **Print** function (\`Cmd+P\` / \`Ctrl+P\`) – styles included!
+
+**Note:** Make sure to select \`Print backgrounds\` in the print dialog when in dark mode.
 
 ### 🆕 Start fresh  
 Click **New** to clear the editor.  
