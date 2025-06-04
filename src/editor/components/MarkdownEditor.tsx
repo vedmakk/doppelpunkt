@@ -35,6 +35,27 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   },
   '& .token.url': {
     background: 'none',
+    color: theme.colors.punctuation,
+    '& > .content': {
+      color: theme.colors.primary,
+      background: theme.colors.paper,
+      borderRadius: theme.spacing(0.5),
+    },
+    '& > .url': {
+      color: theme.colors.primary,
+    },
+  },
+  '& .token.punctuation': {
+    color: theme.colors.punctuation,
+  },
+  '& .token.title': {
+    color: theme.colors.text,
+    fontWeight: 'bold',
+  },
+  '& .token.code-snippet': {
+    color: theme.colors.primary,
+    background: theme.colors.paper,
+    borderRadius: theme.spacing(0.5),
   },
 }))
 
