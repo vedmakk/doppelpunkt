@@ -17,20 +17,24 @@ interface Props {
 
 const EditorContainer = styled.div(({ theme }) => ({
   position: 'relative',
-  flex: 1,
-  overflow: 'auto',
+  [theme.breakpoints.page]: {
+    width: 'fit-content',
+    margin: '0 auto',
+  },
   fontFamily: 'Fira Code, monospace',
   fontSize: theme.fontSize.editor,
   lineHeight: '1.5',
-  backgroundColor: theme.colors.backdrop,
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
 }))
 
 const CodeEditor = styled(Editor)(({ theme }) => ({
   background: theme.colors.background,
-  maxWidth: theme.layout.pageWidth,
-  minHeight: theme.layout.pageHeight,
-  margin: `${theme.spacing(4)} auto`,
+  width: '100%',
+  minHeight: '100vh',
+  [theme.breakpoints.page]: {
+    width: theme.layout.pageWidth,
+    minHeight: theme.layout.pageHeight,
+  },
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
   whiteSpace: 'pre-wrap',
   '& textarea': {

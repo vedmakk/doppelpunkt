@@ -1,18 +1,53 @@
 import React from 'react'
 import styled from '@emotion/styled'
 
-import Toolbar from '../../editor/containers/Toolbar'
+import Toolbar from '../../menu/containers/Toolbar'
 import MarkdownEditor from '../../editor/containers/MarkdownEditor'
 
-const AppContainer = styled.div({
+const AppContainer = styled.div(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
-  height: '100vh',
-})
+  justifyContent: 'center',
+  alignItems: 'flex-start',
+  minHeight: '100vh',
+  background: theme.colors.backdrop,
+}))
+
+const LayoutContainer = styled.div(({ theme }) => ({
+  margin: 0,
+  width: '100%',
+  position: 'relative',
+  [theme.breakpoints.page]: {
+    width: 'fit-content',
+    margin: `${theme.spacing(4)} auto`,
+  },
+  '@media print': {
+    margin: 0,
+  },
+}))
+
+const ToolbarContainer = styled.div(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  width: theme.layout.toolbarWidth,
+  padding: `${theme.spacing(2)}`,
+  [theme.breakpoints.toolbar]: {
+    right: `-${theme.layout.toolbarWidth}`,
+    width: theme.layout.toolbarWidth,
+    padding: `${theme.spacing(2)} ${theme.spacing(4)}`,
+  },
+  '@media print': {
+    display: 'none',
+  },
+}))
 
 export const App: React.FC = () => (
   <AppContainer>
-    <Toolbar />
-    <MarkdownEditor />
+    <LayoutContainer>
+      <MarkdownEditor />
+      <ToolbarContainer>
+        <Toolbar />
+      </ToolbarContainer>
+    </LayoutContainer>
   </AppContainer>
 )
