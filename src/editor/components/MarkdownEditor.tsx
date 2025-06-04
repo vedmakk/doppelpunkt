@@ -33,6 +33,9 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   '& textarea': {
     outline: 'none',
   },
+  '& .token.url': {
+    background: 'none',
+  },
 }))
 
 const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
