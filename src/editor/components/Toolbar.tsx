@@ -26,31 +26,31 @@ const ToolbarContainer = styled.div(({ theme }) => ({
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
 }))
 
-const ToolbarSide = styled.div`
-  display: flex;
-  align-items: center;
-`
+const ToolbarSide = styled.div({
+  display: 'flex',
+  alignItems: 'center',
+})
 
-const ToolbarCenter = styled.div`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  pointer-events: none;
-  user-select: none;
-`
+const ToolbarCenter = styled.div({
+  position: 'absolute',
+  left: '50%',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  pointerEvents: 'none',
+  userSelect: 'none',
+})
 
 const ToolbarItemContainer = styled.div(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(2),
 }))
 
-const HiddenInput = styled.input`
-  display: none;
-`
+const HiddenInput = styled.input({
+  display: 'none',
+})
 
 const Toolbar: React.FC<Props> = ({
   content,
