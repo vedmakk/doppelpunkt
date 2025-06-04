@@ -19,7 +19,7 @@ const EditorContainer = styled.div(({ theme }) => ({
   position: 'relative',
   flex: 1,
   overflow: 'auto',
-  fontFamily: 'Courier New, Courier, monospace',
+  fontFamily: 'Fira Code, monospace',
   fontSize: theme.fontSize.editor,
   lineHeight: '1.5',
   backgroundColor: theme.colors.backdrop,
