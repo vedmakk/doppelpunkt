@@ -17,7 +17,7 @@ const EditorContainer = styled.div(({ theme }) => ({
   flex: 1,
   overflow: 'auto',
   fontFamily: 'Courier New, Courier, monospace',
-  fontSize: '16px',
+  fontSize: theme.fontSize.editor,
   lineHeight: '1.5',
   backgroundColor: theme.colors.backdrop,
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
@@ -25,8 +25,8 @@ const EditorContainer = styled.div(({ theme }) => ({
 
 const CodeEditor = styled(Editor)(({ theme }) => ({
   background: theme.colors.background,
-  maxWidth: '794px', // A4 width at 96dpi: 210mm ≈ 794px
-  minHeight: `calc(100vh - 65px - 2*${theme.spacing(4)})`,
+  maxWidth: theme.layout.pageWidth,
+  minHeight: theme.layout.pageHeight,
   margin: `${theme.spacing(4)} auto`,
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
   whiteSpace: 'pre-wrap',
@@ -69,7 +69,7 @@ const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
           value={content}
           onValueChange={onContentChange}
           highlight={highlight}
-          padding={75} // 20mm at 96dpi
+          padding={theme.layout.pagePadding}
           autoFocus
         />
       </EditorContainer>

@@ -23,10 +23,10 @@ const StyledLabel = styled.span<{
 
   const sizeStyles: CSSObject =
     size === 'small'
-      ? { fontSize: '18px' }
+      ? { fontSize: theme.fontSize.small }
       : size === 'tiny'
-        ? { fontSize: '14px' }
-        : { fontSize: '28px' }
+        ? { fontSize: theme.fontSize.tiny }
+        : { fontSize: theme.fontSize.normal }
 
   return {
     ...baseStyles,
