@@ -1,6 +1,5 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
-import { Interpolation, Theme } from '@emotion/react'
+import React, { useEffect, useState } from 'react'
+import styled from '@emotion/styled'
 
 import { AppTheme } from '../themeSlice'
 import { IconButtonWrapper } from '../../app/components/IconButtonWrapper'
@@ -11,37 +10,32 @@ export interface Props {
   readonly size: number
 }
 
-const orbitStyles = (theme: Theme) => ({
+const Orbit = styled.div<{ sunPosition: number }>(({ theme, sunPosition }) => ({
   position: 'absolute',
   bottom: '-50%',
   width: '100%',
   height: '100%',
   borderRadius: '50%',
   transition: `transform ${theme.animations.transition}`,
-})
-
-const rotateOrbitStyles = (sunPosition: number) => ({
   transform: `rotate(${sunPosition}deg)`,
-})
+}))
 
-const orbiterStyles: Interpolation<Theme> = {
+const Orbiter = styled.div({
   width: '100%',
   height: '100%',
   position: 'absolute',
-}
+})
 
-const sunStyles: Interpolation<Theme> = {
-  ...orbiterStyles,
+const Sun = styled(Orbiter)({
   top: '-50%',
   stroke: 'currentColor',
   strokeWidth: '0.5px',
-}
+})
 
-const moonStyles: Interpolation<Theme> = {
-  ...orbiterStyles,
+const Moon = styled(Orbiter)({
   top: '50%',
-  transform: `rotate(180deg)`,
-}
+  transform: 'rotate(180deg)',
+})
 
 export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
   const [sunPosition, setSunPosition] = useState(
@@ -68,16 +62,8 @@ export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
 
   return (
     <IconButtonWrapper size={size} onClick={onToggleTheme}>
-      <div
-        data-testid="theme-switch"
-        css={(theme) =>
-          ({
-            ...orbitStyles(theme),
-            ...rotateOrbitStyles(sunPosition),
-          }) as Interpolation<Theme>
-        }
-      >
-        <div css={sunStyles}>
+      <Orbit data-testid="theme-switch" sunPosition={sunPosition}>
+        <Sun>
           <svg
             width="100%"
             height="100%"
@@ -95,8 +81,8 @@ export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
               />
             </g>
           </svg>
-        </div>
-        <div css={moonStyles}>
+        </Sun>
+        <Moon>
           <svg
             width="100%"
             height="100%"
@@ -114,8 +100,8 @@ export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
               />
             </g>
           </svg>
-        </div>
-      </div>
+        </Moon>
+      </Orbit>
     </IconButtonWrapper>
   )
 }

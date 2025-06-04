@@ -1,43 +1,45 @@
 import React from 'react'
-import { Theme, CSSObject } from '@emotion/react'
+import styled from '@emotion/styled'
+import { CSSObject } from '@emotion/react'
 
 interface LabelProps {
   children: React.ReactNode
   size?: 'normal' | 'small' | 'tiny'
-  customCss?: (theme: Theme) => CSSObject
+  className?: string
 }
 
-const labelStyles = (theme: Theme): CSSObject => ({
-  color: theme.colors.link,
-  fontFamily: 'Vollkorn',
-  fontSize: '28px',
-  fontStyle: 'normal',
-  fontWeight: 500,
-  lineHeight: 'normal',
-  textAlign: 'left',
-  transition: `color ${theme.animations.transition}`,
-})
+const StyledLabel = styled.span<{
+  size?: 'normal' | 'small' | 'tiny'
+}>(({ theme, size = 'normal' }) => {
+  const baseStyles: CSSObject = {
+    color: theme.colors.link,
+    fontFamily: 'Vollkorn',
+    fontStyle: 'normal',
+    fontWeight: 500,
+    lineHeight: 'normal',
+    textAlign: 'left',
+    transition: `color ${theme.animations.transition}`,
+  }
 
-const smallLabelStyles = (theme: Theme): CSSObject => ({
-  ...labelStyles(theme),
-  fontSize: '18px',
-})
+  const sizeStyles: CSSObject =
+    size === 'small'
+      ? { fontSize: '18px' }
+      : size === 'tiny'
+        ? { fontSize: '14px' }
+        : { fontSize: '28px' }
 
-const tinyLabelStyles = (theme: Theme): CSSObject => ({
-  ...labelStyles(theme),
-  fontSize: '14px',
+  return {
+    ...baseStyles,
+    ...sizeStyles,
+  }
 })
 
 export const Label: React.FC<LabelProps> = ({
   children,
   size = 'normal',
-  customCss,
-}) => {
-  const styles =
-    size === 'normal'
-      ? labelStyles
-      : size === 'small'
-        ? smallLabelStyles
-        : tinyLabelStyles
-  return <span css={[styles, customCss]}>{children}</span>
-}
+  className,
+}) => (
+  <StyledLabel size={size} className={className}>
+    {children}
+  </StyledLabel>
+)
