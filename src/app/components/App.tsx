@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
 
-import Toolbar from '../../menu/containers/Toolbar'
+import Menu from '../../menu/containers/Menu'
 import MarkdownEditor from '../../editor/containers/MarkdownEditor'
 
 const AppContainer = styled.div(({ theme }) => ({
@@ -25,7 +25,7 @@ const LayoutContainer = styled.div(({ theme }) => ({
   },
 }))
 
-const ToolbarContainer = styled.div(({ theme }) => ({
+const MenuContainer = styled.div(({ theme }) => ({
   position: 'absolute',
   top: 0,
   right: 0,
@@ -45,9 +45,9 @@ export const App: React.FC = () => (
   <AppContainer>
     <LayoutContainer>
       <MarkdownEditor />
-      <ToolbarContainer>
-        <Toolbar />
-      </ToolbarContainer>
+      <MenuContainer>
+        <Menu />
+      </MenuContainer>
     </LayoutContainer>
   </AppContainer>
 )

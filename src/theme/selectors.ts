@@ -6,7 +6,7 @@ const SPACING_UNIT = 8
 const ANIMATION_DURATION_SHORT = 0.1
 const ANIMATION_DURATION_LONG = 0.4
 
-const TOOLBAR_WIDTH = 160
+const TOOLBAR_WIDTH = 167
 const PAGE_WIDTH = 794 // A4 width = 8.27 × 96 (DPI) ≈ 794px
 const PAGE_HEIGHT = 1123 // A4 height = 11.69 × 96 (DPI) ≈ 1123px
 const PAGE_PADDING = 75 // 20mm at 96dpi = 0.787402 * 96 = 75.590592px
