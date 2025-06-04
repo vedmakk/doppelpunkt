@@ -5,6 +5,9 @@ import styled from '@emotion/styled'
 
 import 'prismjs/components/prism-markdown'
 
+import editorDarkTheme from '../themes/prism-material-dark.css?inline'
+import editorLightTheme from '../themes/prism-material-light.css?inline'
+
 import { useTheme } from '@emotion/react'
 
 interface Props {
@@ -57,6 +60,9 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
     background: theme.colors.paper,
     borderRadius: theme.spacing(0.5),
   },
+  '& .token.code-block > .operator': {
+    background: 'none',
+  },
 }))
 
 const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
@@ -77,15 +83,9 @@ const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
   return (
     <>
       {theme.mode === 'dark' ? (
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/prismjs/themes/prism-tomorrow.css"
-        />
+        <style>{editorDarkTheme}</style>
       ) : (
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/prismjs/themes/prism.css"
-        />
+        <style>{editorLightTheme}</style>
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
         <CodeEditor
