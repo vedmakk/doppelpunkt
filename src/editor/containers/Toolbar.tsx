@@ -1,8 +1,13 @@
 import React, { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 
-import { clear, load, undo, redo } from '../editorSlice'
-import { useEditorText, useFutureLength, usePastLength } from '../hooks'
+import { clear, load, undo, redo, toggleAutoSave } from '../editorSlice'
+import {
+  useEditorText,
+  useFutureLength,
+  usePastLength,
+  useAutoSaveEnabled,
+} from '../hooks'
 
 import ToolbarComponent from '../components/Toolbar'
 
@@ -12,6 +17,7 @@ const Toolbar: React.FC = () => {
   const content = useEditorText()
   const pastLength = usePastLength()
   const futureLength = useFutureLength()
+  const autoSaveEnabled = useAutoSaveEnabled()
 
   const handleNew = useCallback(() => {
     dispatch(clear())
@@ -30,11 +36,18 @@ const Toolbar: React.FC = () => {
 
   const handleRedo = useCallback(() => dispatch(redo()), [dispatch])
 
+  const handleToggleAutoSave = useCallback(
+    () => dispatch(toggleAutoSave(!autoSaveEnabled)),
+    [dispatch, autoSaveEnabled],
+  )
+
   return (
     <ToolbarComponent
       content={content}
       pastLength={pastLength}
       futureLength={futureLength}
+      autoSaveEnabled={autoSaveEnabled}
+      onToggleAutoSave={handleToggleAutoSave}
       onNew={handleNew}
       onOpen={handleOpen}
       onUndo={handleUndo}

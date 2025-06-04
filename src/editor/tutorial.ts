@@ -34,8 +34,9 @@ In a blank document, type \`/help\` to open this tutorial again.
 
 - **Live syntax-aware Markdown preview** as you type  
 - **Undo / Redo** with full history  
-- **Persistent sessions** – your text auto-saves in your browser  
+- **Auto-Save** – your text auto-saves in your browser's local storage  
   *(Private. No cloud. No server. No tracking.)*
+- **Theme Switch** – switch between light and dark mode
 
 ---
 

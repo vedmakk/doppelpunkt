@@ -18,3 +18,8 @@ export const selectFutureLength = createSelector(
   selectEditor,
   (editor) => editor.future.length,
 )
+
+export const selectAutoSaveEnabled = createSelector(
+  selectEditor,
+  (editor) => editor.autoSave,
+)

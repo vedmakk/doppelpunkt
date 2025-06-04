@@ -21,8 +21,8 @@ Save the current editor content as a `.md` file.
 🖨️ **Print-Ready**  
 Includes `print.css` for consistent printed output (or **PDF export** via Print). Make sure to select `Print backgrounds` in the print dialog when in dark mode.
 
-💡 **Persistent Sessions**  
-Text is auto-saved in **LocalStorage** between sessions.
+💡 **Auto-Save**  
+Text is auto-saved in **LocalStorage** between sessions. Auto-save is disabled by default.
 
 ↩️↪️ **Undo/Redo**  
 Supports full undo/redo history for text changes.

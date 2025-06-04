@@ -4,6 +4,7 @@ import {
   selectEditorText,
   selectFutureLength,
   selectPastLength,
+  selectAutoSaveEnabled,
 } from './selectors'
 
 import { tutorial, TUTORIAL_PLACEHOLDER } from './tutorial'
@@ -21,3 +22,5 @@ export const useEditorText = () => {
 export const usePastLength = () => useAppSelector(selectPastLength)
 
 export const useFutureLength = () => useAppSelector(selectFutureLength)
+
+export const useAutoSaveEnabled = () => useAppSelector(selectAutoSaveEnabled)

@@ -4,11 +4,16 @@ import styled from '@emotion/styled'
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { Button } from '../../app/components/Button'
 import { Label } from '../../app/components/Label'
+import Tooltip from '../../app/components/Tooltip'
+import Switch from '../../app/components/Switch'
+import { Appear } from '../../app/components/Appear'
 
 interface Props {
   content: string
   pastLength: number
   futureLength: number
+  autoSaveEnabled: boolean
+  onToggleAutoSave: () => void
   onNew: () => void
   onOpen: (text: string) => void
   onUndo: () => void
@@ -56,6 +61,8 @@ const Toolbar: React.FC<Props> = ({
   content,
   pastLength,
   futureLength,
+  autoSaveEnabled,
+  onToggleAutoSave,
   onNew,
   onOpen,
   onUndo,
@@ -116,57 +123,50 @@ const Toolbar: React.FC<Props> = ({
     <ToolbarContainer id="toolbar">
       <ToolbarSide>
         <ToolbarItemContainer>
-          <Button label="New" onClick={handleNew} variant="text" size="tiny" />
-          <Button
-            label="Open"
-            onClick={handleOpen}
-            variant="text"
-            size="tiny"
-          />
+          <Button label="New" onClick={handleNew} />
+          <Button label="Open" onClick={handleOpen} />
           <HiddenInput
             type="file"
             accept=".md"
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-          <Button
-            label="Export"
-            onClick={handleExport}
-            variant="text"
-            size="tiny"
-          />
-          <Button
-            label="Undo"
-            onClick={onUndo}
-            disabled={!pastLength}
-            variant="text"
-            size="tiny"
-          />
-          <Button
-            label="Redo"
-            onClick={onRedo}
-            disabled={!futureLength}
-            variant="text"
-            size="tiny"
-          />
+          <Button label="Export" onClick={handleExport} />
+          <Button label="Undo" onClick={onUndo} disabled={!pastLength} />
+          <Button label="Redo" onClick={onRedo} disabled={!futureLength} />
         </ToolbarItemContainer>
       </ToolbarSide>
       <ToolbarCenter>
-        <Label size="small">
-          doppelp
-          <span
-            css={(theme) => ({
-              color: theme.colors.primary,
-              transition: `color ${theme.animations.transition}`,
-            })}
-          >
-            :
-          </span>
-          nkt
-        </Label>
+        <Appear>
+          <Label size="small">
+            doppelp
+            <span
+              css={(theme) => ({
+                color: theme.colors.primary,
+                transition: `color ${theme.animations.transition}`,
+              })}
+            >
+              :
+            </span>
+            nkt
+          </Label>
+        </Appear>
       </ToolbarCenter>
       <ToolbarSide>
-        <ThemeSwitch size={32} />
+        <ToolbarItemContainer
+          css={(theme) => ({
+            gap: theme.spacing(4),
+          })}
+        >
+          <Tooltip label="Enabling this will save your content in your browser’s local storage, so you can pick up where you left off. Nothing is shared or stored online – everything stays on your device.">
+            <Switch
+              label="Auto-save"
+              checked={autoSaveEnabled}
+              onChange={onToggleAutoSave}
+            />
+          </Tooltip>
+          <ThemeSwitch size={32} />
+        </ToolbarItemContainer>
       </ToolbarSide>
     </ToolbarContainer>
   )

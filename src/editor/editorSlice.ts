@@ -6,14 +6,18 @@ interface EditorState {
   past: string[]
   present: string
   future: string[]
+  autoSave: boolean
 }
 
-const initialContent = localStorage.getItem('markdown') || TUTORIAL_PLACEHOLDER
+const EDITOR_KEY = 'editor'
+const MARKDOWN_KEY = `${EDITOR_KEY}.markdown`
+const AUTO_SAVE_KEY = `${EDITOR_KEY}.autoSave`
 
 const initialState: EditorState = {
   past: [],
-  present: initialContent,
+  present: localStorage.getItem(MARKDOWN_KEY) || TUTORIAL_PLACEHOLDER,
   future: [],
+  autoSave: localStorage.getItem(AUTO_SAVE_KEY) === 'true',
 }
 
 const editorSlice = createSlice({
@@ -28,26 +32,34 @@ const editorSlice = createSlice({
       state.past.push(state.present)
       state.present = newText
       state.future = []
-      localStorage.setItem('markdown', state.present)
+      if (state.autoSave) {
+        localStorage.setItem(MARKDOWN_KEY, state.present)
+      }
     },
     clear(state) {
       state.past = []
       state.future = []
       state.present = ''
-      localStorage.setItem('markdown', state.present)
+      if (state.autoSave) {
+        localStorage.setItem(MARKDOWN_KEY, state.present)
+      }
     },
     load(state, action: PayloadAction<string>) {
       state.past = []
       state.future = []
       state.present = action.payload
-      localStorage.setItem('markdown', state.present)
+      if (state.autoSave) {
+        localStorage.setItem(MARKDOWN_KEY, state.present)
+      }
     },
     undo(state) {
       if (state.past.length > 0) {
         const previous = state.past.pop()!
         state.future.unshift(state.present)
         state.present = previous
-        localStorage.setItem('markdown', state.present)
+        if (state.autoSave) {
+          localStorage.setItem(MARKDOWN_KEY, state.present)
+        }
       }
     },
     redo(state) {
@@ -55,11 +67,25 @@ const editorSlice = createSlice({
         const next = state.future.shift()!
         state.past.push(state.present)
         state.present = next
-        localStorage.setItem('markdown', state.present)
+        if (state.autoSave) {
+          localStorage.setItem(MARKDOWN_KEY, state.present)
+        }
+      }
+    },
+    toggleAutoSave(state, action: PayloadAction<boolean>) {
+      const enabled = action.payload
+      state.autoSave = enabled
+      if (enabled) {
+        localStorage.setItem(AUTO_SAVE_KEY, 'true')
+        localStorage.setItem(MARKDOWN_KEY, state.present)
+      } else {
+        localStorage.removeItem(AUTO_SAVE_KEY)
+        localStorage.removeItem(MARKDOWN_KEY)
       }
     },
   },
 })
 
-export const { setText, clear, load, undo, redo } = editorSlice.actions
+export const { setText, clear, load, undo, redo, toggleAutoSave } =
+  editorSlice.actions
 export default editorSlice.reducer
