@@ -36,6 +36,9 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   '& textarea': {
     outline: 'none',
   },
+  '& .token': {
+    transition: `color ${theme.animations.transition}, background-color ${theme.animations.transition}`,
+  },
   '& .token.url': {
     background: 'none',
     color: theme.colors.punctuation,
@@ -51,7 +54,7 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   '& .token.punctuation': {
     color: theme.colors.punctuation,
   },
-  '& .token.title': {
+  '& .token.title, & .token.important': {
     color: theme.colors.text,
     fontWeight: 'bold',
   },

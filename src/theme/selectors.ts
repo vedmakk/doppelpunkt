@@ -90,7 +90,7 @@ const BASE_THEME: BaseTheme = {
     normal: '28px',
     small: '18px',
     tiny: '14px',
-    editor: '16px',
+    editor: '14px',
   },
 }
 
