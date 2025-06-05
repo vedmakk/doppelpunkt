@@ -112,7 +112,11 @@ const Toolbar: React.FC<Props> = ({
         <Button label="Undo" onClick={onUndo} disabled={!pastLength} />
         <Button label="Redo" onClick={onRedo} disabled={!futureLength} />
       </ToolbarItemContainer>
-      <ToolbarItemContainer>
+      <ToolbarItemContainer
+        css={(theme) => ({
+          gap: theme.spacing(2),
+        })}
+      >
         <Tooltip label="Enabling this will save your content in your browser’s local storage, so you can pick up where you left off. Nothing is shared or stored online – everything stays on your device.">
           <Switch
             label="Auto-save"
