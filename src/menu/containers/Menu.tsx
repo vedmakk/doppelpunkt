@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux'
 import { toggleMenu, openMenu, closeMenu, setShouldRender } from '../menuSlice'
 
 import { useIsMenuOpen, useShouldRenderMenu } from '../hooks'
+import { useEscapeKey } from '../../shared/hooks'
 
 import MenuComponent from '../components/Menu'
 
@@ -29,6 +30,8 @@ const Menu: React.FC = () => {
   const handleCloseMenu = useCallback(() => {
     dispatch(closeMenu())
   }, [dispatch])
+
+  useEscapeKey(handleCloseMenu)
 
   // Initially open the menu if the screen is wide enough
   useEffect(() => {
