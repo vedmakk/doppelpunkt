@@ -10,6 +10,10 @@ const AppContainer = styled.div(({ theme }) => ({
   alignItems: 'flex-start',
   minHeight: '100vh',
   background: theme.colors.backdrop,
+  '@media print': {
+    minHeight: 'auto',
+    background: 'transparent',
+  },
 }))
 
 const LayoutContainer = styled.div(({ theme }) => ({

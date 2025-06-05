@@ -10,6 +10,7 @@ const TOOLBAR_WIDTH = 200
 const PAGE_WIDTH = 794 // A4 width = 8.27 × 96 (DPI) ≈ 794px
 const PAGE_HEIGHT = 1123 // A4 height = 11.69 × 96 (DPI) ≈ 1123px
 const PAGE_PADDING = 75 // 20mm at 96dpi = 0.787402 * 96 = 75.590592px
+const PAGE_PADDING_PRINT = 20 // 20mm
 
 export const TOOLBAR_BREAKPOINT = PAGE_WIDTH + 2 * TOOLBAR_WIDTH
 
@@ -49,6 +50,7 @@ interface BaseTheme {
     pageWidth: string
     pageHeight: string
     pagePadding: string
+    pagePaddingPrint: string
   }
   fontSize: {
     normal: string
@@ -98,6 +100,7 @@ const BASE_THEME: BaseTheme = {
     pageWidth: `${PAGE_WIDTH}px`,
     pageHeight: `${PAGE_HEIGHT}px`,
     pagePadding: `${PAGE_PADDING}px`,
+    pagePaddingPrint: `${PAGE_PADDING_PRINT}mm !important`,
   },
   fontSize: {
     normal: '28px',

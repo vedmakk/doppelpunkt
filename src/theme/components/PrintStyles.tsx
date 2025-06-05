@@ -3,18 +3,14 @@ import { Global, Theme, CSSObject } from '@emotion/react'
 
 const printStyles = (theme: Theme): CSSObject => ({
   '@page': {
-    // margin: '20mm',
-    margin: '0',
+    margin: theme.layout.pagePaddingPrint,
   },
   '@media print': {
     body: {
       printColorAdjust: 'exact',
       WebkitPrintColorAdjust: 'exact',
     },
-    '#toolbar': {
-      display: 'none',
-    },
-    'html, body, #root > div, .editor-container, .code-editor': {
+    'html, body': {
       maxWidth: 'auto !important',
       height: 'auto !important',
       minHeight: 'auto !important',
@@ -24,10 +20,6 @@ const printStyles = (theme: Theme): CSSObject => ({
       '& > pre': {
         padding: '0 !important',
       },
-    },
-    '.code-editor': {
-      margin: '0 !important',
-      padding: '20mm !important',
     },
   },
 })

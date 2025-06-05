@@ -22,6 +22,10 @@ const EditorContainer = styled.div(({ theme }) => ({
     width: 'fit-content',
     margin: '0 auto',
   },
+  '@media print': {
+    width: 'auto',
+    margin: 0,
+  },
   fontFamily: 'Fira Code, monospace',
   fontSize: theme.fontSize.editor,
   lineHeight: '1.5',
@@ -35,6 +39,14 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   [theme.breakpoints.toolbar]: {
     width: theme.layout.pageWidth,
     minHeight: theme.layout.pageHeight,
+  },
+  '@media print': {
+    width: 'auto',
+    minHeight: 'auto',
+    overflow: 'visible',
+    '& > pre': {
+      padding: '0 !important',
+    },
   },
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
   whiteSpace: 'pre-wrap',
