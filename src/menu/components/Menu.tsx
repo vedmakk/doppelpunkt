@@ -37,13 +37,9 @@ const disappearAnimation = keyframes`
 
 const ToolbarContainer = styled.div<{ isOpen: boolean }>(
   ({ theme, isOpen }) => ({
-    background: theme.colors.background,
     width: '100%',
     transition: `color ${theme.animations.transition}`,
     animation: `${isOpen ? appearAnimation : disappearAnimation} ${theme.animations.transition} forwards`,
-    [theme.breakpoints.toolbar]: {
-      background: 'transparent',
-    },
   }),
 )
 
@@ -76,6 +72,8 @@ const MenuWrapper = styled.div(({ theme }) => ({
   display: 'flex',
   alignItems: 'flex-start',
   gap: theme.spacing(2),
+  position: 'relative',
+  zIndex: 2,
 }))
 
 const MenuContainer = styled.div(({ theme }) => ({
@@ -83,6 +81,39 @@ const MenuContainer = styled.div(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   gap: theme.spacing(6),
+}))
+
+const Background = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
+  ({ theme, isOpen, shouldRender }) => ({
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    background: theme.colors.paper,
+    zIndex: 0,
+    opacity: isOpen ? 1 : 0,
+    transform: shouldRender ? 'translateX(0)' : 'translateX(-100%)',
+    transition: `opacity ${theme.animations.transition}, background ${theme.animations.transition}`,
+    [theme.breakpoints.toolbar]: {
+      display: 'none',
+    },
+  }),
+)
+
+const MenuBackground = styled.div<{ isOpen: boolean }>(({ theme, isOpen }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: `calc(1.25 * ${theme.layout.toolbarWidth})`,
+  height: '100vh',
+  background: theme.colors.background,
+  zIndex: 1,
+  transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+  transition: `transform ${theme.animations.transition}, background ${theme.animations.transition}`,
+  [theme.breakpoints.toolbar]: {
+    display: 'none',
+  },
 }))
 
 const Menu: React.FC<Props> = ({
@@ -100,6 +131,12 @@ const Menu: React.FC<Props> = ({
 
   return (
     <>
+      <Background
+        isOpen={isOpen}
+        shouldRender={shouldRender}
+        onClick={toggleMenu}
+      />
+      <MenuBackground isOpen={isOpen} />
       <MenuWrapper>
         <MenuButton
           onClick={toggleMenu}

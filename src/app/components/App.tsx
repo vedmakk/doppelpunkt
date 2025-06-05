@@ -16,7 +16,7 @@ const LayoutContainer = styled.div(({ theme }) => ({
   margin: 0,
   width: '100%',
   position: 'relative',
-  [theme.breakpoints.page]: {
+  [theme.breakpoints.toolbar]: {
     width: 'fit-content',
     margin: `${theme.spacing(4)} auto`,
   },
@@ -28,10 +28,12 @@ const LayoutContainer = styled.div(({ theme }) => ({
 const MenuContainer = styled.div(({ theme }) => ({
   position: 'absolute',
   top: 0,
-  right: 0,
+  left: 0,
   width: theme.layout.toolbarWidth,
   padding: theme.spacing(2),
   [theme.breakpoints.toolbar]: {
+    left: 'unset',
+    top: 0,
     right: `-${theme.layout.toolbarWidth}`,
     width: theme.layout.toolbarWidth,
     padding: theme.spacing(2),

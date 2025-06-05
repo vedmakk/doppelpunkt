@@ -17,7 +17,7 @@ interface Props {
 
 const EditorContainer = styled.div(({ theme }) => ({
   position: 'relative',
-  [theme.breakpoints.page]: {
+  [theme.breakpoints.toolbar]: {
     width: 'fit-content',
     margin: '0 auto',
   },
@@ -31,7 +31,7 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   background: theme.colors.background,
   width: '100%',
   minHeight: '100vh',
-  [theme.breakpoints.page]: {
+  [theme.breakpoints.toolbar]: {
     width: theme.layout.pageWidth,
     minHeight: theme.layout.pageHeight,
   },

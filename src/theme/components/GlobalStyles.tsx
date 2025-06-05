@@ -17,6 +17,10 @@ const globalStyles: CSSObject = {
   img: {
     userSelect: 'none',
   },
+  '#floating-portal': {
+    zIndex: 1000,
+    position: 'relative',
+  },
 }
 
 // At first we had these styles merged with "globalStyles", which caused

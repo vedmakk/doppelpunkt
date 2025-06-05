@@ -77,13 +77,16 @@ const Tooltip: React.FC<Props> = ({ label, children }) => {
   return (
     <>
       <div
-        css={{ display: 'flex', alignItems: 'center' }}
+        css={{
+          display: 'flex',
+          alignItems: 'center',
+        }}
         ref={refs.setReference}
         {...getReferenceProps()}
       >
         {children}
       </div>
-      <FloatingPortal>
+      <FloatingPortal id="floating-portal">
         {isOpen && (
           <div
             className="tooltip"
