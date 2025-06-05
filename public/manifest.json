@@ -1,0 +1,16 @@
+{
+  "name": "doppelp:nkt",
+  "short_name": "dp:",
+  "description": "A minimalistic Markdown editor.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9c6dff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
