@@ -102,6 +102,10 @@ const Toolbar: React.FC<Props> = ({
     URL.revokeObjectURL(url)
   }, [content])
 
+  const handlePDF = useCallback(() => {
+    window.print()
+  }, [])
+
   return (
     <ToolbarContainer id="toolbar">
       <ToolbarItemContainer>
@@ -114,6 +118,7 @@ const Toolbar: React.FC<Props> = ({
           onChange={handleFileChange}
         />
         <Button label="Export" onClick={handleExport} />
+        <Button label="PDF" onClick={handlePDF} />
         <Button label="Undo" onClick={onUndo} disabled={!pastLength} />
         <Button label="Redo" onClick={onRedo} disabled={!futureLength} />
       </ToolbarItemContainer>
@@ -148,8 +153,8 @@ const Toolbar: React.FC<Props> = ({
       </ToolbarItemContainer>
       <ToolbarItemContainer>
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
-          © 2025 <br />
-          Jan Mittelman
+          Everything you write stays in your browser. No data is ever uploaded
+          or tracked.
         </Label>
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           This project is open source under the MIT License.
@@ -159,6 +164,17 @@ const Toolbar: React.FC<Props> = ({
           label="GitHub"
           externalLink
         />
+        <Button
+          href="https://www.google.com/search?q=markdown+cheat+sheet"
+          label="Markdown"
+          externalLink
+        />
+      </ToolbarItemContainer>
+      <ToolbarItemContainer>
+        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+          © 2025 <br />
+          Jan Mittelman
+        </Label>
       </ToolbarItemContainer>
     </ToolbarContainer>
   )
