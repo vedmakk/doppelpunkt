@@ -34,6 +34,13 @@ const menuSlice = createSlice({
         shouldRender: action.payload,
       }
     },
+    openMenu: (state) => {
+      return {
+        ...state,
+        isOpen: true,
+        shouldRender: true,
+      }
+    },
     closeMenu: (state) => {
       return {
         ...state,
@@ -44,4 +51,5 @@ const menuSlice = createSlice({
 })
 
 export const menuReducer = menuSlice.reducer
-export const { toggleMenu, setShouldRender, closeMenu } = menuSlice.actions
+export const { toggleMenu, setShouldRender, openMenu, closeMenu } =
+  menuSlice.actions

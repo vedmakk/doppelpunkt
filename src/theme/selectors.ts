@@ -11,11 +11,13 @@ const PAGE_WIDTH = 794 // A4 width = 8.27 × 96 (DPI) ≈ 794px
 const PAGE_HEIGHT = 1123 // A4 height = 11.69 × 96 (DPI) ≈ 1123px
 const PAGE_PADDING = 75 // 20mm at 96dpi = 0.787402 * 96 = 75.590592px
 
+export const TOOLBAR_BREAKPOINT = PAGE_WIDTH + 2 * TOOLBAR_WIDTH
+
 const breakpoints = {
   sm: '@media screen and (min-width: 0px)',
   md: '@media screen and (min-width: 768px)',
   page: `@media screen and (min-width: ${PAGE_WIDTH}px)`,
-  toolbar: `@media screen and (min-width: ${PAGE_WIDTH + 2 * TOOLBAR_WIDTH}px)`,
+  toolbar: `@media screen and (min-width: ${TOOLBAR_BREAKPOINT}px)`,
   lg: '@media screen and (min-width: 1024px)',
   xl: '@media screen and (min-width: 1440px)',
 }
