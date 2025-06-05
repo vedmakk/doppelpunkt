@@ -4,6 +4,7 @@ import { keyframes } from '@emotion/react'
 
 import Toolbar from '../containers/Toolbar'
 import Logo from './Logo'
+import MenuButton from './MenuButton'
 
 interface Props {
   isOpen: boolean
@@ -42,31 +43,6 @@ const ToolbarContainer = styled.div<{ isOpen: boolean }>(
     animation: `${isOpen ? appearAnimation : disappearAnimation} ${theme.animations.transition} forwards`,
   }),
 )
-
-const MenuButton = styled.button<{ isOpen: boolean }>(({ theme, isOpen }) => ({
-  width: 22,
-  height: 22,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  padding: '6px 4px',
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  '& span': {
-    display: 'block',
-    width: 18,
-    height: 2,
-    background: theme.colors.text,
-    transition: `transform ${theme.animations.transition}, opacity ${theme.animations.transition}, color ${theme.animations.transition}`,
-  },
-  '& span:nth-of-type(1)': {
-    transform: isOpen ? 'rotate(45deg) translate(3px, 3px)' : 'none',
-  },
-  '& span:nth-of-type(2)': {
-    transform: isOpen ? 'rotate(-45deg) translate(3px, -3px)' : 'none',
-  },
-}))
 
 const MenuWrapper = styled.div(({ theme }) => ({
   display: 'flex',
@@ -138,14 +114,7 @@ const Menu: React.FC<Props> = ({
       />
       <MenuBackground isOpen={isOpen} />
       <MenuWrapper>
-        <MenuButton
-          onClick={toggleMenu}
-          isOpen={isOpen}
-          aria-label="Toggle menu"
-        >
-          <span />
-          <span />
-        </MenuButton>
+        <MenuButton onClick={toggleMenu} isOpen={isOpen} size={24} />
         <MenuContainer>
           <Logo isDense={!isOpen} />
           {shouldRender && (
