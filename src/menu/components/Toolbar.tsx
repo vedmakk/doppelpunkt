@@ -146,6 +146,20 @@ const Toolbar: React.FC<Props> = ({
         </Label>
         <Label size="tiny">{stats.readingTime}</Label>
       </ToolbarItemContainer>
+      <ToolbarItemContainer>
+        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+          © 2025 <br />
+          Jan Mittelman
+        </Label>
+        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+          This project is open source under the MIT License.
+        </Label>
+        <Button
+          href="https://github.com/vedmakk/doppelpunkt"
+          label="GitHub"
+          externalLink
+        />
+      </ToolbarItemContainer>
     </ToolbarContainer>
   )
 }

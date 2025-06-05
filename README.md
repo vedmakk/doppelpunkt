@@ -56,7 +56,7 @@ bun run dev
 ## 📜 License
 
 This project is licensed under the MIT License — use freely, modify openly, and share widely.  
-See the [LICENSE](LICENSE) file for full details.
+See the [LICENSE](LICENSE.md) file for full details.
 
 The Fira Code font is included under the terms of the SIL Open Font License, Version 1.1.  
 See the [Fira Code License](src/theme/fonts/woff2/LICENSE) for more information.
