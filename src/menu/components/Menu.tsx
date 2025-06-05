@@ -2,9 +2,8 @@ import React, { useCallback } from 'react'
 import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
 
-import { Label } from '../../app/components/Label'
-import { Appear } from '../../app/components/Appear'
 import Toolbar from '../containers/Toolbar'
+import Logo from './Logo'
 
 interface Props {
   isOpen: boolean
@@ -50,11 +49,11 @@ const ToolbarContainer = styled.div<{ isOpen: boolean }>(
 
 const MenuButton = styled.button<{ isOpen: boolean }>(({ theme, isOpen }) => ({
   width: 22,
-  height: 18,
+  height: 22,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
-  padding: 4,
+  padding: '6px 4px',
   background: 'transparent',
   border: 'none',
   cursor: 'pointer',
@@ -73,11 +72,17 @@ const MenuButton = styled.button<{ isOpen: boolean }>(({ theme, isOpen }) => ({
   },
 }))
 
-const MenuHeader = styled.div(({ theme }) => ({
+const MenuWrapper = styled.div(({ theme }) => ({
   display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(2),
+}))
+
+const MenuContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  marginBottom: theme.spacing(3),
+  gap: theme.spacing(3),
 }))
 
 const Menu: React.FC<Props> = ({
@@ -95,21 +100,7 @@ const Menu: React.FC<Props> = ({
 
   return (
     <>
-      <MenuHeader>
-        <Appear>
-          <Label size="small" css={{ userSelect: 'none' }}>
-            doppelp
-            <span
-              css={(theme) => ({
-                color: theme.colors.primary,
-                transition: `color ${theme.animations.transition}`,
-              })}
-            >
-              :
-            </span>
-            nkt
-          </Label>
-        </Appear>
+      <MenuWrapper>
         <MenuButton
           onClick={toggleMenu}
           isOpen={isOpen}
@@ -118,12 +109,18 @@ const Menu: React.FC<Props> = ({
           <span />
           <span />
         </MenuButton>
-      </MenuHeader>
-      {shouldRender && (
-        <ToolbarContainer isOpen={isOpen} onAnimationEnd={handleAnimationEnd}>
-          <Toolbar />
-        </ToolbarContainer>
-      )}
+        <MenuContainer>
+          <Logo isDense={!isOpen} />
+          {shouldRender && (
+            <ToolbarContainer
+              isOpen={isOpen}
+              onAnimationEnd={handleAnimationEnd}
+            >
+              <Toolbar />
+            </ToolbarContainer>
+          )}
+        </MenuContainer>
+      </MenuWrapper>
     </>
   )
 }

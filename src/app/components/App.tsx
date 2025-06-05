@@ -30,11 +30,11 @@ const MenuContainer = styled.div(({ theme }) => ({
   top: 0,
   right: 0,
   width: theme.layout.toolbarWidth,
-  padding: `${theme.spacing(2)}`,
+  padding: theme.spacing(2),
   [theme.breakpoints.toolbar]: {
     right: `-${theme.layout.toolbarWidth}`,
     width: theme.layout.toolbarWidth,
-    padding: `${theme.spacing(2)} ${theme.spacing(4)}`,
+    padding: theme.spacing(2),
   },
   '@media print': {
     display: 'none',
