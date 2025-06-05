@@ -82,7 +82,7 @@ const MenuContainer = styled.div(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spacing(3),
+  gap: theme.spacing(6),
 }))
 
 const Menu: React.FC<Props> = ({

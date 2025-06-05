@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import { Label } from './Label'
 import { Appear } from './Appear'
+import { InteractiveLabel } from './InteractiveLabel'
 
 interface Props {
   label: string
@@ -34,7 +34,7 @@ const Track = styled.div<{ checked: boolean }>(({ checked, theme }) => ({
   height: '16px',
   borderRadius: '16px',
   backgroundColor: checked ? theme.colors.primary : theme.colors.backdrop,
-  transition: `background-color ${theme.animations.interaction}`,
+  transition: `background-color ${theme.animations.transition}`,
 }))
 
 const Thumb = styled.div<{ checked: boolean }>(({ checked, theme }) => ({
@@ -43,10 +43,15 @@ const Thumb = styled.div<{ checked: boolean }>(({ checked, theme }) => ({
   left: '2px',
   width: '12px',
   height: '12px',
-  backgroundColor: theme.colors.background,
+  backgroundColor:
+    theme.mode === 'light'
+      ? checked
+        ? theme.colors.background
+        : theme.colors.secondary
+      : theme.colors.text,
   borderRadius: '50%',
   boxShadow: `0 1px 3px ${theme.colors.shadow}`,
-  transition: `transform ${theme.animations.interaction}, background-color ${theme.animations.transition}`,
+  transition: `transform ${theme.animations.transition}, background-color ${theme.animations.transition}`,
   transform: checked ? 'translateX(8px)' : 'translateX(0)',
 }))
 
@@ -56,6 +61,7 @@ const Switch: React.FC<Props> = ({ label, checked, onChange }) => {
       <SwitchContainer>
         <SwitchWrapper>
           <HiddenInput
+            id="switch-checkbox"
             type="checkbox"
             checked={checked}
             onChange={(e) => onChange(e.target.checked)}
@@ -63,7 +69,7 @@ const Switch: React.FC<Props> = ({ label, checked, onChange }) => {
           <Track checked={checked} />
           <Thumb checked={checked} />
         </SwitchWrapper>
-        {label && <Label size="tiny">{label}</Label>}
+        {label && <InteractiveLabel label={label} htmlFor="switch-checkbox" />}
       </SwitchContainer>
     </Appear>
   )

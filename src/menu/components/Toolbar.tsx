@@ -22,7 +22,7 @@ const ToolbarContainer = styled.div(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  gap: theme.spacing(3),
+  gap: theme.spacing(6),
 }))
 
 const ToolbarItemContainer = styled.div(({ theme }) => ({
@@ -120,7 +120,7 @@ const Toolbar: React.FC<Props> = ({
             onChange={onToggleAutoSave}
           />
         </Tooltip>
-        <ThemeSwitch size={32} />
+        <ThemeSwitch size={24} />
       </ToolbarItemContainer>
     </ToolbarContainer>
   )
