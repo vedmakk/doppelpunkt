@@ -4,17 +4,15 @@ import styled from '@emotion/styled'
 import Menu from '../../menu/containers/Menu'
 import MarkdownEditor from '../../editor/containers/MarkdownEditor'
 
-const AppContainer = styled.div(({ theme }) => ({
+const AppContainer = styled.div({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'flex-start',
   minHeight: '100vh',
-  background: theme.colors.backdrop,
   '@media print': {
     minHeight: 'auto',
-    background: 'transparent',
   },
-}))
+})
 
 const LayoutContainer = styled.div(({ theme }) => ({
   margin: 0,

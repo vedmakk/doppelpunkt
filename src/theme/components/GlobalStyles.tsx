@@ -32,7 +32,7 @@ const globalStyles: CSSObject = {
 // re-injected.
 const changingGlobalStyles = (theme: Theme): CSSObject => ({
   body: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.backdrop,
     color: theme.colors.text,
     transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
   },
