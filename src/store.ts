@@ -1,14 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
-import editorReducer from './editor/editorSlice'
+import { editorReducer } from './editor/editorSlice'
 import { themeReducer } from './theme/themeSlice'
+import { menuReducer } from './menu/menuSlice'
 
 export const createStore = () =>
   configureStore({
     reducer: {
       theme: themeReducer,
       editor: editorReducer,
+      menu: menuReducer,
     },
   })
 

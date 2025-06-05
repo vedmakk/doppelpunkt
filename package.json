@@ -22,7 +22,8 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
-    "react-simple-code-editor": "^0.14.1"
+    "react-simple-code-editor": "^0.14.1",
+    "reading-time-estimator": "^1.14.0"
   },
   "devDependencies": {
     "@emotion/eslint-plugin": "^11.12.0",

@@ -1,43 +1,9 @@
-import VollkornRegularWoff2 from './woff2/Vollkorn-Regular.woff2'
-import VollkornMediumWoff2 from './woff2/Vollkorn-Medium.woff2'
-import VollkornSemiBoldWoff2 from './woff2/Vollkorn-SemiBold.woff2'
-
 import FiraCodeLightWoff2 from './woff2/FiraCode-Light.woff2'
 import FiraCodeRegularWoff2 from './woff2/FiraCode-Regular.woff2'
 import FiraCodeMediumWoff2 from './woff2/FiraCode-Medium.woff2'
 import FiraCodeSemiBoldWoff2 from './woff2/FiraCode-SemiBold.woff2'
 import FiraCodeBoldWoff2 from './woff2/FiraCode-Bold.woff2'
 import FiraCodeVF from './woff2/FiraCode-VF.woff2'
-
-export const fontVollkorn = [
-  {
-    '@font-face': {
-      fontFamily: 'Vollkorn',
-      src: `url(${VollkornRegularWoff2}) format('woff2')`,
-      fontWeight: 400,
-      fontStyle: 'normal',
-      fontDisplay: 'swap',
-    },
-  },
-  {
-    '@font-face': {
-      fontFamily: 'Vollkorn',
-      src: `url(${VollkornMediumWoff2}) format('woff2')`,
-      fontWeight: 500,
-      fontStyle: 'normal',
-      fontDisplay: 'swap',
-    },
-  },
-  {
-    '@font-face': {
-      fontFamily: 'Vollkorn',
-      src: `url(${VollkornSemiBoldWoff2}) format('woff2')`,
-      fontWeight: 600,
-      fontStyle: 'normal',
-      fontDisplay: 'swap',
-    },
-  },
-]
 
 export const fontFiraCode = [
   {

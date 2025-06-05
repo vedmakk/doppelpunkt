@@ -6,9 +6,19 @@ const SPACING_UNIT = 8
 const ANIMATION_DURATION_SHORT = 0.1
 const ANIMATION_DURATION_LONG = 0.4
 
+const TOOLBAR_WIDTH = 305
+const PAGE_WIDTH = 794 // A4 width = 8.27 × 96 (DPI) ≈ 794px
+const PAGE_HEIGHT = 1123 // A4 height = 11.69 × 96 (DPI) ≈ 1123px
+const PAGE_PADDING = 75 // 20mm at 96dpi = 0.787402 * 96 = 75.590592px
+const PAGE_PADDING_PRINT = 20 // 20mm
+
+export const TOOLBAR_BREAKPOINT = PAGE_WIDTH + 2 * TOOLBAR_WIDTH
+
 const breakpoints = {
   sm: '@media screen and (min-width: 0px)',
   md: '@media screen and (min-width: 768px)',
+  page: `@media screen and (min-width: ${PAGE_WIDTH}px)`,
+  toolbar: `@media screen and (min-width: ${TOOLBAR_BREAKPOINT}px)`,
   lg: '@media screen and (min-width: 1024px)',
   xl: '@media screen and (min-width: 1440px)',
 }
@@ -17,6 +27,8 @@ interface BaseTheme {
   breakpoints: {
     sm: string
     md: string
+    page: string
+    toolbar: string
     lg: string
     xl: string
   }
@@ -34,9 +46,11 @@ interface BaseTheme {
   }
   spacing: (multiplier: number) => string
   layout: {
+    toolbarWidth: string
     pageWidth: string
     pageHeight: string
     pagePadding: string
+    pagePaddingPrint: string
   }
   fontSize: {
     normal: string
@@ -82,9 +96,11 @@ const BASE_THEME: BaseTheme = {
   },
   spacing: (multiplier: number) => `${multiplier * SPACING_UNIT}px`,
   layout: {
-    pageWidth: '794px', // A4 width = 8.27 × 96 (DPI) ≈ 794px
-    pageHeight: '1123px', // A4 height = 11.69 × 96 (DPI) ≈ 1123px
-    pagePadding: '75px', // 20mm at 96dpi = 0.787402 * 96 = 75.590592px
+    toolbarWidth: `${TOOLBAR_WIDTH}px`,
+    pageWidth: `${PAGE_WIDTH}px`,
+    pageHeight: `${PAGE_HEIGHT}px`,
+    pagePadding: `${PAGE_PADDING}px`,
+    pagePaddingPrint: `${PAGE_PADDING_PRINT}mm !important`,
   },
   fontSize: {
     normal: '28px',

@@ -86,6 +86,6 @@ const editorSlice = createSlice({
   },
 })
 
+export const editorReducer = editorSlice.reducer
 export const { setText, clear, load, undo, redo, toggleAutoSave } =
   editorSlice.actions
-export default editorSlice.reducer

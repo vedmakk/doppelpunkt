@@ -1,12 +1,13 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import { Label } from './Label'
 import { Appear } from './Appear'
+import { InteractiveLabel } from './InteractiveLabel'
 
 interface Props {
   label: string
   checked: boolean
   onChange: (checked: boolean) => void
+  size: number
 }
 
 const SwitchContainer = styled.label(({ theme }) => ({
@@ -29,41 +30,53 @@ const HiddenInput = styled.input({
   height: 0,
 })
 
-const Track = styled.div<{ checked: boolean }>(({ checked, theme }) => ({
-  width: '24px',
-  height: '16px',
-  borderRadius: '16px',
-  backgroundColor: checked ? theme.colors.primary : theme.colors.backdrop,
-  transition: `background-color ${theme.animations.interaction}`,
-}))
+const Track = styled.div<{ checked: boolean; size: number }>(
+  ({ checked, theme, size }) => ({
+    width: `${size}px`,
+    height: `${Math.round(size / 1.5)}px`,
+    borderRadius: '16px',
+    backgroundColor: checked ? theme.colors.primary : theme.colors.backdrop,
+    transition: `background-color ${theme.animations.transition}`,
+  }),
+)
 
-const Thumb = styled.div<{ checked: boolean }>(({ checked, theme }) => ({
-  position: 'absolute',
-  top: '2px',
-  left: '2px',
-  width: '12px',
-  height: '12px',
-  backgroundColor: theme.colors.background,
-  borderRadius: '50%',
-  boxShadow: `0 1px 3px ${theme.colors.shadow}`,
-  transition: `transform ${theme.animations.interaction}, background-color ${theme.animations.transition}`,
-  transform: checked ? 'translateX(8px)' : 'translateX(0)',
-}))
+const Thumb = styled.div<{ checked: boolean; size: number }>(
+  ({ checked, theme, size }) => ({
+    position: 'absolute',
+    top: `${Math.round(size / 10)}px`,
+    left: `${Math.round(size / 10)}px`,
+    width: `${Math.round(size / 1.5) - 2 * Math.round(size / 10)}px`,
+    height: `${Math.round(size / 1.5) - 2 * Math.round(size / 10)}px`,
+    backgroundColor:
+      theme.mode === 'light'
+        ? checked
+          ? theme.colors.background
+          : theme.colors.secondary
+        : theme.colors.text,
+    borderRadius: '50%',
+    boxShadow: `0 1px 3px ${theme.colors.shadow}`,
+    transition: `transform ${theme.animations.transition}, background-color ${theme.animations.transition}`,
+    transform: checked
+      ? `translateX(${Math.round(size / 3)}px)`
+      : 'translateX(0)',
+  }),
+)
 
-const Switch: React.FC<Props> = ({ label, checked, onChange }) => {
+const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
   return (
     <Appear>
       <SwitchContainer>
         <SwitchWrapper>
           <HiddenInput
+            id="switch-checkbox"
             type="checkbox"
             checked={checked}
             onChange={(e) => onChange(e.target.checked)}
           />
-          <Track checked={checked} />
-          <Thumb checked={checked} />
+          <Track checked={checked} size={size} />
+          <Thumb checked={checked} size={size} />
         </SwitchWrapper>
-        {label && <Label size="tiny">{label}</Label>}
+        {label && <InteractiveLabel label={label} htmlFor="switch-checkbox" />}
       </SwitchContainer>
     </Appear>
   )

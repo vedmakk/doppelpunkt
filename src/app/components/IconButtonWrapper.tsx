@@ -5,7 +5,7 @@ import { Appear } from './Appear'
 
 interface Props {
   size: number
-  onClick: () => void
+  onClick?: () => void
   children: React.ReactNode
   disabled?: boolean
 }
@@ -21,6 +21,7 @@ const Container = styled.div<{ size: number }>(({ theme, size }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   backgroundColor: theme.colors.backdrop,
+  color: theme.colors.text,
   opacity: 1,
   willChange: 'transform, color, background-color, opacity',
   transition: `transform ${theme.animations.interaction}, color ${theme.animations.interaction}, background-color ${theme.animations.interaction}, opacity ${theme.animations.interaction}`,
