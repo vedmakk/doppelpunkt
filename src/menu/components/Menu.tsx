@@ -115,7 +115,7 @@ const Menu: React.FC<Props> = ({
       />
       <MenuBackground isOpen={isOpen} />
       <MenuWrapper>
-        <MenuButton onClick={toggleMenu} isOpen={isOpen} size={24} />
+        <MenuButton onClick={toggleMenu} isOpen={isOpen} size={22} />
         <MenuContainer>
           <Logo isDense={!isOpen} />
           {shouldRender && (
