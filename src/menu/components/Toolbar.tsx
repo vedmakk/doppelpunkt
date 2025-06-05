@@ -118,6 +118,7 @@ const Toolbar: React.FC<Props> = ({
             label="Auto-save"
             checked={autoSaveEnabled}
             onChange={onToggleAutoSave}
+            size={24}
           />
         </Tooltip>
         <ThemeSwitch size={24} />
