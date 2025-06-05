@@ -53,6 +53,7 @@ interface BaseTheme {
     pagePaddingPrint: string
   }
   fontSize: {
+    large: string
     normal: string
     small: string
     tiny: string
@@ -103,10 +104,11 @@ const BASE_THEME: BaseTheme = {
     pagePaddingPrint: `${PAGE_PADDING_PRINT}mm !important`,
   },
   fontSize: {
-    normal: '28px',
-    small: '18px',
-    tiny: '14px',
-    editor: '14px',
+    large: '1.2rem',
+    normal: '1rem',
+    small: '0.875rem',
+    tiny: '0.75rem',
+    editor: '1rem',
   },
 }
 

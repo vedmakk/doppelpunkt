@@ -4,12 +4,12 @@ import { CSSObject } from '@emotion/react'
 
 interface LabelProps {
   children: React.ReactNode
-  size?: 'normal' | 'small' | 'tiny'
+  size?: 'large' | 'normal' | 'small' | 'tiny'
   className?: string
 }
 
 const StyledLabel = styled.span<{
-  size?: 'normal' | 'small' | 'tiny'
+  size?: 'large' | 'normal' | 'small' | 'tiny'
 }>(({ theme, size = 'normal' }) => {
   const baseStyles: CSSObject = {
     color: theme.colors.link,
@@ -22,11 +22,13 @@ const StyledLabel = styled.span<{
   }
 
   const sizeStyles: CSSObject =
-    size === 'small'
-      ? { fontSize: theme.fontSize.small }
-      : size === 'tiny'
-        ? { fontSize: theme.fontSize.tiny }
-        : { fontSize: theme.fontSize.normal }
+    size === 'large'
+      ? { fontSize: theme.fontSize.large }
+      : size === 'small'
+        ? { fontSize: theme.fontSize.small }
+        : size === 'tiny'
+          ? { fontSize: theme.fontSize.tiny }
+          : { fontSize: theme.fontSize.normal }
 
   return {
     ...baseStyles,

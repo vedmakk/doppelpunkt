@@ -64,7 +64,7 @@ export const interactiveLabelStyles = ({
   css({
     color: theme.colors.link,
     fontFamily: 'Fira Code, monospace',
-    fontSize: theme.fontSize.tiny,
+    fontSize: theme.fontSize.small,
     fontStyle: 'normal',
     fontWeight: 500,
     lineHeight: 'normal',

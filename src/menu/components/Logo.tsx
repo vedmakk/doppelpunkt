@@ -61,7 +61,7 @@ const StyledSpan = styled.span(({ theme }) => ({
 const Logo: React.FC<Props> = ({ isDense }) => {
   return (
     <Appear>
-      <StyledLabel size="small" isDense={isDense}>
+      <StyledLabel size="large" isDense={isDense}>
         <StyledSpan>d</StyledSpan>
         <StyledSpan>o</StyledSpan>
         <StyledSpan>p</StyledSpan>
