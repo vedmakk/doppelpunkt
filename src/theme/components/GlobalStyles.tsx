@@ -1,14 +1,14 @@
 import React from 'react'
 import { Global, Theme, CSSObject } from '@emotion/react'
 
-import { fontVollkorn, fontFiraCode } from '../fonts'
+import { fontFiraCode } from '../fonts'
 
 const globalStyles: CSSObject = {
   '*': {
     boxSizing: 'border-box',
   },
   body: {
-    fontFamily: 'Vollkorn, serif',
+    fontFamily: 'Fira Code, monospace',
     margin: 0,
     padding: 0,
     WebKitFontSmoothing: 'antialiased',
@@ -36,7 +36,7 @@ const changingGlobalStyles = (theme: Theme): CSSObject => ({
 
 export const GlobalStyles = () => (
   <>
-    <Global styles={[...fontVollkorn, ...fontFiraCode, globalStyles]} />
+    <Global styles={[...fontFiraCode, globalStyles]} />
     <Global styles={changingGlobalStyles} />
   </>
 )

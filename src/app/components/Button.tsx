@@ -54,7 +54,7 @@ const StyledLabel = styled.span<{
   active: boolean
 }>(({ theme, active }) => ({
   color: theme.colors.link,
-  fontFamily: 'Vollkorn',
+  fontFamily: 'Fira Code, monospace',
   fontSize: theme.fontSize.tiny,
   fontStyle: 'normal',
   fontWeight: 500,

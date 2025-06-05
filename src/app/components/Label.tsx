@@ -13,7 +13,7 @@ const StyledLabel = styled.span<{
 }>(({ theme, size = 'normal' }) => {
   const baseStyles: CSSObject = {
     color: theme.colors.link,
-    fontFamily: 'Vollkorn',
+    fontFamily: 'Fira Code, monospace',
     fontStyle: 'normal',
     fontWeight: 500,
     lineHeight: 'normal',
