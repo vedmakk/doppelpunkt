@@ -55,7 +55,7 @@ const MenuWrapper = styled.div(({ theme }) => ({
 const MenuContainer = styled.div(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
+  alignItems: 'flex-start',
   gap: theme.spacing(6),
 }))
 

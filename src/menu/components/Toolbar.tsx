@@ -1,16 +1,20 @@
 import React, { useCallback, useRef } from 'react'
 import styled from '@emotion/styled'
 
+import { EditorStats } from '../../shared/types'
+
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { Button } from '../../app/components/Button'
 import Tooltip from '../../app/components/Tooltip'
 import Switch from '../../app/components/Switch'
+import { Label } from '../../app/components/Label'
 
 interface Props {
   content: string
   pastLength: number
   futureLength: number
   autoSaveEnabled: boolean
+  stats: EditorStats
   onToggleAutoSave: () => void
   onNew: () => void
   onOpen: (text: string) => void
@@ -40,6 +44,7 @@ const Toolbar: React.FC<Props> = ({
   pastLength,
   futureLength,
   autoSaveEnabled,
+  stats,
   onToggleAutoSave,
   onNew,
   onOpen,
@@ -126,6 +131,20 @@ const Toolbar: React.FC<Props> = ({
           />
         </Tooltip>
         <ThemeSwitch size={24} />
+      </ToolbarItemContainer>
+      <ToolbarItemContainer>
+        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+          Stats
+        </Label>
+        <Label size="tiny">
+          {stats.wordCount === 1 ? '1 word' : `${stats.wordCount} words`}
+        </Label>
+        <Label size="tiny">
+          {stats.characterCount === 1
+            ? '1 character'
+            : `${stats.characterCount} characters`}
+        </Label>
+        <Label size="tiny">{stats.readingTime}</Label>
       </ToolbarItemContainer>
     </ToolbarContainer>
   )

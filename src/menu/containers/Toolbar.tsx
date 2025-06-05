@@ -14,6 +14,7 @@ import {
   useFutureLength,
   usePastLength,
   useAutoSaveEnabled,
+  useEditorContentStats,
 } from '../../editor/hooks'
 
 import ToolbarComponent from '../components/Toolbar'
@@ -23,6 +24,7 @@ const Toolbar: React.FC = () => {
   const pastLength = usePastLength()
   const futureLength = useFutureLength()
   const autoSaveEnabled = useAutoSaveEnabled()
+  const stats = useEditorContentStats()
 
   const dispatch = useDispatch()
 
@@ -54,6 +56,7 @@ const Toolbar: React.FC = () => {
       pastLength={pastLength}
       futureLength={futureLength}
       autoSaveEnabled={autoSaveEnabled}
+      stats={stats}
       onToggleAutoSave={handleToggleAutoSave}
       onNew={handleNew}
       onOpen={handleOpen}
