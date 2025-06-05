@@ -27,6 +27,16 @@ test('renders without crashing', async () => {
             hoverOpacity: 1,
             activeOpacity: 0.8,
           },
+          opacity: {
+            disabled: 0.5,
+          },
+          fontSize: {
+            normal: '28px',
+            small: '18px',
+            tiny: '14px',
+            editor: '14px',
+          },
+          spacing: (multiplier: number) => `${multiplier * 8}px`,
         } as Partial<Theme>
       }
     >
