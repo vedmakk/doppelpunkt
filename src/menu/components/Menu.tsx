@@ -57,6 +57,7 @@ const MenuContainer = styled.div(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: theme.spacing(6),
+  flex: 'min-content',
 }))
 
 const Background = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
