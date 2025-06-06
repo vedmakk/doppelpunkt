@@ -36,6 +36,14 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   background: theme.colors.page,
   width: '100%',
   minHeight: '100vh',
+  '& > pre, & > textarea': {
+    padding: `${theme.layout.pagePadding} ${theme.spacing(2)} !important`,
+  },
+  [theme.breakpoints.page]: {
+    '& > pre, & > textarea': {
+      padding: `${theme.layout.pagePadding} !important`,
+    },
+  },
   [theme.breakpoints.toolbar]: {
     width: theme.layout.pageWidth,
     minHeight: theme.layout.pageHeight,
@@ -124,7 +132,6 @@ const MarkdownEditor: React.FC<Props> = ({
           value={content}
           onValueChange={onContentChange}
           highlight={highlight}
-          padding={theme.layout.pagePadding}
           autoFocus
         />
       </EditorContainer>
