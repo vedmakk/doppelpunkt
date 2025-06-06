@@ -1,3 +1,5 @@
+![doppelpunkt.io – Screenshot](./assets/screenshot.png)
+
 # doppelp:nkt – Minimal Markdown Editor
 
 A **minimalist**, **distraction-free** Markdown editor – ready the moment you open it. With live syntax-aware rendering, inspired by the writing experiences in apps like **Things**.
