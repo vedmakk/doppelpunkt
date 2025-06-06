@@ -72,7 +72,9 @@ export type CustomTheme = BaseTheme & {
     backdrop: string
     paper: string
     background: string
+    page: string
     shadow: string
+    modal: string
     modalBackdrop: string
     punctuation: string
   }
@@ -121,10 +123,12 @@ const LIGHT_THEME: CustomTheme = {
     title: 'rgba(55, 55, 55, 1)',
     text: 'rgba(55, 55, 55, 1)',
     link: 'rgba(55, 55, 55, 1)',
-    backdrop: 'rgba(0, 0, 0, 0.03)',
+    backdrop: 'rgba(0, 0, 0, 0.075)',
     paper: 'rgba(156, 109, 255, 0.1)',
-    background: 'rgba(255, 255, 255, 1)',
+    background: 'rgb(248, 248, 248)',
+    page: 'rgba(255, 255, 255, 1)',
     shadow: 'rgba(0, 0, 0, 0.1)',
+    modal: 'rgba(255, 255, 255, 1)',
     modalBackdrop: 'rgba(255, 255, 255, 0.8)',
     punctuation: 'rgba(156, 109, 255, 0.5)',
   },
@@ -145,7 +149,9 @@ const DARK_THEME: CustomTheme = {
     backdrop: 'rgba(255, 255, 255, 0.1)', // A lighter backdrop for dark theme
     paper: 'rgba(156, 109, 255, 0.2)', // A slightly more prominent shade for paper in dark theme
     background: 'rgba(34, 34, 34, 1)', // Dark grey background color
+    page: 'rgba(44, 44, 44, 1)',
     shadow: 'rgba(255, 255, 255, 0.05)',
+    modal: 'rgba(44, 44, 44, 1)',
     modalBackdrop: 'rgba(34, 34, 34, 0.9)',
     punctuation: 'rgba(156, 109, 255, 0.5)',
   },

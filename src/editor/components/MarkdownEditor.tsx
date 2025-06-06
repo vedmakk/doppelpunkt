@@ -33,7 +33,7 @@ const EditorContainer = styled.div(({ theme }) => ({
 }))
 
 const CodeEditor = styled(Editor)(({ theme }) => ({
-  background: theme.colors.background,
+  background: theme.colors.page,
   width: '100%',
   minHeight: '100vh',
   [theme.breakpoints.toolbar]: {

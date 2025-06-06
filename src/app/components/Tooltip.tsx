@@ -24,7 +24,7 @@ interface Props {
 }
 
 const TooltipContainer = styled.div(({ theme }) => ({
-  backgroundColor: theme.colors.background,
+  backgroundColor: theme.colors.modal,
   color: theme.colors.text,
   padding: theme.spacing(1),
   border: `1px solid ${theme.colors.primary}`,
@@ -99,7 +99,7 @@ const Tooltip: React.FC<Props> = ({ label, children }) => {
               height={12}
               ref={arrowRef}
               context={context}
-              fill={theme.colors.background}
+              fill={theme.colors.modal}
               stroke={theme.colors.primary}
               strokeWidth={1}
               tipRadius={1}

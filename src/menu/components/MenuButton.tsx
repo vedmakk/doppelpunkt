@@ -35,8 +35,8 @@ const MenuButtonLineTemplate = styled.div<{ isOpen: boolean }>(({ theme }) => ({
     display: 'block',
     width: '100%',
     height: 2,
-    background: theme.colors.text,
-    transition: `color ${theme.animations.transition}`,
+    backgroundColor: theme.colors.text,
+    transition: `background-color ${theme.animations.transition}`,
   },
 }))
 

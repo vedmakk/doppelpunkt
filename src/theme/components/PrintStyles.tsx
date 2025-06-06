@@ -15,7 +15,7 @@ const printStyles = (theme: Theme): CSSObject => ({
       height: 'auto !important',
       minHeight: 'auto !important',
       overflow: 'visible !important',
-      backgroundColor: `${theme.colors.background} !important`,
+      backgroundColor: `${theme.colors.page} !important`,
       color: theme.colors.text,
       '& > pre': {
         padding: '0 !important',
