@@ -8,6 +8,7 @@ import {
   redo,
   toggleAutoSave,
 } from '../../editor/editorSlice'
+import { closeMenu } from '../menuSlice'
 
 import {
   useEditorText,
@@ -16,6 +17,7 @@ import {
   useAutoSaveEnabled,
   useEditorContentStats,
 } from '../../editor/hooks'
+import { useFullMenuWidth } from '../../theme/hooks'
 
 import ToolbarComponent from '../components/Toolbar'
 
@@ -26,19 +28,27 @@ const Toolbar: React.FC = () => {
   const autoSaveEnabled = useAutoSaveEnabled()
   const stats = useEditorContentStats()
 
+  const isFullMenuWidth = useFullMenuWidth()
+
   const dispatch = useDispatch()
 
   const handleNew = useCallback(() => {
     dispatch(clear())
-  }, [dispatch])
+    if (!isFullMenuWidth) {
+      dispatch(closeMenu())
+    }
+  }, [dispatch, isFullMenuWidth])
 
   const handleOpen = useCallback(
     (text: string) => {
       if (typeof text === 'string') {
         dispatch(load(text))
+        if (!isFullMenuWidth) {
+          dispatch(closeMenu())
+        }
       }
     },
-    [dispatch],
+    [dispatch, isFullMenuWidth],
   )
 
   const handleUndo = useCallback(() => dispatch(undo()), [dispatch])

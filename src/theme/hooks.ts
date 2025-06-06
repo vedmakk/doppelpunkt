@@ -1,6 +1,6 @@
 import { useAppSelector } from '../store'
 
-import { selectCustomTheme, selectTheme } from './selectors'
+import { selectCustomTheme, selectTheme, TOOLBAR_BREAKPOINT } from './selectors'
 
 // WARNING: You should never need to use this hook, it is only needed to
 // initialize Emotionss `ThemeProvider` (inside `App`)
@@ -8,3 +8,11 @@ import { selectCustomTheme, selectTheme } from './selectors'
 export const useCustomTheme = () => useAppSelector(selectCustomTheme)
 
 export const useSelectedTheme = () => useAppSelector(selectTheme)
+
+export const useFullMenuWidth = () => {
+  const isWideEnough = window.matchMedia(
+    `(min-width: ${TOOLBAR_BREAKPOINT}px)`,
+  ).matches
+
+  return isWideEnough
+}

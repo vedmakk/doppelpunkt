@@ -5,14 +5,14 @@ import { toggleMenu, openMenu, closeMenu, setShouldRender } from '../menuSlice'
 
 import { useIsMenuOpen, useShouldRenderMenu } from '../hooks'
 import { useEscapeKey } from '../../shared/hooks'
+import { useFullMenuWidth } from '../../theme/hooks'
 
 import MenuComponent from '../components/Menu'
-
-import { TOOLBAR_BREAKPOINT } from '../../theme/selectors'
 
 const Menu: React.FC = () => {
   const isMenuOpen = useIsMenuOpen()
   const shouldRenderMenu = useShouldRenderMenu()
+  const isFullMenuWidth = useFullMenuWidth()
 
   const dispatch = useDispatch()
 
@@ -35,14 +35,10 @@ const Menu: React.FC = () => {
 
   // Initially open the menu if the screen is wide enough
   useEffect(() => {
-    const isWideEnough = window.matchMedia(
-      `(min-width: ${TOOLBAR_BREAKPOINT}px)`,
-    ).matches
-
-    if (isWideEnough) {
+    if (isFullMenuWidth) {
       dispatch(openMenu())
     }
-  }, [dispatch])
+  }, [dispatch, isFullMenuWidth])
 
   return (
     <MenuComponent
