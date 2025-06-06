@@ -3,6 +3,8 @@ import { Global, Theme, CSSObject, useTheme } from '@emotion/react'
 
 import { fontFiraCode } from '../fonts'
 
+import { useFullMenuWidth } from '../hooks'
+
 const globalStyles: CSSObject = {
   '*': {
     boxSizing: 'border-box',
@@ -40,10 +42,14 @@ const changingGlobalStyles = (theme: Theme): CSSObject => ({
 
 export const GlobalStyles = () => {
   const theme = useTheme()
+  const isFullMenuWidth = useFullMenuWidth()
 
   return (
     <>
-      <meta name="theme-color" content={theme.colors.background} />
+      <meta
+        name="theme-color"
+        content={isFullMenuWidth ? theme.colors.background : theme.colors.page}
+      />
       <Global styles={[...fontFiraCode, globalStyles]} />
       <Global styles={changingGlobalStyles} />
     </>
