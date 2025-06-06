@@ -2,12 +2,14 @@
   "name": "doppelpunkt",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "vite build",
     "preview": "bunx --bun vite preview",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "bun test",
     "prepare": "husky",
@@ -23,7 +25,8 @@
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
     "react-simple-code-editor": "^0.14.1",
-    "reading-time-estimator": "^1.14.0"
+    "reading-time-estimator": "^1.14.0",
+    "vite-plugin-checker": "^0.9.3"
   },
   "devDependencies": {
     "@emotion/eslint-plugin": "^11.12.0",
