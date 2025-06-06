@@ -55,7 +55,7 @@ const StyledLabel = styled(Label)<{ isDense: boolean }>(({ isDense }) => ({
 
 const StyledSpan = styled.span(({ theme }) => ({
   display: 'inline-block',
-  transition: `transform ${theme.animations.transition}, opacity ${theme.animations.transition}, color ${theme.animations.transition}`,
+  transition: `transform ${theme.animations.transition}, opacity ${theme.animations.transition}`,
 }))
 
 const Logo: React.FC<Props> = ({ isDense }) => {

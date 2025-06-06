@@ -39,7 +39,6 @@ const disappearAnimation = keyframes`
 const ToolbarContainer = styled.div<{ isOpen: boolean }>(
   ({ theme, isOpen }) => ({
     width: '100%',
-    transition: `color ${theme.animations.transition}`,
     animation: `${isOpen ? appearAnimation : disappearAnimation} ${theme.animations.transition} forwards`,
   }),
 )
@@ -67,11 +66,11 @@ const Background = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
     left: 0,
     width: '100vw',
     height: '100vh',
-    background: theme.colors.paper,
+    backgroundColor: theme.colors.paper,
     zIndex: 0,
     opacity: isOpen ? 1 : 0,
     transform: shouldRender ? 'translateX(0)' : 'translateX(-100%)',
-    transition: `opacity ${theme.animations.transition}, background ${theme.animations.transition}`,
+    transition: `opacity ${theme.animations.transition}, background-color ${theme.animations.transition}`,
     [theme.breakpoints.toolbar]: {
       display: 'none',
     },
@@ -84,10 +83,10 @@ const MenuBackground = styled.div<{ isOpen: boolean }>(({ theme, isOpen }) => ({
   left: 0,
   width: `calc(1.2 * ${theme.layout.toolbarWidth})`,
   height: '100vh',
-  background: theme.colors.background,
+  backgroundColor: theme.colors.background,
   zIndex: 1,
   transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-  transition: `transform ${theme.animations.transition}, background ${theme.animations.transition}`,
+  transition: `transform ${theme.animations.transition}, background-color ${theme.animations.transition}`,
   [theme.breakpoints.toolbar]: {
     display: 'none',
   },

@@ -34,7 +34,7 @@ const changingGlobalStyles = (theme: Theme): CSSObject => ({
   body: {
     backgroundColor: theme.colors.background,
     color: theme.colors.text,
-    transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
+    transition: `background-color ${theme.animations.transition}`,
   },
 })
 

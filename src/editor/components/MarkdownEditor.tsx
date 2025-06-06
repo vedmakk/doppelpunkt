@@ -28,11 +28,9 @@ const EditorContainer = styled.div(({ theme }) => ({
   fontFamily: 'Fira Code, monospace',
   fontSize: theme.fontSize.editor,
   lineHeight: '1.5',
-  transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
 }))
 
 const CodeEditor = styled(Editor)(({ theme }) => ({
-  background: theme.colors.page,
   width: '100%',
   minHeight: '100vh',
   '& > pre, & > textarea': {
@@ -55,13 +53,14 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
       padding: '0 !important',
     },
   },
-  transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
+  backgroundColor: theme.colors.page,
+  transition: `background-color ${theme.animations.transition}`,
+  '& > pre > *': {
+    transition: `color ${theme.animations.transition}`,
+  },
   whiteSpace: 'pre-wrap',
   '& textarea': {
     outline: 'none',
-  },
-  '& .token': {
-    transition: `color ${theme.animations.transition}, background-color ${theme.animations.transition}`,
   },
   '& .token.url': {
     background: 'none',
