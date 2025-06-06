@@ -82,7 +82,7 @@ const MenuBackground = styled.div<{ isOpen: boolean }>(({ theme, isOpen }) => ({
   position: 'fixed',
   top: 0,
   left: 0,
-  width: `calc(1.25 * ${theme.layout.toolbarWidth})`,
+  width: `calc(1.2 * ${theme.layout.toolbarWidth})`,
   height: '100vh',
   background: theme.colors.background,
   zIndex: 1,
