@@ -106,7 +106,7 @@ const BASE_THEME: BaseTheme = {
     pagePaddingPrint: `${PAGE_PADDING_PRINT}mm !important`,
   },
   fontSize: {
-    large: '1.2rem',
+    large: '1.5rem',
     normal: '1rem',
     small: '0.875rem',
     tiny: '0.75rem',

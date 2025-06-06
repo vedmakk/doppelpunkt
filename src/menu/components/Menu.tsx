@@ -115,7 +115,16 @@ const Menu: React.FC<Props> = ({
       />
       <MenuBackground isOpen={isOpen} />
       <MenuWrapper>
-        <MenuButton onClick={toggleMenu} isOpen={isOpen} size={22} />
+        <div
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '2rem',
+          }}
+        >
+          <MenuButton onClick={toggleMenu} isOpen={isOpen} size={22} />
+        </div>
         <MenuContainer>
           <Logo isDense={!isOpen} />
           {shouldRender && (
