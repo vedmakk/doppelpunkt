@@ -13,7 +13,6 @@ import { useTheme } from '@emotion/react'
 interface Props {
   content: string
   onContentChange: (content: string) => void
-  isMenuOpen: boolean
 }
 
 const EditorContainer = styled.div(({ theme }) => ({
@@ -93,11 +92,7 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   },
 }))
 
-const MarkdownEditor: React.FC<Props> = ({
-  content,
-  onContentChange,
-  isMenuOpen,
-}) => {
+const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
   const theme = useTheme()
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -106,8 +101,8 @@ const MarkdownEditor: React.FC<Props> = ({
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
 
   useEffect(() => {
-    // Focus the editor when the menu is closed or a new file is created
-    if (containerRef.current && (content === '' || !isMenuOpen)) {
+    // Focus the editor when a new file is created
+    if (containerRef.current && content === '') {
       const textarea = containerRef.current.querySelector('textarea')
       if (textarea) {
         ;(textarea as HTMLTextAreaElement).focus()
@@ -117,7 +112,7 @@ const MarkdownEditor: React.FC<Props> = ({
         ;(textarea as HTMLTextAreaElement).setSelectionRange(len, len)
       }
     }
-  }, [content, isMenuOpen])
+  }, [content])
 
   return (
     <>

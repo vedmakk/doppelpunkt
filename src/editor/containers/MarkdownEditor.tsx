@@ -6,11 +6,9 @@ import { useEditorText } from '../hooks'
 import { setText } from '../editorSlice'
 
 import MarkdownEditorComponent from '../components/MarkdownEditor'
-import { useIsMenuOpen } from '../../menu/hooks'
 
 const MarkdownEditor: React.FC = () => {
   const content = useEditorText()
-  const isMenuOpen = useIsMenuOpen()
 
   const dispatch = useDispatch()
 
@@ -25,7 +23,6 @@ const MarkdownEditor: React.FC = () => {
     <MarkdownEditorComponent
       content={content}
       onContentChange={handleContentChange}
-      isMenuOpen={isMenuOpen}
     />
   )
 }
