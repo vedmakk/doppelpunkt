@@ -1,5 +1,5 @@
 import React from 'react'
-import { Global, Theme, CSSObject } from '@emotion/react'
+import { Global, Theme, CSSObject, useTheme } from '@emotion/react'
 
 import { fontFiraCode } from '../fonts'
 
@@ -38,9 +38,14 @@ const changingGlobalStyles = (theme: Theme): CSSObject => ({
   },
 })
 
-export const GlobalStyles = () => (
-  <>
-    <Global styles={[...fontFiraCode, globalStyles]} />
-    <Global styles={changingGlobalStyles} />
-  </>
-)
+export const GlobalStyles = () => {
+  const theme = useTheme()
+
+  return (
+    <>
+      <meta name="theme-color" content={theme.colors.background} />
+      <Global styles={[...fontFiraCode, globalStyles]} />
+      <Global styles={changingGlobalStyles} />
+    </>
+  )
+}
