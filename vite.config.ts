@@ -6,6 +6,16 @@ export default defineConfig({
   plugins: [
     react({
       jsxImportSource: '@emotion/react',
+      babel: {
+        plugins: [
+          [
+            'babel-plugin-react-compiler',
+            {
+              target: '19',
+            },
+          ],
+        ],
+      },
     }),
     checker({
       typescript: true,
