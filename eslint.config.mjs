@@ -8,7 +8,7 @@ import js from '@eslint/js'
 import { FlatCompat } from '@eslint/eslintrc'
 import prettier from 'eslint-plugin-prettier'
 import react from 'eslint-plugin-react'
-import reactHooks from 'eslint-plugin-react-hooks'
+import * as reactHooks from 'eslint-plugin-react-hooks'
 import * as emotion from '@emotion/eslint-plugin'
 import { fixupPluginRules } from '@eslint/compat'
 
@@ -28,19 +28,20 @@ export default defineConfig([
     '**/node_modules/**/*',
   ]),
   {
-    extends: compat.extends(
-      'eslint:recommended',
-      'plugin:react/recommended',
-      'plugin:react-hooks/recommended',
-      'plugin:@typescript-eslint/recommended',
-      'plugin:prettier/recommended',
-    ),
+    extends: [
+      ...compat.extends(
+        'eslint:recommended',
+        'plugin:react/recommended',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:prettier/recommended',
+      ),
+      reactHooks.configs.recommended,
+    ],
 
     plugins: {
       '@typescript-eslint': typescriptEslint,
       prettier: prettier,
       react: react,
-      'react-hooks': reactHooks,
       '@emotion': fixupPluginRules(emotion),
     },
 
