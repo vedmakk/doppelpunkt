@@ -6,7 +6,7 @@ export const selectEditor = (s: RootState) => s.editor
 
 export const selectEditorText = createSelector(
   selectEditor,
-  (editor) => editor.present,
+  (editor) => editor.text,
 )
 
 export const selectAutoSaveEnabled = createSelector(

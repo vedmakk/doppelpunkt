@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { TUTORIAL_PLACEHOLDER } from './tutorial'
 
 interface EditorState {
-  present: string
+  text: string
   autoSave: boolean
 }
 
@@ -12,7 +12,7 @@ const MARKDOWN_KEY = `${EDITOR_KEY}.markdown`
 const AUTO_SAVE_KEY = `${EDITOR_KEY}.autoSave`
 
 const initialState: EditorState = {
-  present: localStorage.getItem(MARKDOWN_KEY) || TUTORIAL_PLACEHOLDER,
+  text: localStorage.getItem(MARKDOWN_KEY) || TUTORIAL_PLACEHOLDER,
   autoSave: localStorage.getItem(AUTO_SAVE_KEY) === 'true',
 }
 
@@ -22,24 +22,24 @@ const editorSlice = createSlice({
   reducers: {
     setText(state, action: PayloadAction<string>) {
       const newText = action.payload
-      if (newText === state.present) {
+      if (newText === state.text) {
         return
       }
-      state.present = newText
+      state.text = newText
       if (state.autoSave) {
-        localStorage.setItem(MARKDOWN_KEY, state.present)
+        localStorage.setItem(MARKDOWN_KEY, state.text)
       }
     },
     clear(state) {
-      state.present = ''
+      state.text = ''
       if (state.autoSave) {
-        localStorage.setItem(MARKDOWN_KEY, state.present)
+        localStorage.setItem(MARKDOWN_KEY, state.text)
       }
     },
     load(state, action: PayloadAction<string>) {
-      state.present = action.payload
+      state.text = action.payload
       if (state.autoSave) {
-        localStorage.setItem(MARKDOWN_KEY, state.present)
+        localStorage.setItem(MARKDOWN_KEY, state.text)
       }
     },
     toggleAutoSave(state, action: PayloadAction<boolean>) {
@@ -47,7 +47,7 @@ const editorSlice = createSlice({
       state.autoSave = enabled
       if (enabled) {
         localStorage.setItem(AUTO_SAVE_KEY, 'true')
-        localStorage.setItem(MARKDOWN_KEY, state.present)
+        localStorage.setItem(MARKDOWN_KEY, state.text)
       } else {
         localStorage.removeItem(AUTO_SAVE_KEY)
         localStorage.removeItem(MARKDOWN_KEY)

@@ -26,6 +26,9 @@ Includes `print.css` for consistent printed output (or **PDF export** via Print)
 💡 **Auto-Save**  
 Text is auto-saved in **LocalStorage** between sessions. Auto-save is disabled by default.
 
+↩️↪️ **Undo/Redo**  
+Supports full undo/redo history for text changes.
+
 ## 🧰 Tech Stack
 
 - [React](https://reactjs.org/)
