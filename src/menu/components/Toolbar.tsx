@@ -11,15 +11,11 @@ import { Label } from '../../app/components/Label'
 
 interface Props {
   content: string
-  pastLength: number
-  futureLength: number
   autoSaveEnabled: boolean
   stats: EditorStats
   onToggleAutoSave: () => void
   onNew: () => void
   onOpen: (text: string) => void
-  onUndo: () => void
-  onRedo: () => void
 }
 
 const ToolbarContainer = styled.div(({ theme }) => ({
@@ -41,15 +37,11 @@ const HiddenInput = styled.input({
 
 const Toolbar: React.FC<Props> = ({
   content,
-  pastLength,
-  futureLength,
   autoSaveEnabled,
   stats,
   onToggleAutoSave,
   onNew,
   onOpen,
-  onUndo,
-  onRedo,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -119,8 +111,6 @@ const Toolbar: React.FC<Props> = ({
         />
         <Button label="Export" onClick={handleExport} />
         <Button label="PDF" onClick={handlePDF} />
-        <Button label="Undo" onClick={onUndo} disabled={!pastLength} />
-        <Button label="Redo" onClick={onRedo} disabled={!futureLength} />
       </ToolbarItemContainer>
       <ToolbarItemContainer
         css={(theme) => ({

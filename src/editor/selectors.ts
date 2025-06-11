@@ -9,16 +9,6 @@ export const selectEditorText = createSelector(
   (editor) => editor.present,
 )
 
-export const selectPastLength = createSelector(
-  selectEditor,
-  (editor) => editor.past.length,
-)
-
-export const selectFutureLength = createSelector(
-  selectEditor,
-  (editor) => editor.future.length,
-)
-
 export const selectAutoSaveEnabled = createSelector(
   selectEditor,
   (editor) => editor.autoSave,
