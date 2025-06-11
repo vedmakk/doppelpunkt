@@ -58,6 +58,7 @@ interface BaseTheme {
     small: string
     tiny: string
     editor: string
+    kbd: string
   }
 }
 
@@ -111,6 +112,7 @@ const BASE_THEME: BaseTheme = {
     small: '0.875rem',
     tiny: '0.75rem',
     editor: '1rem',
+    kbd: '0.6rem',
   },
 }
 
