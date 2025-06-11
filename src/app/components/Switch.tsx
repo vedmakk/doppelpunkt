@@ -1,5 +1,8 @@
 import React from 'react'
 import styled from '@emotion/styled'
+
+import { focusWithinStyles } from '../../shared/styles'
+
 import { Appear } from './Appear'
 import { InteractiveLabel } from './InteractiveLabel'
 
@@ -10,13 +13,16 @@ interface Props {
   size: number
 }
 
-const SwitchContainer = styled.label(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  cursor: 'pointer',
-  gap: theme.spacing(1),
-  userSelect: 'none',
-}))
+const SwitchContainer = styled.label(
+  ({ theme }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    gap: theme.spacing(1),
+    userSelect: 'none',
+  }),
+  focusWithinStyles,
+)
 
 const SwitchWrapper = styled.div({
   position: 'relative',

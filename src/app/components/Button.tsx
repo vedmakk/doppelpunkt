@@ -2,6 +2,8 @@ import React from 'react'
 import styled from '@emotion/styled'
 import { css, Theme } from '@emotion/react'
 
+import { focusVisibleStyles } from '../../shared/styles'
+
 import { Appear } from './Appear'
 
 interface Props {
@@ -50,13 +52,9 @@ export const interactiveStyles = ({ theme }: { theme: Theme }) =>
         opacity: theme.interactions.activeOpacity,
       },
     },
-    '&:focus-visible': {
-      outline: `2px solid ${theme.colors.primary}`,
-      outlineOffset: '2px',
-    },
   })
 
-const StyledInteractive = styled.button(interactiveStyles)
+const StyledInteractive = styled.button(interactiveStyles, focusVisibleStyles)
 
 export const interactiveLabelStyles = ({
   theme,

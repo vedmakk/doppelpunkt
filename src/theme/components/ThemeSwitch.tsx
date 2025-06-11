@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react'
 import styled from '@emotion/styled'
 
 import { AppTheme } from '../themeSlice'
+
+import { focusVisibleStyles } from '../../shared/styles'
+
 import { IconButtonWrapper } from '../../app/components/IconButtonWrapper'
 import { Appear } from '../../app/components/Appear'
 import { InteractiveLabel } from '../../app/components/InteractiveLabel'
@@ -39,19 +42,22 @@ const Moon = styled(Orbiter)({
   transform: 'rotate(180deg)',
 })
 
-const StyledButtonContainer = styled.button(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  flexDirection: 'row',
-  gap: theme.spacing(1),
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  padding: 0,
-  margin: 0,
-  width: 'fit-content',
-  height: 'fit-content',
-}))
+const StyledButtonContainer = styled.button(
+  ({ theme }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: theme.spacing(1),
+    background: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 0,
+    margin: 0,
+    width: 'fit-content',
+    height: 'fit-content',
+  }),
+  focusVisibleStyles,
+)
 
 export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
   const [sunPosition, setSunPosition] = useState(
