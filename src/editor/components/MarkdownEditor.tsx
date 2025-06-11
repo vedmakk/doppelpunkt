@@ -44,6 +44,17 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   [theme.breakpoints.toolbar]: {
     width: theme.layout.pageWidth,
     minHeight: theme.layout.pageHeight,
+    outline: `2px solid transparent`,
+    boxShadow:
+      theme.mode === 'dark'
+        ? `none`
+        : `0 0 ${theme.spacing(1)} 0 ${theme.colors.paper}`,
+    borderRadius: theme.spacing(0.5),
+    '&:focus-within': {
+      outline: `2px solid ${theme.colors.editorFocus}`,
+      boxShadow: `0 0 ${theme.spacing(1)} 0 ${theme.colors.paper}`,
+      transition: `outline ${theme.animations.interaction}, box-shadow ${theme.animations.interaction}`,
+    },
   },
   '@media print': {
     width: 'auto',

@@ -5,6 +5,7 @@ export const focusVisibleStyles = ({ theme }: { theme: Theme }) =>
     '&:focus-visible': {
       outline: `2px solid ${theme.colors.primary}`,
       outlineOffset: '2px',
+      borderRadius: theme.spacing(0.25),
     },
   })
 
@@ -13,5 +14,6 @@ export const focusWithinStyles = ({ theme }: { theme: Theme }) =>
     '&:focus-within': {
       outline: `2px solid ${theme.colors.primary}`,
       outlineOffset: '2px',
+      borderRadius: theme.spacing(0.25),
     },
   })
