@@ -179,7 +179,16 @@ const Toolbar: React.FC<Props> = ({
           </ListItem>
         </List>
       </ToolbarItemContainer>
-      <ToolbarItemContainer as="aside" aria-label="Keyboard Shortcuts">
+      <ToolbarItemContainer
+        as="aside"
+        aria-label="Keyboard Shortcuts"
+        css={(theme) => ({
+          display: 'none',
+          [theme.breakpoints.lg]: {
+            display: 'flex',
+          },
+        })}
+      >
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           Keyboard Shortcuts
         </Label>
