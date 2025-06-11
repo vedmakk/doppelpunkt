@@ -31,6 +31,17 @@ const ToolbarItemContainer = styled.div(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
+const StatsList = styled.ul(({ theme }) => ({
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+}))
+
+const StatsItem = styled.li({})
+
 const HiddenInput = styled.input({
   display: 'none',
 })
@@ -99,7 +110,7 @@ const Toolbar: React.FC<Props> = ({
   }, [])
 
   return (
-    <ToolbarContainer id="toolbar">
+    <ToolbarContainer role="toolbar" aria-label="Editor actions" id="toolbar">
       <ToolbarItemContainer>
         <Button label="New" onClick={handleNew} />
         <Button label="Open" onClick={handleOpen} />
@@ -131,15 +142,23 @@ const Toolbar: React.FC<Props> = ({
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           Stats
         </Label>
-        <Label size="tiny">
-          {stats.wordCount === 1 ? '1 word' : `${stats.wordCount} words`}
-        </Label>
-        <Label size="tiny">
-          {stats.characterCount === 1
-            ? '1 character'
-            : `${stats.characterCount} characters`}
-        </Label>
-        <Label size="tiny">{stats.readingTime}</Label>
+        <StatsList>
+          <StatsItem>
+            <Label size="tiny">
+              {stats.wordCount === 1 ? '1 word' : `${stats.wordCount} words`}
+            </Label>
+          </StatsItem>
+          <StatsItem>
+            <Label size="tiny">
+              {stats.characterCount === 1
+                ? '1 character'
+                : `${stats.characterCount} characters`}
+            </Label>
+          </StatsItem>
+          <StatsItem>
+            <Label size="tiny">{stats.readingTime}</Label>
+          </StatsItem>
+        </StatsList>
       </ToolbarItemContainer>
       <ToolbarItemContainer>
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
