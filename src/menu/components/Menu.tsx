@@ -43,13 +43,30 @@ const ToolbarContainer = styled.div<{ isOpen: boolean }>(
   }),
 )
 
-const MenuWrapper = styled.div(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: theme.spacing(2),
-  position: 'relative',
-  zIndex: 2,
-}))
+const MenuWrapper = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
+  ({ theme, isOpen, shouldRender }) => ({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(2),
+    position: 'relative',
+    zIndex: 2,
+    padding: `${theme.spacing(2)} ${theme.spacing(6)} ${isOpen ? theme.spacing(6) : theme.spacing(0)} ${theme.spacing(2)}`,
+    backdropFilter: isOpen ? 'blur(10px)' : 'blur(0px)',
+    WebkitBackdropFilter: isOpen ? 'blur(10px)' : 'blur(0px)',
+    boxShadow: isOpen
+      ? `0 0 ${theme.spacing(1)} 0 ${theme.colors.shadow}`
+      : 'none',
+    transition: `backdrop-filter ${theme.animations.transition}, box-shadow ${theme.animations.transition}`,
+    minHeight: shouldRender ? '100vh' : '0',
+    [theme.breakpoints.toolbar]: {
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+      boxShadow: 'none',
+      transition: 'none',
+      minHeight: 'unset',
+    },
+  }),
+)
 
 const MenuContainer = styled.div(({ theme }) => ({
   display: 'flex',
@@ -66,7 +83,6 @@ const Background = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
     left: 0,
     width: '100vw',
     height: '100vh',
-    backgroundColor: theme.colors.paper,
     zIndex: 0,
     opacity: isOpen ? 1 : 0,
     transform: shouldRender ? 'translateX(0)' : 'translateX(-100%)',
@@ -76,21 +92,6 @@ const Background = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
     },
   }),
 )
-
-const MenuBackground = styled.div<{ isOpen: boolean }>(({ theme, isOpen }) => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: `calc(1.2 * ${theme.layout.toolbarWidth})`,
-  height: '100vh',
-  backgroundColor: theme.colors.background,
-  zIndex: 1,
-  transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-  transition: `transform ${theme.animations.transition}, background-color ${theme.animations.transition}`,
-  [theme.breakpoints.toolbar]: {
-    display: 'none',
-  },
-}))
 
 const Menu: React.FC<Props> = ({
   isOpen,
@@ -112,8 +113,7 @@ const Menu: React.FC<Props> = ({
         shouldRender={shouldRender}
         onClick={toggleMenu}
       />
-      <MenuBackground isOpen={isOpen} />
-      <MenuWrapper>
+      <MenuWrapper isOpen={isOpen} shouldRender={shouldRender}>
         <div
           css={{
             display: 'flex',
