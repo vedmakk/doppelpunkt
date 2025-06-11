@@ -6,17 +6,7 @@ export const selectEditor = (s: RootState) => s.editor
 
 export const selectEditorText = createSelector(
   selectEditor,
-  (editor) => editor.present,
-)
-
-export const selectPastLength = createSelector(
-  selectEditor,
-  (editor) => editor.past.length,
-)
-
-export const selectFutureLength = createSelector(
-  selectEditor,
-  (editor) => editor.future.length,
+  (editor) => editor.text,
 )
 
 export const selectAutoSaveEnabled = createSelector(
