@@ -16,12 +16,18 @@ import {
   FloatingArrow,
 } from '@floating-ui/react'
 import { useTheme } from '@emotion/react'
+
 import { Label } from './Label'
 
 interface Props {
   label: string
   children: React.ReactNode
 }
+
+const StyledElementContainer = styled.div({
+  display: 'flex',
+  alignItems: 'center',
+})
 
 const TooltipContainer = styled.div(({ theme }) => ({
   backgroundColor: theme.colors.modal,
@@ -49,7 +55,7 @@ const Tooltip: React.FC<Props> = ({ label, children }) => {
     // Make sure the tooltip stays on the screen
     whileElementsMounted: autoUpdate,
     middleware: [
-      offset(12),
+      offset(16),
       flip(),
       shift(),
       arrow({
@@ -76,16 +82,9 @@ const Tooltip: React.FC<Props> = ({ label, children }) => {
 
   return (
     <>
-      <div
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-        }}
-        ref={refs.setReference}
-        {...getReferenceProps()}
-      >
+      <StyledElementContainer ref={refs.setReference} {...getReferenceProps()}>
         {children}
-      </div>
+      </StyledElementContainer>
       <FloatingPortal id="floating-portal">
         {isOpen && (
           <div

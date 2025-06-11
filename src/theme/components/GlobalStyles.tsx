@@ -23,6 +23,17 @@ const globalStyles: CSSObject = {
     zIndex: 1000,
     position: 'relative',
   },
+  '.sr-only': {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    padding: '0',
+    margin: '-1px',
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+    border: '0',
+  },
 }
 
 // At first we had these styles merged with "globalStyles", which caused
