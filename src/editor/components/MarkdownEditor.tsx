@@ -121,7 +121,11 @@ const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
         <style>{editorLightTheme}</style>
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
+        <label htmlFor="markdown-editor-input" className="sr-only">
+          Markdown editor
+        </label>
         <CodeEditor
+          textareaId="markdown-editor-input"
           className="code-editor"
           value={content}
           onValueChange={onContentChange}

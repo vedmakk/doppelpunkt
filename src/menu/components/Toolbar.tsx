@@ -40,7 +40,9 @@ const StatsList = styled.ul(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
-const StatsItem = styled.li({})
+const StatsItem = styled.li({
+  lineHeight: '1',
+})
 
 const HiddenInput = styled.input({
   display: 'none',

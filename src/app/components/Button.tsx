@@ -50,6 +50,10 @@ export const interactiveStyles = ({ theme }: { theme: Theme }) =>
         opacity: theme.interactions.activeOpacity,
       },
     },
+    '&:focus-visible': {
+      outline: `2px solid ${theme.colors.primary}`,
+      outlineOffset: '2px',
+    },
   })
 
 const StyledInteractive = styled.button(interactiveStyles)
@@ -90,7 +94,9 @@ export const Button: React.FC<Props> = ({
   const interactiveProps = href
     ? {
         as: 'a' as const,
-        href,
+        href: disabled ? undefined : href,
+        tabIndex: disabled ? -1 : undefined,
+        'aria-disabled': disabled ? true : undefined,
         target: externalLink ? '_blank' : undefined,
         rel: externalLink ? 'noreferrer' : undefined,
       }
