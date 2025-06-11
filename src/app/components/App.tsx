@@ -4,7 +4,7 @@ import styled from '@emotion/styled'
 import Menu from '../../menu/containers/Menu'
 import MarkdownEditor from '../../editor/containers/MarkdownEditor'
 
-const AppContainer = styled.div({
+const AppContainer = styled.main({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'flex-start',
@@ -27,7 +27,7 @@ const LayoutContainer = styled.div(({ theme }) => ({
   },
 }))
 
-const MenuContainer = styled.div(({ theme }) => ({
+const MenuContainer = styled.nav(({ theme }) => ({
   position: 'absolute',
   top: 0,
   left: 0,
@@ -47,7 +47,7 @@ export const App: React.FC = () => (
   <AppContainer>
     <LayoutContainer>
       <MarkdownEditor />
-      <MenuContainer>
+      <MenuContainer aria-label="Main menu">
         <Menu />
       </MenuContainer>
     </LayoutContainer>

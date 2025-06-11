@@ -31,6 +31,36 @@ const ToolbarItemContainer = styled.div(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
+const List = styled.ul(({ theme }) => ({
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+}))
+
+const ListItem = styled.li({
+  lineHeight: '1',
+})
+
+const StyledKbd = styled.kbd(({ theme }) => ({
+  backgroundColor: theme.colors.page,
+  color: theme.colors.secondary,
+  borderRadius: '0.25rem',
+  border: `1px solid ${theme.colors.shadow}`,
+  boxShadow: `0 1px 0 0.5px ${theme.colors.shadow}`,
+  fontSize: theme.fontSize.kbd,
+  lineHeight: '1',
+  minWidth: '0.75rem',
+  display: 'inline-block',
+  textAlign: 'center',
+  padding: '2px 5px',
+  position: 'relative',
+  top: '-1px',
+  transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}, border ${theme.animations.transition}, box-shadow ${theme.animations.transition}`,
+}))
+
 const HiddenInput = styled.input({
   display: 'none',
 })
@@ -99,7 +129,7 @@ const Toolbar: React.FC<Props> = ({
   }, [])
 
   return (
-    <ToolbarContainer id="toolbar">
+    <ToolbarContainer role="toolbar" aria-label="Editor actions" id="toolbar">
       <ToolbarItemContainer>
         <Button label="New" onClick={handleNew} />
         <Button label="Open" onClick={handleOpen} />
@@ -131,15 +161,51 @@ const Toolbar: React.FC<Props> = ({
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           Stats
         </Label>
-        <Label size="tiny">
-          {stats.wordCount === 1 ? '1 word' : `${stats.wordCount} words`}
+        <List>
+          <ListItem>
+            <Label size="tiny">
+              {stats.wordCount === 1 ? '1 word' : `${stats.wordCount} words`}
+            </Label>
+          </ListItem>
+          <ListItem>
+            <Label size="tiny">
+              {stats.characterCount === 1
+                ? '1 character'
+                : `${stats.characterCount} characters`}
+            </Label>
+          </ListItem>
+          <ListItem>
+            <Label size="tiny">{stats.readingTime}</Label>
+          </ListItem>
+        </List>
+      </ToolbarItemContainer>
+      <ToolbarItemContainer
+        as="aside"
+        aria-label="Keyboard Shortcuts"
+        css={(theme) => ({
+          display: 'none',
+          [theme.breakpoints.lg]: {
+            display: 'flex',
+          },
+        })}
+      >
+        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+          Keyboard Shortcuts
         </Label>
-        <Label size="tiny">
-          {stats.characterCount === 1
-            ? '1 character'
-            : `${stats.characterCount} characters`}
-        </Label>
-        <Label size="tiny">{stats.readingTime}</Label>
+        <List>
+          <ListItem>
+            <Label size="tiny">
+              <StyledKbd>Ctrl</StyledKbd> + <StyledKbd>Shift</StyledKbd> +{' '}
+              <StyledKbd>M</StyledKbd> (Mac) / <StyledKbd>Ctrl</StyledKbd> +{' '}
+              <StyledKbd>M</StyledKbd> Toggle capture tab key in editor
+            </Label>
+          </ListItem>
+          <ListItem>
+            <Label size="tiny">
+              <StyledKbd>Esc</StyledKbd> Toggle menu
+            </Label>
+          </ListItem>
+        </List>
       </ToolbarItemContainer>
       <ToolbarItemContainer>
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>

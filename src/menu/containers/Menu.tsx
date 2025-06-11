@@ -31,7 +31,7 @@ const Menu: React.FC = () => {
     dispatch(closeMenu())
   }, [dispatch])
 
-  useEscapeKey(handleCloseMenu)
+  useEscapeKey(handleToggleMenu)
 
   // Initially open the menu if the screen is wide enough
   useEffect(() => {

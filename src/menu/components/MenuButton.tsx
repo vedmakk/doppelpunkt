@@ -1,22 +1,27 @@
 import React from 'react'
 import styled from '@emotion/styled'
 
+import { focusVisibleStyles } from '../../shared/styles'
+
 interface Props {
   isOpen: boolean
   onClick: () => void
   size: number
 }
 
-const MenuButtonContainer = styled.button<{ size: number }>(({ size }) => ({
-  width: size,
-  height: size,
-  padding: 0,
-  margin: 0,
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  position: 'relative',
-}))
+const MenuButtonContainer = styled.button<{ size: number }>(
+  ({ size }) => ({
+    width: size,
+    height: size,
+    padding: 0,
+    margin: 0,
+    background: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    position: 'relative',
+  }),
+  focusVisibleStyles,
+)
 
 const MenuButtonLineTemplate = styled.div<{ isOpen: boolean }>(({ theme }) => ({
   width: '100%',
