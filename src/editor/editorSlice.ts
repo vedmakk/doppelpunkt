@@ -5,15 +5,16 @@ import { TUTORIAL_PLACEHOLDER } from './tutorial'
 interface EditorState {
   text: string
   autoSave: boolean
+  captureTab: boolean
 }
 
 const EDITOR_KEY = 'editor'
 const MARKDOWN_KEY = `${EDITOR_KEY}.markdown`
 const AUTO_SAVE_KEY = `${EDITOR_KEY}.autoSave`
-
 const initialState: EditorState = {
   text: localStorage.getItem(MARKDOWN_KEY) || TUTORIAL_PLACEHOLDER,
   autoSave: localStorage.getItem(AUTO_SAVE_KEY) === 'true',
+  captureTab: true,
 }
 
 const editorSlice = createSlice({
@@ -53,8 +54,12 @@ const editorSlice = createSlice({
         localStorage.removeItem(MARKDOWN_KEY)
       }
     },
+    setCaptureTab(state, action: PayloadAction<boolean>) {
+      state.captureTab = action.payload
+    },
   },
 })
 
 export const editorReducer = editorSlice.reducer
-export const { setText, clear, load, toggleAutoSave } = editorSlice.actions
+export const { setText, clear, load, toggleAutoSave, setCaptureTab } =
+  editorSlice.actions

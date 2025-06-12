@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { editorReducer } from './editor/editorSlice'
 import { themeReducer } from './theme/themeSlice'
 import { menuReducer } from './menu/menuSlice'
+import { hotkeysReducer } from './hotkeys/hotkeysSlice'
 
 export const createStore = () =>
   configureStore({
@@ -11,6 +12,7 @@ export const createStore = () =>
       theme: themeReducer,
       editor: editorReducer,
       menu: menuReducer,
+      hotkeys: hotkeysReducer,
     },
   })
 

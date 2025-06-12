@@ -3,11 +3,14 @@ import styled from '@emotion/styled'
 
 import { EditorStats } from '../../shared/types'
 
+import { useHasKeyboard } from '../../hotkeys/hooks'
+
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { Button } from '../../app/components/Button'
 import Tooltip from '../../app/components/Tooltip'
 import Switch from '../../app/components/Switch'
 import { Label } from '../../app/components/Label'
+import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 
 interface Props {
   content: string
@@ -44,23 +47,6 @@ const ListItem = styled.li({
   lineHeight: '1',
 })
 
-const StyledKbd = styled.kbd(({ theme }) => ({
-  backgroundColor: theme.colors.page,
-  color: theme.colors.secondary,
-  borderRadius: '0.25rem',
-  border: `1px solid ${theme.colors.shadow}`,
-  boxShadow: `0 1px 0 0.5px ${theme.colors.shadow}`,
-  fontSize: theme.fontSize.kbd,
-  lineHeight: '1',
-  minWidth: '0.75rem',
-  display: 'inline-block',
-  textAlign: 'center',
-  padding: '2px 5px',
-  position: 'relative',
-  top: '-1px',
-  transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}, border ${theme.animations.transition}, box-shadow ${theme.animations.transition}`,
-}))
-
 const HiddenInput = styled.input({
   display: 'none',
 })
@@ -74,6 +60,8 @@ const Toolbar: React.FC<Props> = ({
   onOpen,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const hasKeyboard = useHasKeyboard()
 
   const handleNew = useCallback(() => {
     if (
@@ -158,7 +146,10 @@ const Toolbar: React.FC<Props> = ({
         <ThemeSwitch size={24} />
       </ToolbarItemContainer>
       <ToolbarItemContainer>
-        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+        <Label
+          size="small"
+          css={(theme) => ({ color: theme.colors.secondary })}
+        >
           Stats
         </Label>
         <List>
@@ -179,34 +170,11 @@ const Toolbar: React.FC<Props> = ({
           </ListItem>
         </List>
       </ToolbarItemContainer>
-      <ToolbarItemContainer
-        as="aside"
-        aria-label="Keyboard Shortcuts"
-        css={(theme) => ({
-          display: 'none',
-          [theme.breakpoints.lg]: {
-            display: 'flex',
-          },
-        })}
-      >
-        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
-          Keyboard Shortcuts
-        </Label>
-        <List>
-          <ListItem>
-            <Label size="tiny">
-              <StyledKbd>Ctrl</StyledKbd> + <StyledKbd>Shift</StyledKbd> +{' '}
-              <StyledKbd>M</StyledKbd> (Mac) / <StyledKbd>Ctrl</StyledKbd> +{' '}
-              <StyledKbd>M</StyledKbd> Toggle capture tab key in editor
-            </Label>
-          </ListItem>
-          <ListItem>
-            <Label size="tiny">
-              <StyledKbd>Esc</StyledKbd> Toggle menu
-            </Label>
-          </ListItem>
-        </List>
-      </ToolbarItemContainer>
+      {hasKeyboard && (
+        <ToolbarItemContainer as="aside" aria-label="Keyboard Shortcuts">
+          <HotkeysInfo />
+        </ToolbarItemContainer>
+      )}
       <ToolbarItemContainer>
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           Everything you write stays in your browser. No data is ever uploaded
