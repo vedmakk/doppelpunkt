@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
@@ -9,10 +9,12 @@ import editorDarkTheme from '../themes/prism-material-dark.css?inline'
 import editorLightTheme from '../themes/prism-material-light.css?inline'
 
 import { useTheme } from '@emotion/react'
+import { Label } from '../../app/components/Label'
 
 interface Props {
   content: string
   onContentChange: (content: string) => void
+  captureTab: boolean
 }
 
 const EditorContainer = styled.div(({ theme }) => ({
@@ -96,8 +98,13 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   },
 }))
 
-const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
+const MarkdownEditor: React.FC<Props> = ({
+  content,
+  onContentChange,
+  captureTab,
+}) => {
   const theme = useTheme()
+  const [showCapture, setShowCapture] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -118,6 +125,12 @@ const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
     }
   }, [content])
 
+  useEffect(() => {
+    setShowCapture(true)
+    const t = setTimeout(() => setShowCapture(false), 1000)
+    return () => clearTimeout(t)
+  }, [captureTab])
+
   return (
     <>
       {theme.mode === 'dark' ? (
@@ -126,6 +139,22 @@ const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
         <style>{editorLightTheme}</style>
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
+        {showCapture && (
+          <Label
+            size="tiny"
+            css={(theme) => ({
+              position: 'absolute',
+              top: theme.spacing(1),
+              right: theme.spacing(1),
+              background: theme.colors.paper,
+              padding: `0 ${theme.spacing(1)}`,
+              borderRadius: theme.spacing(0.5),
+              opacity: 0.8,
+            })}
+          >
+            {captureTab ? 'Tab captured' : 'Tab ignored'}
+          </Label>
+        )}
         <label htmlFor="markdown-editor-input" className="sr-only">
           Markdown editor
         </label>
@@ -135,6 +164,7 @@ const MarkdownEditor: React.FC<Props> = ({ content, onContentChange }) => {
           value={content}
           onValueChange={onContentChange}
           highlight={highlight}
+          ignoreTabKey={!captureTab}
           autoFocus
         />
       </EditorContainer>

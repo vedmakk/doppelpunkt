@@ -4,7 +4,11 @@ import { EditorStats } from '../shared/types'
 
 import { useAppSelector } from '../store'
 
-import { selectEditorText, selectAutoSaveEnabled } from './selectors'
+import {
+  selectEditorText,
+  selectAutoSaveEnabled,
+  selectCaptureTab,
+} from './selectors'
 
 import { tutorial, TUTORIAL_PLACEHOLDER } from './tutorial'
 
@@ -19,6 +23,8 @@ export const useEditorText = () => {
 }
 
 export const useAutoSaveEnabled = () => useAppSelector(selectAutoSaveEnabled)
+
+export const useCaptureTabEnabled = () => useAppSelector(selectCaptureTab)
 
 export const useEditorContentStats = (): EditorStats => {
   const text = useEditorText()

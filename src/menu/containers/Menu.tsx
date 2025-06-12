@@ -4,7 +4,8 @@ import { useDispatch } from 'react-redux'
 import { toggleMenu, openMenu, closeMenu, setShouldRender } from '../menuSlice'
 
 import { useIsMenuOpen, useShouldRenderMenu } from '../hooks'
-import { useEscapeKey } from '../../shared/hooks'
+import { useHotkey } from '../../hotkeys/hooks'
+import { getHotkey } from '../../hotkeys/registry'
 import { useFullMenuWidth } from '../../theme/hooks'
 
 import MenuComponent from '../components/Menu'
@@ -31,7 +32,12 @@ const Menu: React.FC = () => {
     dispatch(closeMenu())
   }, [dispatch])
 
-  useEscapeKey(handleToggleMenu)
+  const toggleMenuHotkey = getHotkey('toggleMenu')
+  useHotkey(
+    'toggleMenu',
+    toggleMenuHotkey?.defaultKeys || 'escape',
+    handleToggleMenu,
+  )
 
   // Initially open the menu if the screen is wide enough
   useEffect(() => {
