@@ -1,24 +1,39 @@
+export enum HotkeyId {
+  ToggleCaptureTab = 'toggleCaptureTab',
+  ToggleMenu = 'toggleMenu',
+}
+
+export enum HotkeyScope {
+  Global = 'global',
+  Editor = 'editor',
+}
+
 export interface HotkeyDefinition {
-  id: string
+  id: HotkeyId
   description: string
   defaultKeys: string
-  scope: string
+  scope: HotkeyScope
 }
 
 export const hotkeys: HotkeyDefinition[] = [
   {
-    id: 'toggleCaptureTab',
+    id: HotkeyId.ToggleCaptureTab,
     description: 'Toggle capture tab key in editor',
     defaultKeys: 'ctrl+shift+l',
-    scope: 'editor',
+    scope: HotkeyScope.Editor,
   },
   {
-    id: 'toggleMenu',
+    id: HotkeyId.ToggleMenu,
     description: 'Toggle menu',
     defaultKeys: 'escape',
-    scope: 'global',
+    scope: HotkeyScope.Global,
   },
 ]
 
-export const getHotkey = (id: string): HotkeyDefinition | undefined =>
-  hotkeys.find((hk) => hk.id === id)
+export const getHotkey = (id: HotkeyId): HotkeyDefinition => {
+  const hotkey = hotkeys.find((hk) => hk.id === id)
+  if (!hotkey) {
+    throw new Error(`Hotkey ${id} not found`)
+  }
+  return hotkey
+}

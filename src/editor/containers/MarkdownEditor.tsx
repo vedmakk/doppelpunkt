@@ -4,8 +4,8 @@ import { useDispatch } from 'react-redux'
 
 import { useEditorText, useCaptureTabEnabled } from '../hooks'
 import { setText, setCaptureTab } from '../editorSlice'
-import { useHotkey } from '../../hotkeys/hooks'
-import { getHotkey } from '../../hotkeys/registry'
+import { useCustomHotkey } from '../../hotkeys/hooks'
+import { HotkeyId } from '../../hotkeys/registry'
 
 import MarkdownEditorComponent from '../components/MarkdownEditor'
 
@@ -22,12 +22,11 @@ const MarkdownEditor: React.FC = () => {
     [dispatch],
   )
 
-  const captureTabHotkey = getHotkey('toggleCaptureTab')
-  useHotkey(
-    'toggleCaptureTab',
-    captureTabHotkey?.defaultKeys || 'ctrl+shift+m',
-    () => dispatch(setCaptureTab(!captureTab)),
-  )
+  const toggleCaptureTab = useCallback(() => {
+    dispatch(setCaptureTab(!captureTab))
+  }, [dispatch, captureTab])
+
+  useCustomHotkey(HotkeyId.ToggleCaptureTab, toggleCaptureTab)
 
   return (
     <MarkdownEditorComponent

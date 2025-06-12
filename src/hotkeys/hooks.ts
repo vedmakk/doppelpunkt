@@ -1,80 +1,43 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
+import { useHotkeys, useRecordHotkeys } from 'react-hotkeys-hook'
+
 import { useAppDispatch, useAppSelector } from '../store'
 import { selectHotkey } from './selectors'
 import { setHotkey } from './hotkeysSlice'
+import { getHotkey, HotkeyId } from './registry'
 
-const hasKeyboard = () => navigator.maxTouchPoints === 0
-
-const parseKeys = (keys: string) => keys.toLowerCase().split('+')
+export const useHasKeyboard = () => navigator.maxTouchPoints === 0
 
 export const useStoredHotkey = (id: string) => useAppSelector(selectHotkey(id))
 
 type Callback = (event: KeyboardEvent) => void
 
-export const useHotkey = (
-  id: string,
-  defaultKeys: string,
-  callback: Callback,
-) => {
-  const keys = useStoredHotkey(id) || defaultKeys
+export const useCustomHotkey = (id: HotkeyId, callback: Callback) => {
+  const hotkey = getHotkey(id)
 
-  useEffect(() => {
-    if (!hasKeyboard()) return
-    const handler = (e: KeyboardEvent) => {
-      const parts = parseKeys(keys)
-      const mod = parts.includes('ctrl') || parts.includes('mod')
-      const shift = parts.includes('shift')
-      const key = parts[parts.length - 1]
-      if (
-        !!mod === (e.ctrlKey || e.metaKey) &&
-        !!shift === e.shiftKey &&
-        e.key.toLowerCase() === key
-      ) {
-        e.preventDefault()
-        callback(e)
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [keys, callback])
+  const keys = useStoredHotkey(id) || hotkey.defaultKeys
+
+  useHotkeys(keys, callback, {
+    scopes: [hotkey.scope],
+    enabled: useHasKeyboard(),
+    enableOnFormTags: true,
+  })
 }
 
-export const useRecordHotkey = (id: string | null) => {
+export const useCustomRecordHotkey = (id: HotkeyId | null) => {
+  const [keys, { start, stop, isRecording }] = useRecordHotkeys()
+
   const dispatch = useAppDispatch()
-  const [keys, setKeys] = useState<string[]>([])
-  const [isRecording, setIsRecording] = useState(false)
 
-  const start = useCallback(() => {
-    if (!id) return
-    setKeys([])
-    setIsRecording(true)
-  }, [id])
-
-  const stop = useCallback(
+  const wrappedStop = useCallback(
     (save: boolean) => {
-      if (save && id && keys.length) {
-        dispatch(setHotkey({ id, keys: keys.join('+') }))
+      if (save && id && keys.size > 0) {
+        dispatch(setHotkey({ id, keys: Array.from(keys).join('+') }))
       }
-      setIsRecording(false)
+      stop()
     },
-    [dispatch, id, keys],
+    [dispatch, id, keys, stop],
   )
 
-  const handleKey = useCallback((e: KeyboardEvent) => {
-    e.preventDefault()
-    const parts = [
-      e.ctrlKey || e.metaKey ? 'ctrl' : null,
-      e.shiftKey ? 'shift' : null,
-      e.key.toLowerCase(),
-    ].filter(Boolean) as string[]
-    setKeys(parts)
-  }, [])
-
-  useEffect(() => {
-    if (!isRecording || !id || !hasKeyboard()) return
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [isRecording, id, handleKey])
-
-  return [keys, { start, stop, isRecording }] as const
+  return [keys, { start, stop: wrappedStop, isRecording }] as const
 }
