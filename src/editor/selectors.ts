@@ -13,3 +13,8 @@ export const selectAutoSaveEnabled = createSelector(
   selectEditor,
   (editor) => editor.autoSave,
 )
+
+export const selectCaptureTab = createSelector(
+  selectEditor,
+  (editor) => editor.captureTab,
+)
