@@ -112,12 +112,12 @@ const CaptureLabel = styled(Label)(({ theme }) => ({
   top: theme.spacing(2),
   right: theme.spacing(2),
   background: theme.colors.paper,
-  color: theme.colors.text,
+  color: theme.colors.primary,
   padding: theme.spacing(0.5),
   borderRadius: theme.spacing(0.5),
   opacity: 0,
   zIndex: 2,
-  animation: `${fadeInOut} 1s ease-in-out`,
+  animation: `${fadeInOut} 2s ease-in-out`,
 }))
 
 const MarkdownEditor: React.FC<Props> = ({
@@ -154,7 +154,7 @@ const MarkdownEditor: React.FC<Props> = ({
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
         <CaptureLabel key={String(captureTab)} size="tiny">
-          {captureTab ? 'Tab captured' : 'Tab ignored'}
+          {captureTab ? 'Capturing tab' : 'Ignoring tab'}
         </CaptureLabel>
         <label htmlFor="markdown-editor-input" className="sr-only">
           Markdown editor

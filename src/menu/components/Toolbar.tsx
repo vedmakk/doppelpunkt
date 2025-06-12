@@ -3,12 +3,14 @@ import styled from '@emotion/styled'
 
 import { EditorStats } from '../../shared/types'
 
+import { useHasKeyboard } from '../../hotkeys/hooks'
+
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { Button } from '../../app/components/Button'
 import Tooltip from '../../app/components/Tooltip'
 import Switch from '../../app/components/Switch'
 import { Label } from '../../app/components/Label'
-import { KeyboardShortcutsInfo } from '../../hotkeys/components/KeyboardShortcutsInfo'
+import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 
 interface Props {
   content: string
@@ -58,6 +60,8 @@ const Toolbar: React.FC<Props> = ({
   onOpen,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const hasKeyboard = useHasKeyboard()
 
   const handleNew = useCallback(() => {
     if (
@@ -142,7 +146,10 @@ const Toolbar: React.FC<Props> = ({
         <ThemeSwitch size={24} />
       </ToolbarItemContainer>
       <ToolbarItemContainer>
-        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+        <Label
+          size="small"
+          css={(theme) => ({ color: theme.colors.secondary })}
+        >
           Stats
         </Label>
         <List>
@@ -163,18 +170,11 @@ const Toolbar: React.FC<Props> = ({
           </ListItem>
         </List>
       </ToolbarItemContainer>
-      <ToolbarItemContainer
-        as="aside"
-        aria-label="Keyboard Shortcuts"
-        css={(theme) => ({
-          display: 'none',
-          [theme.breakpoints.lg]: {
-            display: 'flex',
-          },
-        })}
-      >
-        <KeyboardShortcutsInfo />
-      </ToolbarItemContainer>
+      {hasKeyboard && (
+        <ToolbarItemContainer as="aside" aria-label="Keyboard Shortcuts">
+          <HotkeysInfo />
+        </ToolbarItemContainer>
+      )}
       <ToolbarItemContainer>
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           Everything you write stays in your browser. No data is ever uploaded

@@ -18,13 +18,13 @@ export interface HotkeyDefinition {
 export const hotkeys: HotkeyDefinition[] = [
   {
     id: HotkeyId.ToggleCaptureTab,
-    description: 'Toggle capture tab key in editor',
+    description: 'Tab capture',
     defaultKeys: 'ctrl+shift+l',
     scope: HotkeyScope.Editor,
   },
   {
     id: HotkeyId.ToggleMenu,
-    description: 'Toggle menu',
+    description: 'Menu',
     defaultKeys: 'escape',
     scope: HotkeyScope.Global,
   },
