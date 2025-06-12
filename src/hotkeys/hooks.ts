@@ -24,14 +24,14 @@ export const useCustomHotkey = (id: HotkeyId, callback: Callback) => {
   })
 }
 
-export const useCustomRecordHotkey = (id: HotkeyId | null) => {
+export const useCustomRecordHotkey = (id: HotkeyId) => {
   const [keys, { start, stop, isRecording }] = useRecordHotkeys()
 
   const dispatch = useAppDispatch()
 
   const wrappedStop = useCallback(
     (save: boolean) => {
-      if (save && id && keys.size > 0) {
+      if (save && keys.size > 0) {
         dispatch(setHotkey({ id, keys: Array.from(keys).join('+') }))
       }
       stop()
@@ -39,5 +39,14 @@ export const useCustomRecordHotkey = (id: HotkeyId | null) => {
     [dispatch, id, keys, stop],
   )
 
-  return [keys, { start, stop: wrappedStop, isRecording }] as const
+  const setDefaultKeys = useCallback(() => {
+    const hotkey = getHotkey(id)
+    dispatch(setHotkey({ id, keys: hotkey.defaultKeys }))
+    stop()
+  }, [dispatch, stop, id])
+
+  return [
+    keys,
+    { start, stop: wrappedStop, setDefaultKeys, isRecording },
+  ] as const
 }

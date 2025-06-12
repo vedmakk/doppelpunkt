@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback } from 'react'
 
 import { useCustomRecordHotkey, useStoredHotkey } from '../hooks'
 
@@ -13,44 +13,39 @@ interface Props {
 }
 
 const KbdInfoItem = ({ hotkey }: Props) => {
-  const [editing, setEditing] = useState(false)
-
   const stored = useStoredHotkey(hotkey.id)
-  const [keys, { start, stop, isRecording }] = useCustomRecordHotkey(
-    editing ? hotkey.id : null,
-  )
+  const [keys, { start, stop, setDefaultKeys, isRecording }] =
+    useCustomRecordHotkey(hotkey.id)
 
-  const handleCancel = () => {
+  const handleEdit = useCallback(() => {
+    start()
+  }, [start])
+
+  const handleCancel = useCallback(() => {
     stop(false)
-    setEditing(false)
-  }
+  }, [stop])
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     stop(true)
-    setEditing(false)
-  }
+  }, [stop])
 
   return (
     <Label size="tiny">
-      {editing ? (
-        isRecording ? (
-          <>
-            {keys.size > 0 ? (
-              <KbdShortcut hotkeys={Array.from(keys).join(' + ')} />
-            ) : (
-              <span>Press keys…</span>
-            )}{' '}
-            <Button label="save" onClick={handleSave} />{' '}
-            <Button label="cancel" onClick={handleCancel} />
-          </>
-        ) : (
-          <Button label="record" onClick={start} />
-        )
+      {isRecording ? (
+        <>
+          {keys.size > 0 ? (
+            <KbdShortcut hotkeys={Array.from(keys).join(' + ')} />
+          ) : (
+            <span>Press keys…</span>
+          )}{' '}
+          <Button label="save" onClick={handleSave} />{' '}
+          <Button label="default" onClick={setDefaultKeys} />{' '}
+          <Button label="cancel" onClick={handleCancel} />
+        </>
       ) : (
         <>
           <KbdShortcut hotkeys={stored || hotkey.defaultKeys} />{' '}
-          {hotkey.description}{' '}
-          <Button label="edit" onClick={() => setEditing(true)} />
+          {hotkey.description} <Button label="edit" onClick={handleEdit} />
         </>
       )}
     </Label>
