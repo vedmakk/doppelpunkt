@@ -22,6 +22,12 @@ const Container = styled.div(() => ({
   width: '100%',
 }))
 
+const LabelContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+}))
+
 const HotkeysInfoItem = ({
   hotkey,
   isEditing,
@@ -35,19 +41,24 @@ const HotkeysInfoItem = ({
   }, [onStartEditHotkey, hotkey.id])
 
   return (
-    <Container>
-      <Label size="tiny">{hotkey.description}</Label>
-      <KbdShortcut
-        hotkeys={
-          isEditing
-            ? editHotkeyKeys || 'Press keys…'
-            : stored || hotkey.defaultKeys
-        }
-        isEditing={isEditing}
-        onClick={handleClick}
-        disabled={isEditing}
-      />
-    </Container>
+    <LabelContainer>
+      <Container>
+        <Label size="tiny">{hotkey.label}</Label>
+        <KbdShortcut
+          hotkeys={
+            isEditing
+              ? editHotkeyKeys || 'Press keys…'
+              : stored || hotkey.defaultKeys
+          }
+          isEditing={isEditing}
+          onClick={handleClick}
+          disabled={isEditing}
+        />
+      </Container>
+      <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+        {hotkey.description}
+      </Label>
+    </LabelContainer>
   )
 }
 

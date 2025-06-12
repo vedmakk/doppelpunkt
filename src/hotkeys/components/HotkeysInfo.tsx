@@ -87,7 +87,7 @@ export const HotkeysInfo = ({
         <Appear>
           <EditContainer>
             <Label size="tiny">
-              Custom keyboard shortcuts are stored in your browser.
+              Custom shortcuts are saved in your browser’s local storage.
             </Label>
             <EditButtonsContainer>
               <Button
@@ -110,7 +110,7 @@ export const HotkeysInfo = ({
               marginTop: theme.spacing(1),
             })}
           >
-            Click on a shortcut to change it.
+            Click a shortcut to change.
           </Label>
         </Appear>
       )}

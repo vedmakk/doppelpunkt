@@ -10,6 +10,7 @@ export enum HotkeyScope {
 
 export interface HotkeyDefinition {
   id: HotkeyId
+  label: string
   description: string
   defaultKeys: string
   scope: HotkeyScope
@@ -18,13 +19,16 @@ export interface HotkeyDefinition {
 export const hotkeys: HotkeyDefinition[] = [
   {
     id: HotkeyId.ToggleCaptureTab,
-    description: 'Tab capture',
+    label: 'Tab Capture',
+    description:
+      'Toggles capturing the Tab key in the editor (insert tab vs. focus change).',
     defaultKeys: 'ctrl+shift+l',
     scope: HotkeyScope.Editor,
   },
   {
     id: HotkeyId.ToggleMenu,
-    description: 'Menu',
+    label: 'Menu',
+    description: 'Toggles the editor menu.',
     defaultKeys: 'escape',
     scope: HotkeyScope.Global,
   },
