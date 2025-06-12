@@ -9,7 +9,7 @@ export const hotkeys: HotkeyDefinition[] = [
   {
     id: 'toggleCaptureTab',
     description: 'Toggle capture tab key in editor',
-    defaultKeys: 'ctrl+shift+m',
+    defaultKeys: 'ctrl+shift+l',
     scope: 'editor',
   },
   {

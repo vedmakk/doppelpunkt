@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
+import { useTheme, keyframes } from '@emotion/react'
 
 import 'prismjs/components/prism-markdown'
 
 import editorDarkTheme from '../themes/prism-material-dark.css?inline'
 import editorLightTheme from '../themes/prism-material-light.css?inline'
 
-import { useTheme } from '@emotion/react'
 import { Label } from '../../app/components/Label'
 
 interface Props {
@@ -98,14 +98,34 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   },
 }))
 
+// keyframes for fade-in/out
+const fadeInOut = keyframes`
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+`
+
+// styled label that animates on mount
+const CaptureLabel = styled(Label)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(2),
+  right: theme.spacing(2),
+  background: theme.colors.paper,
+  color: theme.colors.text,
+  padding: theme.spacing(0.5),
+  borderRadius: theme.spacing(0.5),
+  opacity: 0,
+  zIndex: 2,
+  animation: `${fadeInOut} 1s ease-in-out`,
+}))
+
 const MarkdownEditor: React.FC<Props> = ({
   content,
   onContentChange,
   captureTab,
 }) => {
   const theme = useTheme()
-  const [showCapture, setShowCapture] = useState(false)
-
   const containerRef = useRef<HTMLDivElement>(null)
 
   const highlight = (code: string) =>
@@ -125,12 +145,6 @@ const MarkdownEditor: React.FC<Props> = ({
     }
   }, [content])
 
-  useEffect(() => {
-    setShowCapture(true)
-    const t = setTimeout(() => setShowCapture(false), 1000)
-    return () => clearTimeout(t)
-  }, [captureTab])
-
   return (
     <>
       {theme.mode === 'dark' ? (
@@ -139,22 +153,9 @@ const MarkdownEditor: React.FC<Props> = ({
         <style>{editorLightTheme}</style>
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
-        {showCapture && (
-          <Label
-            size="tiny"
-            css={(theme) => ({
-              position: 'absolute',
-              top: theme.spacing(1),
-              right: theme.spacing(1),
-              background: theme.colors.paper,
-              padding: `0 ${theme.spacing(1)}`,
-              borderRadius: theme.spacing(0.5),
-              opacity: 0.8,
-            })}
-          >
-            {captureTab ? 'Tab captured' : 'Tab ignored'}
-          </Label>
-        )}
+        <CaptureLabel key={String(captureTab)} size="tiny">
+          {captureTab ? 'Tab captured' : 'Tab ignored'}
+        </CaptureLabel>
         <label htmlFor="markdown-editor-input" className="sr-only">
           Markdown editor
         </label>

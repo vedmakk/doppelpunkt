@@ -14,7 +14,7 @@ const AUTO_SAVE_KEY = `${EDITOR_KEY}.autoSave`
 const initialState: EditorState = {
   text: localStorage.getItem(MARKDOWN_KEY) || TUTORIAL_PLACEHOLDER,
   autoSave: localStorage.getItem(AUTO_SAVE_KEY) === 'true',
-  captureTab: false,
+  captureTab: true,
 }
 
 const editorSlice = createSlice({
