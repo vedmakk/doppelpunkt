@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
@@ -139,9 +139,8 @@ const MarkdownEditor: React.FC<Props> = ({
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
 
-  useEffect(() => {
-    // Focus the editor when a new file is created
-    if (containerRef.current && content === '') {
+  const focusEditor = useCallback(() => {
+    if (containerRef.current) {
       const textarea = containerRef.current.querySelector('textarea')
       if (textarea) {
         ;(textarea as HTMLTextAreaElement).focus()
@@ -151,7 +150,19 @@ const MarkdownEditor: React.FC<Props> = ({
         ;(textarea as HTMLTextAreaElement).setSelectionRange(len, len)
       }
     }
-  }, [content])
+  }, [])
+
+  // Focus the editor initially
+  useEffect(() => {
+    focusEditor()
+  }, [focusEditor])
+
+  // Focus the editor when a new file is created
+  useEffect(() => {
+    if (content === '') {
+      focusEditor()
+    }
+  }, [content, focusEditor])
 
   return (
     <>
