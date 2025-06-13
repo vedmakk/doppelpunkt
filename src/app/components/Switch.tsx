@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 
-import { focusWithinStyles } from '../../shared/styles'
+import { outlineStyles } from '../../shared/styles'
 
 import { Appear } from './Appear'
 import { InteractiveLabel } from './InteractiveLabel'
@@ -13,16 +13,13 @@ interface Props {
   size: number
 }
 
-const SwitchContainer = styled.label(
-  ({ theme }) => ({
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    gap: theme.spacing(1),
-    userSelect: 'none',
-  }),
-  focusWithinStyles,
-)
+const SwitchContainer = styled.label(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  gap: theme.spacing(1),
+  userSelect: 'none',
+}))
 
 const SwitchWrapper = styled.div({
   position: 'relative',
@@ -69,15 +66,34 @@ const Thumb = styled.div<{ checked: boolean; size: number }>(
 )
 
 const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
+  const [isFocusVisible, setIsFocusVisible] = useState(false)
+
+  const checkboxRef = useRef<HTMLInputElement>(null)
+
+  const handleFocus = useCallback(() => {
+    if (checkboxRef.current?.matches(':focus-visible')) {
+      setIsFocusVisible(true)
+    }
+  }, [])
+
+  const handleBlur = useCallback(() => {
+    setIsFocusVisible(false)
+  }, [])
+
   return (
     <Appear>
-      <SwitchContainer>
+      <SwitchContainer
+        css={(theme) => (isFocusVisible ? outlineStyles({ theme }) : undefined)}
+      >
         <SwitchWrapper>
           <HiddenInput
+            ref={checkboxRef}
             id="switch-checkbox"
             type="checkbox"
             checked={checked}
             onChange={(e) => onChange(e.target.checked)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
           />
           <Track checked={checked} size={size} />
           <Thumb checked={checked} size={size} />
