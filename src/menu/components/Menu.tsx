@@ -58,12 +58,14 @@ const MenuWrapper = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
       : 'none',
     transition: `backdrop-filter ${theme.animations.transition}, box-shadow ${theme.animations.transition}`,
     minHeight: shouldRender ? '100vh' : '0',
+    height: '100%',
     [theme.breakpoints.toolbar]: {
       backdropFilter: 'none',
       WebkitBackdropFilter: 'none',
       boxShadow: 'none',
       transition: 'none',
       minHeight: 'unset',
+      height: 'unset',
     },
   }),
 )
