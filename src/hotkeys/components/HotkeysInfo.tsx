@@ -31,12 +31,6 @@ const ListItem = styled.li({
   lineHeight: '1',
 })
 
-const Container = styled.div(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(1),
-}))
-
 const EditContainer = styled.div(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -67,7 +61,7 @@ export const HotkeysInfo = ({
   onSetDefaultKeys,
 }: Props) => {
   return (
-    <Container as="aside" aria-label="Keyboard Shortcuts">
+    <>
       <Label size="small" css={(theme) => ({ color: theme.colors.secondary })}>
         Keyboard Shortcuts
       </Label>
@@ -107,13 +101,12 @@ export const HotkeysInfo = ({
             size="tiny"
             css={(theme) => ({
               color: theme.colors.secondary,
-              marginTop: theme.spacing(1),
             })}
           >
             Click a shortcut to change.
           </Label>
         </Appear>
       )}
-    </Container>
+    </>
   )
 }

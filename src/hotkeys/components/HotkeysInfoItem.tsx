@@ -15,10 +15,10 @@ interface Props {
   onStartEditHotkey: (id: HotkeyId) => void
 }
 
-const Container = styled.div(() => ({
+const Container = styled.div(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  gap: theme.spacing(1),
   width: '100%',
 }))
 
