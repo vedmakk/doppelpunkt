@@ -9,7 +9,10 @@ import 'prismjs/components/prism-markdown'
 import editorDarkTheme from '../themes/prism-material-dark.css?inline'
 import editorLightTheme from '../themes/prism-material-light.css?inline'
 
+import { useHasKeyboard } from '../../hotkeys/hooks'
+
 import { Label } from '../../app/components/Label'
+import { LogoAlignContainer } from '../../menu/components/Logo'
 
 interface Props {
   content: string
@@ -108,16 +111,19 @@ const fadeInOut = keyframes`
 
 // styled label that animates on mount
 const CaptureLabel = styled(Label)(({ theme }) => ({
-  position: 'absolute',
-  top: theme.spacing(2),
-  right: theme.spacing(2),
   background: theme.colors.paper,
   color: theme.colors.primary,
   padding: theme.spacing(0.5),
   borderRadius: theme.spacing(0.5),
   opacity: 0,
-  zIndex: 2,
   animation: `${fadeInOut} 2s ease-in-out`,
+}))
+
+const StyledLogoAlignContainer = styled(LogoAlignContainer)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(2),
+  right: theme.spacing(2.5),
+  zIndex: 2,
 }))
 
 const MarkdownEditor: React.FC<Props> = ({
@@ -127,6 +133,8 @@ const MarkdownEditor: React.FC<Props> = ({
 }) => {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const hasKeyboard = useHasKeyboard()
 
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
@@ -153,9 +161,13 @@ const MarkdownEditor: React.FC<Props> = ({
         <style>{editorLightTheme}</style>
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
-        <CaptureLabel key={String(captureTab)} size="tiny">
-          {captureTab ? 'Capturing tab' : 'Ignoring tab'}
-        </CaptureLabel>
+        {hasKeyboard && (
+          <StyledLogoAlignContainer>
+            <CaptureLabel key={String(captureTab)} size="tiny">
+              {captureTab ? 'Capturing tab' : 'Ignoring tab'}
+            </CaptureLabel>
+          </StyledLogoAlignContainer>
+        )}
         <label htmlFor="markdown-editor-input" className="sr-only">
           Markdown editor
         </label>

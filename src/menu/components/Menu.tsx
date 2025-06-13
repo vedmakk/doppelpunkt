@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
 
 import Toolbar from '../containers/Toolbar'
-import Logo from './Logo'
+import Logo, { LogoAlignContainer } from './Logo'
 import MenuButton from './MenuButton'
 
 interface Props {
@@ -114,16 +114,9 @@ const Menu: React.FC<Props> = ({
         onClick={toggleMenu}
       />
       <MenuWrapper isOpen={isOpen} shouldRender={shouldRender}>
-        <div
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '2rem',
-          }}
-        >
+        <LogoAlignContainer>
           <MenuButton onClick={toggleMenu} isOpen={isOpen} size={22} />
-        </div>
+        </LogoAlignContainer>
         <MenuContainer>
           <Logo isDense={!isOpen} />
           {shouldRender && (

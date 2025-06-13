@@ -8,6 +8,13 @@ interface Props {
   isDense: boolean
 }
 
+export const LogoAlignContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  height: `calc(${theme.fontSize.large} + 2 * ${theme.spacing(0.5)})`,
+}))
+
 const StyledLabel = styled(Label)<{ isDense: boolean }>(({ isDense }) => ({
   display: 'flex',
   flexDirection: 'row',
@@ -60,27 +67,29 @@ const StyledSpan = styled.span(({ theme }) => ({
 
 const Logo: React.FC<Props> = ({ isDense }) => {
   return (
-    <Appear>
-      <StyledLabel size="large" isDense={isDense}>
-        <StyledSpan>d</StyledSpan>
-        <StyledSpan>o</StyledSpan>
-        <StyledSpan>p</StyledSpan>
-        <StyledSpan>p</StyledSpan>
-        <StyledSpan>e</StyledSpan>
-        <StyledSpan>l</StyledSpan>
-        <StyledSpan>p</StyledSpan>
-        <StyledSpan
-          css={(theme) => ({
-            color: theme.colors.primary,
-          })}
-        >
-          :
-        </StyledSpan>
-        <StyledSpan>n</StyledSpan>
-        <StyledSpan>k</StyledSpan>
-        <StyledSpan>t</StyledSpan>
-      </StyledLabel>
-    </Appear>
+    <LogoAlignContainer>
+      <Appear>
+        <StyledLabel size="large" isDense={isDense}>
+          <StyledSpan>d</StyledSpan>
+          <StyledSpan>o</StyledSpan>
+          <StyledSpan>p</StyledSpan>
+          <StyledSpan>p</StyledSpan>
+          <StyledSpan>e</StyledSpan>
+          <StyledSpan>l</StyledSpan>
+          <StyledSpan>p</StyledSpan>
+          <StyledSpan
+            css={(theme) => ({
+              color: theme.colors.primary,
+            })}
+          >
+            :
+          </StyledSpan>
+          <StyledSpan>n</StyledSpan>
+          <StyledSpan>k</StyledSpan>
+          <StyledSpan>t</StyledSpan>
+        </StyledLabel>
+      </Appear>
+    </LogoAlignContainer>
   )
 }
 
