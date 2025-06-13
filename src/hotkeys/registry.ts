@@ -1,6 +1,8 @@
 export enum HotkeyId {
   ToggleCaptureTab = 'toggleCaptureTab',
   ToggleMenu = 'toggleMenu',
+  NewDocument = 'newDocument',
+  OpenDocument = 'openDocument',
 }
 
 export enum HotkeyScope {
@@ -21,14 +23,28 @@ export const hotkeys: HotkeyDefinition[] = [
     id: HotkeyId.ToggleCaptureTab,
     label: 'Tab Capture',
     description:
-      'Toggles capturing the Tab key in the editor (insert tab vs. focus change).',
+      'Toggle capturing the Tab key in the editor (insert tab vs. focus change).',
     defaultKeys: 'ctrl+shift+l',
+    scope: HotkeyScope.Editor,
+  },
+  {
+    id: HotkeyId.NewDocument,
+    label: 'New Document',
+    description: 'Create a new document.',
+    defaultKeys: 'ctrl+shift+n',
+    scope: HotkeyScope.Editor,
+  },
+  {
+    id: HotkeyId.OpenDocument,
+    label: 'Open Document',
+    description: 'Open a document from the file system.',
+    defaultKeys: 'ctrl+shift+o',
     scope: HotkeyScope.Editor,
   },
   {
     id: HotkeyId.ToggleMenu,
     label: 'Menu',
-    description: 'Toggles the editor menu.',
+    description: 'Toggle the editor menu.',
     defaultKeys: 'escape',
     scope: HotkeyScope.Global,
   },

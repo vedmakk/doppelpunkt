@@ -3,7 +3,8 @@ import styled from '@emotion/styled'
 
 import { EditorStats } from '../../shared/types'
 
-import { useHasKeyboard } from '../../hotkeys/hooks'
+import { HotkeyId } from '../../hotkeys/registry'
+import { useCustomHotkey, useHasKeyboard } from '../../hotkeys/hooks'
 
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { Button } from '../../app/components/Button'
@@ -115,6 +116,10 @@ const Toolbar: React.FC<Props> = ({
   const handlePDF = useCallback(() => {
     window.print()
   }, [])
+
+  // Hotkeys
+  useCustomHotkey(HotkeyId.NewDocument, handleNew)
+  useCustomHotkey(HotkeyId.OpenDocument, handleOpen)
 
   return (
     <ToolbarContainer role="toolbar" aria-label="Editor actions" id="toolbar">
