@@ -27,31 +27,11 @@ const LayoutContainer = styled.div(({ theme }) => ({
   },
 }))
 
-const MenuContainer = styled.nav(({ theme }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: theme.layout.toolbarWidth,
-  height: '100%',
-  [theme.breakpoints.toolbar]: {
-    left: 'unset',
-    top: 0,
-    right: `-${theme.layout.toolbarWidth}`,
-    width: theme.layout.toolbarWidth,
-    height: 'unset',
-  },
-  '@media print': {
-    display: 'none',
-  },
-}))
-
 export const App: React.FC = () => (
   <AppContainer>
     <LayoutContainer>
       <MarkdownEditor />
-      <MenuContainer aria-label="Main menu">
-        <Menu />
-      </MenuContainer>
+      <Menu />
     </LayoutContainer>
   </AppContainer>
 )

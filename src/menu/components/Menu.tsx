@@ -43,6 +43,26 @@ const ToolbarContainer = styled.div<{ isOpen: boolean }>(
   }),
 )
 
+const NavContainer = styled.nav<{ shouldRender: boolean }>(
+  ({ theme, shouldRender }) => ({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: theme.layout.toolbarWidth,
+    height: shouldRender ? '100%' : 'auto',
+    [theme.breakpoints.toolbar]: {
+      left: 'unset',
+      top: 0,
+      right: `-${theme.layout.toolbarWidth}`,
+      width: theme.layout.toolbarWidth,
+      height: 'unset',
+    },
+    '@media print': {
+      display: 'none',
+    },
+  }),
+)
+
 const MenuWrapper = styled.div<{ isOpen: boolean; shouldRender: boolean }>(
   ({ theme, isOpen, shouldRender }) => ({
     display: 'flex',
@@ -109,7 +129,7 @@ const Menu: React.FC<Props> = ({
   }, [isOpen, setShouldRender])
 
   return (
-    <>
+    <NavContainer aria-label="Main menu" shouldRender={shouldRender}>
       <Background
         isOpen={isOpen}
         shouldRender={shouldRender}
@@ -131,7 +151,7 @@ const Menu: React.FC<Props> = ({
           )}
         </MenuContainer>
       </MenuWrapper>
-    </>
+    </NavContainer>
   )
 }
 
