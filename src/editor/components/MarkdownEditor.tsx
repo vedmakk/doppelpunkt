@@ -241,9 +241,6 @@ const MarkdownEditor: React.FC<Props> = ({
     }
   }, [content, focusEditor])
 
-  console.log(content)
-  console.log(displayContent)
-
   return (
     <>
       {theme.mode === 'dark' ? (
