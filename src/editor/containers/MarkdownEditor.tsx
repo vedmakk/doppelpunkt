@@ -1,5 +1,7 @@
 import React, { useCallback } from 'react'
 
+import { stripVisualIndents } from '../utils/visualIndent'
+
 import { useDispatch } from 'react-redux'
 
 import { useEditorText, useCaptureTabEnabled } from '../hooks'
@@ -73,7 +75,7 @@ const MarkdownEditor: React.FC = () => {
         const newValue =
           value.slice(0, selectionStart) + insertion + value.slice(selectionEnd)
 
-        handleContentChange(newValue)
+        handleContentChange(stripVisualIndents(newValue))
 
         // Restore caret position in the next tick once React has flushed the
         // state update and the value prop has propagated to the underlying
@@ -110,7 +112,7 @@ const MarkdownEditor: React.FC = () => {
         newCursor = selectionStart + insertion.length
       }
 
-      handleContentChange(newValue)
+      handleContentChange(stripVisualIndents(newValue))
 
       requestAnimationFrame(() => {
         textarea.selectionStart = textarea.selectionEnd = newCursor
