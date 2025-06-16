@@ -18,6 +18,10 @@ interface Props {
   content: string
   onContentChange: (content: string) => void
   captureTab: boolean
+  onKeyDown: (
+    e: React.KeyboardEvent<HTMLDivElement> &
+      React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => void
 }
 
 const EditorContainer = styled.div(({ theme }) => ({
@@ -130,6 +134,7 @@ const MarkdownEditor: React.FC<Props> = ({
   content,
   onContentChange,
   captureTab,
+  onKeyDown,
 }) => {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -187,6 +192,7 @@ const MarkdownEditor: React.FC<Props> = ({
           className="code-editor"
           value={content}
           onValueChange={onContentChange}
+          onKeyDown={onKeyDown}
           highlight={highlight}
           ignoreTabKey={!captureTab}
           autoFocus
