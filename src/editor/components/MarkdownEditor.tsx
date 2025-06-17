@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react'
+import React from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
@@ -14,9 +14,6 @@ import { useHasKeyboard } from '../../hotkeys/hooks'
 import { Label } from '../../app/components/Label'
 import { LogoAlignContainer } from '../../menu/components/Logo'
 
-// Visual indentation helpers for soft-wrapped list items
-import { injectVisualIndents, stripVisualIndents } from '../utils/visualIndent'
-
 interface Props {
   content: string
   onContentChange: (content: string) => void
@@ -25,6 +22,7 @@ interface Props {
     e: React.KeyboardEvent<HTMLDivElement> &
       React.KeyboardEvent<HTMLTextAreaElement>,
   ) => void
+  containerRef: React.RefObject<HTMLDivElement | null>
 }
 
 const EditorContainer = styled.div(({ theme }) => ({
@@ -138,108 +136,14 @@ const MarkdownEditor: React.FC<Props> = ({
   onContentChange,
   captureTab,
   onKeyDown,
+  containerRef,
 }) => {
   const theme = useTheme()
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  // ------------------------------------------------------------------
-  // Determine roughly how many monospace characters fit on a single
-  // physical line inside the textarea.  This allows us to mimic the
-  // browser's soft-wrapping so that we can inject matching visual
-  // indents for wrapped list items.
-  // ------------------------------------------------------------------
-
-  const [charsPerLine, setCharsPerLine] = useState<number>(80)
-
-  useEffect(() => {
-    const calc = () => {
-      const textarea = containerRef.current?.querySelector('textarea') as
-        | HTMLTextAreaElement
-        | undefined
-      if (!textarea) return
-
-      const cs = window.getComputedStyle(textarea)
-
-      const padLeft = parseFloat(cs.paddingLeft || '0')
-      const padRight = parseFloat(cs.paddingRight || '0')
-      const availWidth = textarea.clientWidth - padLeft - padRight
-
-      // Measure width of a single glyph
-      const m = document.createElement('span')
-      m.textContent = 'a'
-      m.style.fontFamily = cs.fontFamily
-      m.style.fontSize = cs.fontSize
-      m.style.whiteSpace = 'pre'
-      m.style.visibility = 'hidden'
-      document.body.appendChild(m)
-      const charWidth = m.getBoundingClientRect().width || 8
-      document.body.removeChild(m)
-
-      if (!charWidth) return
-
-      const per = Math.floor(availWidth / charWidth)
-      if (per > 0 && per !== charsPerLine) {
-        setCharsPerLine(per)
-      }
-    }
-
-    calc()
-
-    const ro = new ResizeObserver(calc)
-    const textarea = containerRef.current?.querySelector('textarea')
-    if (textarea) ro.observe(textarea)
-
-    window.addEventListener('resize', calc)
-
-    return () => {
-      ro.disconnect()
-      window.removeEventListener('resize', calc)
-    }
-  }, [charsPerLine])
 
   const hasKeyboard = useHasKeyboard()
 
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
-
-  // Derive the display version of the content that includes visual indents
-  const displayContent = useMemo(
-    () => injectVisualIndents(content, charsPerLine),
-    [content, charsPerLine],
-  )
-
-  const handleDisplayChange = useCallback(
-    (newDisplayValue: string) => {
-      const sanitized = stripVisualIndents(newDisplayValue)
-      onContentChange(sanitized)
-    },
-    [onContentChange],
-  )
-
-  const focusEditor = useCallback(() => {
-    if (containerRef.current) {
-      const textarea = containerRef.current.querySelector('textarea')
-      if (textarea) {
-        ;(textarea as HTMLTextAreaElement).focus()
-
-        // Move cursor to the end
-        const len = (textarea as HTMLTextAreaElement).value.length
-        ;(textarea as HTMLTextAreaElement).setSelectionRange(len, len)
-      }
-    }
-  }, [])
-
-  // Focus the editor initially
-  useEffect(() => {
-    focusEditor()
-  }, [focusEditor])
-
-  // Focus the editor when a new file is created
-  useEffect(() => {
-    if (content === '') {
-      focusEditor()
-    }
-  }, [content, focusEditor])
 
   return (
     <>
@@ -262,8 +166,8 @@ const MarkdownEditor: React.FC<Props> = ({
         <CodeEditor
           textareaId="markdown-editor-input"
           className="code-editor"
-          value={displayContent}
-          onValueChange={handleDisplayChange}
+          value={content}
+          onValueChange={onContentChange}
           onKeyDown={onKeyDown}
           highlight={highlight}
           ignoreTabKey={!captureTab}
