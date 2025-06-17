@@ -116,19 +116,19 @@ const MarkdownEditor: React.FC = () => {
 
       // Measure width of a single glyph
       const m = document.createElement('span')
-      m.textContent = 'a'
+      m.textContent = 'a'.repeat(100) // Reduce rounding errors
       m.style.fontFamily = cs.fontFamily
       m.style.fontSize = cs.fontSize
       m.style.whiteSpace = 'pre'
       m.style.visibility = 'hidden'
       document.body.appendChild(m)
-      const charWidth = m.getBoundingClientRect().width || 8
+      const charWidth = m.getBoundingClientRect().width / 100
       document.body.removeChild(m)
 
       if (!charWidth) return
 
       const per = Math.floor(availWidth / charWidth)
-      if (per > 0 && per !== charsPerLine) {
+      if (per > 0) {
         setCharsPerLine(per)
       }
     }
@@ -141,11 +141,22 @@ const MarkdownEditor: React.FC = () => {
 
     window.addEventListener('resize', calc)
 
+    // Re-run once all fonts that affect the textarea are loaded
+    if ('fonts' in document) {
+      // Fires once when every pending font-face is ready
+      document.fonts.ready.then(calc)
+      // Fires any time a new font family finishes loading later
+      document.fonts.addEventListener('loadingdone', calc)
+    }
+
     return () => {
       ro.disconnect()
       window.removeEventListener('resize', calc)
+      if ('fonts' in document) {
+        document.fonts.removeEventListener('loadingdone', calc)
+      }
     }
-  }, [charsPerLine])
+  }, [])
 
   // Focus the editor initially
   useEffect(() => {
