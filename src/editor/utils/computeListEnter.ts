@@ -1,3 +1,5 @@
+import { stripVisualIndents } from './visualIndent'
+
 export interface ComputeListEnterOptions {
   /** Current textarea value */
   value: string
@@ -32,12 +34,20 @@ export function computeListEnter(
 ): ComputeListEnterResult | undefined {
   const { value, selectionStart, selectionEnd, shiftKey } = opts
 
-  // Determine the boundaries of the current logical line.
-  const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1 // -1 => -1 + 1 = 0
-  const lineEndIndex = value.indexOf('\n', selectionStart)
-  const lineEnd = lineEndIndex === -1 ? value.length : lineEndIndex
+  // Sanitize the value by removing visual indents up to the selection start and then correcting the selection start and end
+  const sanitizedValue =
+    stripVisualIndents(value.slice(0, selectionStart)) +
+    value.slice(selectionStart)
+  const lengthDifference = value.length - sanitizedValue.length
+  const sanitizedSelectionStart = selectionStart - lengthDifference
 
-  const currentLine = value.slice(lineStart, lineEnd)
+  // Determine the boundaries of the current logical line.
+  const lineStart =
+    sanitizedValue.lastIndexOf('\n', sanitizedSelectionStart - 1) + 1 // -1 => -1 + 1 = 0
+  const lineEndIndex = sanitizedValue.indexOf('\n', sanitizedSelectionStart)
+  const lineEnd = lineEndIndex === -1 ? sanitizedValue.length : lineEndIndex
+
+  const currentLine = sanitizedValue.slice(lineStart, lineEnd)
 
   // RegEx to match unordered (-,*,+) or ordered (1., 2. ...)
   const listPrefixMatch = currentLine.match(
@@ -69,7 +79,8 @@ export function computeListEnter(
 
   if (isEmptyItem) {
     // Exit behaviour – remove the list marker and insert plain newline.
-    const beforePrefix = value.slice(0, lineStart)
+    const originalLineStart = value.lastIndexOf('\n', selectionStart - 1) + 1
+    const beforePrefix = value.slice(0, originalLineStart)
     const afterCaret = value.slice(selectionEnd)
 
     const newValue = beforePrefix + '\n' + afterCaret
