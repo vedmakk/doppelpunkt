@@ -105,6 +105,16 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   '& .token.code-block > .operator': {
     background: 'none',
   },
+  '& .token.strike > .content': {
+    textDecoration: 'line-through',
+  },
+  '& .token.variable': {
+    color: theme.colors.primary,
+  },
+  '& .token.operator': {
+    color: theme.colors.punctuation,
+    background: 'none',
+  },
 }))
 
 // keyframes for fade-in/out
