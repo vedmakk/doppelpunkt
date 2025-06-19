@@ -55,9 +55,9 @@ describe('visualIndent utilities', () => {
       expect(injectedCursorPos).toBe(caret)
     })
 
-    it('wraps long list items and prefixes wrapped lines with visual indent', () => {
-      const raw = '- abcdefghij' // 10 chars of content, prefix "- " (2 chars)
-      const maxChars = 10 // force wrapping after 8 content chars
+    it('wraps long list items at word boundaries and adds visual indentation', () => {
+      const raw = '- lorem ipsum' // total length 13 (prefix 2 + 11 content)
+      const maxChars = 10 // available content chars: 8 – forces wrapping after the first word
       const caret = raw.length
 
       const { injectedValue, injectedCursorPos } = injectVisualIndents(
@@ -67,9 +67,9 @@ describe('visualIndent utilities', () => {
       )
 
       // Expected physical representation after wrapping:
-      // "- abcdefgh" (first 8 chars)
-      // "<indent>ij" (remaining 2 chars)
-      const expected = `- abcdefgh\n${VISUAL_INDENT_CHAR.repeat(2)}ij`
+      // "- lorem " (first word incl. the trailing space that preceded the wrap)
+      // "<indent>ipsum" (second word)
+      const expected = `- lorem \n${VISUAL_INDENT_CHAR.repeat(2)}ipsum`
 
       expect(injectedValue).toBe(expected)
 

@@ -11,6 +11,7 @@
  * interaction that feeds the text back into persistence / business logic must
  * remove them again.
  */
+import wrap from 'word-wrap'
 
 export const VISUAL_INDENT_CHAR = '\u2002' // en-space – visually consistent and has fixed width in monospaced fonts
 
@@ -123,20 +124,35 @@ export function injectVisualIndents(
         continue
       }
 
-      let cursor = 0
+      // When the content exceeds the available space we wrap at *word*
+      // boundaries to avoid splitting words in the middle.  We use the
+      // "word-wrap" library for this purpose.  The approach is:
+      //   1. Word-wrap the *content* (excluding the list prefix).
+      //   2. Prepend the original prefix to the first wrapped line.
+      //   3. For every subsequent physical line, prefix an equivalent amount
+      //      of en-spaces so that the text aligns visually with the first
+      //      line's content.
 
-      // First physical line keeps the list prefix.
-      physicalLines.push(prefix + content.slice(0, spaceForFirstLine))
-      cursor += spaceForFirstLine
-
-      // Subsequent physical lines get visual indent.
       const indent = VISUAL_INDENT_CHAR.repeat(prefix.length)
-      const spacePerWrappedLine = maxCharsPerLine - prefix.length
 
-      while (cursor < content.length) {
-        const part = content.slice(cursor, cursor + spacePerWrappedLine)
-        physicalLines.push(indent + part)
-        cursor += spacePerWrappedLine
+      // Wrap only the content (without prefix) so that the calculated width
+      // matches the available characters of the *content* section.
+      const wrappedContent = wrap(content, {
+        width: spaceForFirstLine, // identical for first and subsequent lines
+        trim: false,
+        cut: false, // do not split a word unless it exceeds the width itself
+        indent: '', // override word-wrap's default two-space indent
+        newline: '\n',
+      })
+
+      const wrappedLines = wrappedContent.split('\n')
+
+      // First physical line keeps the bullet prefix.
+      physicalLines.push(prefix + wrappedLines[0])
+
+      // Remaining physical lines receive the visual indent.
+      for (let i = 1; i < wrappedLines.length; i++) {
+        physicalLines.push(indent + wrappedLines[i])
       }
     }
 
