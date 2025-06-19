@@ -109,6 +109,18 @@ const MarkdownEditor: React.FC = () => {
     }
   }, [containerRef])
 
+  const handleCopy = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      e.preventDefault()
+
+      console.log('copying', content)
+
+      e.clipboardData.setData('text/markdown', content) // For Markdown-aware apps
+      e.clipboardData.setData('text/plain', content) // Required fallback
+    },
+    [content],
+  )
+
   // ------------------------------------------------------------------
   // Determine roughly how many monospace characters fit on a single
   // physical line inside the textarea.  This allows us to mimic the
@@ -198,6 +210,7 @@ const MarkdownEditor: React.FC = () => {
       onContentChange={handleContentChange}
       captureTab={captureTab}
       onKeyDown={handleKeyDown}
+      onCopy={handleCopy}
       containerRef={containerRef}
     />
   )
