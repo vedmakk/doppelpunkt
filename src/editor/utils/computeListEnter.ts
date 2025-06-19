@@ -34,12 +34,10 @@ export function computeListEnter(
 ): ComputeListEnterResult | undefined {
   const { value, selectionStart, selectionEnd, shiftKey } = opts
 
-  // Sanitize the value by removing visual indents up to the selection start and then correcting the selection start and end
-  const sanitizedValue =
-    stripVisualIndents(value.slice(0, selectionStart)) +
-    value.slice(selectionStart)
-  const lengthDifference = value.length - sanitizedValue.length
-  const sanitizedSelectionStart = selectionStart - lengthDifference
+  // Strip visual indents and obtain the caret position in the sanitized
+  // string so that we can correctly analyse the logical Markdown content.
+  const { sanitizedValue, sanitizedCursorPos: sanitizedSelectionStart } =
+    stripVisualIndents(value, selectionStart)
 
   // Determine the boundaries of the current logical line.
   const lineStart =

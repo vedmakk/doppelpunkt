@@ -9,6 +9,11 @@ export const selectEditorText = createSelector(
   (editor) => editor.text,
 )
 
+export const selectEditorCursorPos = createSelector(selectEditor, (editor) => ({
+  text: editor.text,
+  cursorPos: editor.cursorPos,
+}))
+
 export const selectAutoSaveEnabled = createSelector(
   selectEditor,
   (editor) => editor.autoSave,

@@ -8,6 +8,7 @@ import {
   selectEditorText,
   selectAutoSaveEnabled,
   selectCaptureTab,
+  selectEditorCursorPos,
 } from './selectors'
 
 import { tutorial, TUTORIAL_PLACEHOLDER } from './tutorial'
@@ -20,6 +21,16 @@ export const useEditorText = () => {
   }
 
   return text
+}
+
+export const useEditorCursorPos = () => {
+  const { text, cursorPos } = useAppSelector(selectEditorCursorPos)
+
+  if (cursorPos === 0 && text === TUTORIAL_PLACEHOLDER) {
+    return tutorial.length
+  }
+
+  return cursorPos
 }
 
 export const useAutoSaveEnabled = () => useAppSelector(selectAutoSaveEnabled)

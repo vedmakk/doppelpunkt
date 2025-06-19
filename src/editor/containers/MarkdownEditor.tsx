@@ -5,7 +5,11 @@ import { computeListEnter } from '../utils/computeListEnter'
 
 import { useDispatch } from 'react-redux'
 
-import { useEditorText, useCaptureTabEnabled } from '../hooks'
+import {
+  useEditorText,
+  useCaptureTabEnabled,
+  useEditorCursorPos,
+} from '../hooks'
 import { setText, setCaptureTab } from '../editorSlice'
 import { useCustomHotkey } from '../../hotkeys/hooks'
 import { HotkeyId } from '../../hotkeys/registry'
@@ -18,19 +22,36 @@ const MarkdownEditor: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const content = useEditorText()
+  const cursorPos = useEditorCursorPos()
   const captureTab = useCaptureTabEnabled()
 
   const dispatch = useDispatch()
 
-  const displayContent = useMemo(
-    () => injectVisualIndents(content, charsPerLine),
-    [content, charsPerLine],
+  const { injectedValue, injectedCursorPos } = useMemo(
+    () => injectVisualIndents(content, cursorPos, charsPerLine),
+    [content, charsPerLine, cursorPos],
   )
 
+  const getTextarea = () =>
+    containerRef.current?.querySelector(
+      'textarea',
+    ) as HTMLTextAreaElement | null
+
   const handleContentChange = useCallback(
-    (content: string) => {
-      const sanitized = stripVisualIndents(content)
-      dispatch(setText(sanitized))
+    (content: string, nextCursorPos?: number) => {
+      const textarea = getTextarea()
+      if (textarea) {
+        const cursorPos = nextCursorPos ?? textarea.selectionStart
+
+        const { sanitizedValue, sanitizedCursorPos } = stripVisualIndents(
+          content,
+          cursorPos,
+        )
+
+        dispatch(
+          setText({ text: sanitizedValue, cursorPos: sanitizedCursorPos }),
+        )
+      }
     },
     [dispatch],
   )
@@ -70,21 +91,14 @@ const MarkdownEditor: React.FC = () => {
 
       e.preventDefault()
 
-      handleContentChange(newValue)
-
-      // Restore caret position in the next tick once React has flushed the
-      // state update and the value prop has propagated to the underlying
-      // textarea.
-      requestAnimationFrame(() => {
-        textarea.selectionStart = textarea.selectionEnd = newCursor
-      })
+      handleContentChange(newValue, newCursor)
     },
     [handleContentChange],
   )
 
   const focusEditor = useCallback(() => {
     if (containerRef.current) {
-      const textarea = containerRef.current.querySelector('textarea')
+      const textarea = getTextarea()
       if (textarea) {
         ;(textarea as HTMLTextAreaElement).focus()
 
@@ -103,9 +117,7 @@ const MarkdownEditor: React.FC = () => {
   // ------------------------------------------------------------------
   useEffect(() => {
     const calc = () => {
-      const textarea = containerRef.current?.querySelector('textarea') as
-        | HTMLTextAreaElement
-        | undefined
+      const textarea = getTextarea()
       if (!textarea) return
 
       const cs = window.getComputedStyle(textarea)
@@ -136,7 +148,7 @@ const MarkdownEditor: React.FC = () => {
     calc()
 
     const ro = new ResizeObserver(calc)
-    const textarea = containerRef.current?.querySelector('textarea')
+    const textarea = getTextarea()
     if (textarea) ro.observe(textarea)
 
     window.addEventListener('resize', calc)
@@ -158,6 +170,16 @@ const MarkdownEditor: React.FC = () => {
     }
   }, [])
 
+  // Restore caret position once we've injected visual indents
+  useEffect(() => {
+    const textarea = getTextarea()
+    if (textarea) {
+      requestAnimationFrame(() => {
+        textarea.setSelectionRange(injectedCursorPos, injectedCursorPos)
+      })
+    }
+  }, [injectedCursorPos])
+
   // Focus the editor initially
   useEffect(() => {
     focusEditor()
@@ -172,7 +194,7 @@ const MarkdownEditor: React.FC = () => {
 
   return (
     <MarkdownEditorComponent
-      content={displayContent}
+      content={injectedValue}
       onContentChange={handleContentChange}
       captureTab={captureTab}
       onKeyDown={handleKeyDown}
