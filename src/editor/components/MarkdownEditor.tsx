@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
@@ -18,6 +18,12 @@ interface Props {
   content: string
   onContentChange: (content: string) => void
   captureTab: boolean
+  onKeyDown: (
+    e: React.KeyboardEvent<HTMLDivElement> &
+      React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => void
+  onCopy: (e: React.ClipboardEvent<HTMLDivElement>) => void
+  containerRef: React.RefObject<HTMLDivElement | null>
 }
 
 const EditorContainer = styled.div(({ theme }) => ({
@@ -130,39 +136,16 @@ const MarkdownEditor: React.FC<Props> = ({
   content,
   onContentChange,
   captureTab,
+  onKeyDown,
+  onCopy,
+  containerRef,
 }) => {
   const theme = useTheme()
-  const containerRef = useRef<HTMLDivElement>(null)
 
   const hasKeyboard = useHasKeyboard()
 
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
-
-  const focusEditor = useCallback(() => {
-    if (containerRef.current) {
-      const textarea = containerRef.current.querySelector('textarea')
-      if (textarea) {
-        ;(textarea as HTMLTextAreaElement).focus()
-
-        // Move cursor to the end
-        const len = (textarea as HTMLTextAreaElement).value.length
-        ;(textarea as HTMLTextAreaElement).setSelectionRange(len, len)
-      }
-    }
-  }, [])
-
-  // Focus the editor initially
-  useEffect(() => {
-    focusEditor()
-  }, [focusEditor])
-
-  // Focus the editor when a new file is created
-  useEffect(() => {
-    if (content === '') {
-      focusEditor()
-    }
-  }, [content, focusEditor])
 
   return (
     <>
@@ -187,6 +170,8 @@ const MarkdownEditor: React.FC<Props> = ({
           className="code-editor"
           value={content}
           onValueChange={onContentChange}
+          onKeyDown={onKeyDown}
+          onCopy={onCopy}
           highlight={highlight}
           ignoreTabKey={!captureTab}
           autoFocus
