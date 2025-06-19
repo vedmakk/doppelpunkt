@@ -113,8 +113,6 @@ const MarkdownEditor: React.FC = () => {
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault()
 
-      console.log('copying', content)
-
       e.clipboardData.setData('text/markdown', content) // For Markdown-aware apps
       e.clipboardData.setData('text/plain', content) // Required fallback
     },
