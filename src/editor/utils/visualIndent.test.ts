@@ -28,6 +28,39 @@ describe('visualIndent utilities', () => {
       const result = stripVisualIndents(input, 5)
       expect(result).toEqual({ sanitizedValue: input, sanitizedCursorPos: 5 })
     })
+
+    it('adjusts the cursor position when indents were present before the cursor', () => {
+      const input = `- item\n${VISUAL_INDENT_CHAR.repeat(2)}continued`
+      const caret = 10
+      const { sanitizedValue, sanitizedCursorPos } = stripVisualIndents(
+        input,
+        caret,
+      )
+      expect(sanitizedValue).toBe('- itemcontinued')
+      expect(sanitizedCursorPos).toBe(caret - 3)
+    })
+
+    it('adjusts the cursor position only for indents that were present before the cursor', () => {
+      const input = `- item\n${VISUAL_INDENT_CHAR.repeat(2)}continued\n${VISUAL_INDENT_CHAR.repeat(2)}continued`
+      const caret = 10
+      const { sanitizedValue, sanitizedCursorPos } = stripVisualIndents(
+        input,
+        caret,
+      )
+      expect(sanitizedValue).toBe('- itemcontinuedcontinued')
+      expect(sanitizedCursorPos).toBe(caret - 3)
+    })
+
+    it('does not adjust the cursor position for indents that were present after the cursor', () => {
+      const input = `- itemcontinued\n${VISUAL_INDENT_CHAR.repeat(2)}continued`
+      const caret = 10
+      const { sanitizedValue, sanitizedCursorPos } = stripVisualIndents(
+        input,
+        caret,
+      )
+      expect(sanitizedValue).toBe('- itemcontinuedcontinued')
+      expect(sanitizedCursorPos).toBe(caret)
+    })
   })
 
   describe('injectVisualIndents', () => {
@@ -79,6 +112,51 @@ describe('visualIndent utilities', () => {
       // After stripping, we should get back the original logical line.
       const stripped = stripVisualIndents(injectedValue, injectedCursorPos)
       expect(stripped.sanitizedValue).toBe(raw)
+    })
+
+    it('adjusts the cursor position when indents were inserted before the cursor', () => {
+      const raw = '- lorem ipsum'
+      const maxChars = 7
+      const caret = raw.length
+      const { injectedValue, injectedCursorPos } = injectVisualIndents(
+        raw,
+        caret,
+        maxChars,
+      )
+      expect(injectedValue).toBe(
+        `- lorem \n${VISUAL_INDENT_CHAR.repeat(2)}ipsum`,
+      )
+      expect(injectedCursorPos).toBe(caret + 3)
+    })
+
+    it('adjust the cursor position only for indents that were inserted before the cursor', () => {
+      const raw = '- ' + 'test '.repeat(3)
+      const maxChars = 'test'.length
+      const caret = 'test'.length + 4 // after the first 'test'
+      const { injectedValue, injectedCursorPos } = injectVisualIndents(
+        raw,
+        caret,
+        maxChars,
+      )
+      expect(injectedValue).toBe(
+        `- test \n${VISUAL_INDENT_CHAR.repeat(2)}test \n${VISUAL_INDENT_CHAR.repeat(2)}test `,
+      )
+      expect(injectedCursorPos).toBe(caret + 3)
+    })
+
+    it('does not adjust the cursor position for indents that were inserted after the cursor', () => {
+      const raw = '- lorem ipsum'
+      const maxChars = 7
+      const caret = 3
+      const { injectedValue, injectedCursorPos } = injectVisualIndents(
+        raw,
+        caret,
+        maxChars,
+      )
+      expect(injectedValue).toBe(
+        `- lorem \n${VISUAL_INDENT_CHAR.repeat(2)}ipsum`,
+      )
+      expect(injectedCursorPos).toBe(caret)
     })
   })
 })

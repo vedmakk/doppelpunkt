@@ -27,47 +27,26 @@ export function stripVisualIndents(
   value: string,
   cursorPos: number,
 ): { sanitizedValue: string; sanitizedCursorPos: number } {
+  const stripString = (raw: string): string =>
+    raw.replace(VISUAL_INDENT_PATTERN, '')
+
+  const sanitizedValue = stripString(value)
+
   // Fast-path: no visual indent present – return original inputs unchanged.
-  if (!VISUAL_INDENT_PATTERN.test(value)) {
+  if (sanitizedValue.length === value.length) {
     return {
-      sanitizedValue: value,
+      sanitizedValue,
       sanitizedCursorPos: cursorPos,
     }
   }
 
-  // Reset lastIndex because `test` above advanced the global regex state.
-  VISUAL_INDENT_PATTERN.lastIndex = 0
+  const strippedPrefix = stripString(value.slice(0, cursorPos))
 
-  let removedBeforeCursor = 0
-
-  // Iterate through all matches so we can determine how many characters are
-  // removed *before* the supplied cursor position.
-  let match: RegExpExecArray | null
-  while ((match = VISUAL_INDENT_PATTERN.exec(value))) {
-    const matchStart = match.index
-    const matchLength = match[0].length
-
-    if (matchStart >= cursorPos) {
-      // This and all subsequent matches start at or after the original cursor
-      // position – no need to continue because they won't influence the
-      // adjusted cursor calculation.
-      break
-    }
-
-    // Number of removed characters that lie strictly before the cursor.
-    const charsRemovedBeforeCursor = Math.min(
-      matchLength,
-      cursorPos - matchStart,
-    )
-
-    removedBeforeCursor += charsRemovedBeforeCursor
-  }
-
-  const sanitizedValue = value.replace(VISUAL_INDENT_PATTERN, '')
+  const strippedCursorPos = strippedPrefix.length
 
   return {
     sanitizedValue,
-    sanitizedCursorPos: cursorPos - removedBeforeCursor,
+    sanitizedCursorPos: strippedCursorPos,
   }
 }
 
@@ -161,6 +140,14 @@ export function injectVisualIndents(
 
   // Perform the actual injections.
   const injectedValue = injectString(rawValue)
+
+  // Fast-path: no visual indent present – return original inputs unchanged.
+  if (injectedValue.length === rawValue.length) {
+    return {
+      injectedValue,
+      injectedCursorPos: rawCursorPos,
+    }
+  }
 
   // Inject only the part before (and including) the cursor to determine how
   // many characters were added.
