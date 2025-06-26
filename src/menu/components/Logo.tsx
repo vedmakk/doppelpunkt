@@ -69,25 +69,27 @@ const Logo: React.FC<Props> = ({ isDense }) => {
   return (
     <LogoAlignContainer>
       <Appear>
-        <StyledLabel size="large" isDense={isDense}>
-          <StyledSpan>d</StyledSpan>
-          <StyledSpan>o</StyledSpan>
-          <StyledSpan>p</StyledSpan>
-          <StyledSpan>p</StyledSpan>
-          <StyledSpan>e</StyledSpan>
-          <StyledSpan>l</StyledSpan>
-          <StyledSpan>p</StyledSpan>
-          <StyledSpan
-            css={(theme) => ({
-              color: theme.colors.primary,
-            })}
-          >
-            :
-          </StyledSpan>
-          <StyledSpan>n</StyledSpan>
-          <StyledSpan>k</StyledSpan>
-          <StyledSpan>t</StyledSpan>
-        </StyledLabel>
+        <h1>
+          <StyledLabel size="large" isDense={isDense}>
+            <StyledSpan>d</StyledSpan>
+            <StyledSpan>o</StyledSpan>
+            <StyledSpan>p</StyledSpan>
+            <StyledSpan>p</StyledSpan>
+            <StyledSpan>e</StyledSpan>
+            <StyledSpan>l</StyledSpan>
+            <StyledSpan>p</StyledSpan>
+            <StyledSpan
+              css={(theme) => ({
+                color: theme.colors.primary,
+              })}
+            >
+              :
+            </StyledSpan>
+            <StyledSpan>n</StyledSpan>
+            <StyledSpan>k</StyledSpan>
+            <StyledSpan>t</StyledSpan>
+          </StyledLabel>
+        </h1>
       </Appear>
     </LogoAlignContainer>
   )
