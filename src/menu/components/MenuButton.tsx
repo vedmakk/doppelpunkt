@@ -62,8 +62,10 @@ const SecondMenuButtonLine = styled(MenuButtonLineTemplate)<{
 }))
 
 const MenuButton: React.FC<Props> = ({ isOpen, onClick, size }) => {
+  const ariaLabel = isOpen ? 'Close menu' : 'Open menu'
+
   return (
-    <MenuButtonContainer size={size} onClick={onClick}>
+    <MenuButtonContainer aria-label={ariaLabel} size={size} onClick={onClick}>
       <FristMenuButtonLine isOpen={isOpen}>
         <span />
       </FristMenuButtonLine>
