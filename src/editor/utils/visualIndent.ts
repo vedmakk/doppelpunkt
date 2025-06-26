@@ -47,7 +47,7 @@ export const stripString = (raw: string): string =>
 export const injectString = (raw: string, maxCharsPerLine: number): string => {
   if (!raw) return raw
 
-  const listPrefixRegex = /^(\s*)(?:([-+*])|(\d+[.)]))\s+/
+  const listPrefixRegex = /^(\s*)(?:([-+*>])|(\d+[.)]))\s+/
 
   const physicalLines: string[] = []
 

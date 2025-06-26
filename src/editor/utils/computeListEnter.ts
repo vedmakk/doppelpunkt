@@ -49,7 +49,7 @@ export function computeListEnter(
 
   // RegEx to match unordered (-,*,+) or ordered (1., 2. ...)
   const listPrefixMatch = currentLine.match(
-    /^(\s*)(?:([-+*])|((?:\d+)[.)]))\s+/,
+    /^(\s*)(?:([-+*>])|((?:\d+)[.)]))\s+/,
   )
 
   if (!listPrefixMatch) {
