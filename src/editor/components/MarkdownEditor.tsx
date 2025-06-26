@@ -184,7 +184,6 @@ const MarkdownEditor: React.FC<Props> = ({
           onCopy={onCopy}
           highlight={highlight}
           ignoreTabKey={!captureTab}
-          autoFocus
         />
       </EditorContainer>
     </>

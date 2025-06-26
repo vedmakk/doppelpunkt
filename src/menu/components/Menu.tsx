@@ -43,7 +43,7 @@ const ToolbarContainer = styled.div<{ isOpen: boolean }>(
   }),
 )
 
-const NavContainer = styled.nav<{ shouldRender: boolean }>(
+const Container = styled.div<{ shouldRender: boolean }>(
   ({ theme, shouldRender }) => ({
     position: 'absolute',
     top: 0,
@@ -129,7 +129,7 @@ const Menu: React.FC<Props> = ({
   }, [isOpen, setShouldRender])
 
   return (
-    <NavContainer aria-label="Main menu" shouldRender={shouldRender}>
+    <Container shouldRender={shouldRender}>
       <Background
         isOpen={isOpen}
         shouldRender={shouldRender}
@@ -140,7 +140,9 @@ const Menu: React.FC<Props> = ({
           <MenuButton onClick={toggleMenu} isOpen={isOpen} size={22} />
         </LogoAlignContainer>
         <MenuContainer>
-          <Logo isDense={!isOpen} />
+          <header>
+            <Logo isDense={!isOpen} />
+          </header>
           {shouldRender && (
             <ToolbarContainer
               isOpen={isOpen}
@@ -151,7 +153,7 @@ const Menu: React.FC<Props> = ({
           )}
         </MenuContainer>
       </MenuWrapper>
-    </NavContainer>
+    </Container>
   )
 }
 

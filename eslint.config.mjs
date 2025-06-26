@@ -34,6 +34,7 @@ export default defineConfig([
         'plugin:react/recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:prettier/recommended',
+        'plugin:jsx-a11y/recommended',
       ),
       reactHooks.configs.recommended,
     ],

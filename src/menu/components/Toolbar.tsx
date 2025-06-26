@@ -122,8 +122,8 @@ const Toolbar: React.FC<Props> = ({
   useCustomHotkey(HotkeyId.OpenDocument, handleOpen)
 
   return (
-    <ToolbarContainer role="toolbar" aria-label="Editor actions" id="toolbar">
-      <ToolbarItemContainer>
+    <ToolbarContainer id="toolbar">
+      <ToolbarItemContainer as="nav" aria-label="Editor actions">
         <Button label="New" onClick={handleNew} />
         <Button label="Open" onClick={handleOpen} />
         <HiddenInput
@@ -136,6 +136,8 @@ const Toolbar: React.FC<Props> = ({
         <Button label="PDF" onClick={handlePDF} />
       </ToolbarItemContainer>
       <ToolbarItemContainer
+        as="nav"
+        aria-label="Editor settings"
         css={(theme) => ({
           gap: theme.spacing(2),
         })}
@@ -150,7 +152,7 @@ const Toolbar: React.FC<Props> = ({
         </Tooltip>
         <ThemeSwitch size={24} />
       </ToolbarItemContainer>
-      <ToolbarItemContainer>
+      <ToolbarItemContainer as="section" aria-label="Editor stats">
         <Label
           size="small"
           css={(theme) => ({ color: theme.colors.secondary })}
@@ -180,7 +182,7 @@ const Toolbar: React.FC<Props> = ({
           <HotkeysInfo />
         </ToolbarItemContainer>
       )}
-      <ToolbarItemContainer>
+      <ToolbarItemContainer as="section" aria-label="Editor info">
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           Everything you write stays in your browser. No data is ever uploaded
           or tracked.
@@ -199,7 +201,7 @@ const Toolbar: React.FC<Props> = ({
           externalLink
         />
       </ToolbarItemContainer>
-      <ToolbarItemContainer>
+      <ToolbarItemContainer as="footer" aria-label="Editor footer">
         <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
           © 2025 <br />
           Jan Mittelman
