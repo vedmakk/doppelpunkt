@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { injectVisualIndents, stripVisualIndents } from '../utils/visualIndent'
+import {
+  injectVisualIndents,
+  stripString,
+  stripVisualIndents,
+} from '../utils/visualIndent'
 import { computeListEnter } from '../utils/computeListEnter'
 
 import { useDispatch } from 'react-redux'
@@ -109,15 +113,25 @@ const MarkdownEditor: React.FC = () => {
     }
   }, [containerRef])
 
-  const handleCopy = useCallback(
-    (e: React.ClipboardEvent<HTMLDivElement>) => {
-      e.preventDefault()
+  const handleCopy = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault()
 
-      e.clipboardData.setData('text/markdown', content) // For Markdown-aware apps
-      e.clipboardData.setData('text/plain', content) // Required fallback
-    },
-    [content],
-  )
+    const textarea = getTextarea()
+
+    if (!textarea) return
+
+    const copiedContent = textarea.value.slice(
+      textarea.selectionStart,
+      textarea.selectionEnd,
+    )
+
+    // Remove visual indents from the copied content
+    // as we only need them for displaying the content in the editor
+    const sanitizedCopiedValue = stripString(copiedContent)
+
+    e.clipboardData.setData('text/markdown', sanitizedCopiedValue) // For Markdown-aware apps
+    e.clipboardData.setData('text/plain', sanitizedCopiedValue) // Required fallback
+  }, [])
 
   // ------------------------------------------------------------------
   // Determine roughly how many monospace characters fit on a single
