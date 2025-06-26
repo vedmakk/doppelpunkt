@@ -20,40 +20,11 @@ export const VISUAL_INDENT_CHAR = '\u2002' // en-space – visually consistent a
 const VISUAL_INDENT_PATTERN = new RegExp(`\n${VISUAL_INDENT_CHAR}+`, 'g')
 
 /**
- * Helper to apply a string transformation and adjust the cursor position
- * based on how the transformation changed the overall length.
- */
-function applyTransformWithCursor(
-  raw: string,
-  cursorPos: number,
-  transform: (input: string) => string,
-): { value: string; cursor: number } {
-  const transformedValue = transform(raw)
-  // No change → cursor stays the same
-  if (transformedValue.length === raw.length) {
-    return { value: transformedValue, cursor: cursorPos }
-  }
-  // Otherwise, re-run transform on the prefix up to the original cursor to compute new cursor
-  const transformedPrefix = transform(raw.slice(0, cursorPos))
-  return { value: transformedValue, cursor: transformedPrefix.length }
-}
-
-/**
  * Removes any artificial visual indents from the supplied string so that the
  * returned value only contains the *logical* Markdown content.
  */
-export function stripVisualIndents(
-  value: string,
-  cursorPos: number,
-): { sanitizedValue: string; sanitizedCursorPos: number } {
-  const stripString = (raw: string): string =>
-    raw.replace(VISUAL_INDENT_PATTERN, '')
-
-  const { value: sanitizedValue, cursor: sanitizedCursorPos } =
-    applyTransformWithCursor(value, cursorPos, stripString)
-
-  return { sanitizedValue, sanitizedCursorPos }
-}
+export const stripString = (raw: string): string =>
+  raw.replace(VISUAL_INDENT_PATTERN, '')
 
 /**
  * Inserts visual hanging indents for soft-wrapped Markdown list items.
@@ -73,76 +44,107 @@ export function stripVisualIndents(
  *       to keep the textarea's caret and the syntax-highlighting overlay in
  *       sync while providing the desired visual indentation.
  */
+export const injectString = (raw: string, maxCharsPerLine: number): string => {
+  if (!raw) return raw
+
+  const listPrefixRegex = /^(\s*)(?:([-+*])|(\d+[.)]))\s+/
+
+  const physicalLines: string[] = []
+
+  const logicalLines = raw.split('\n')
+
+  for (const line of logicalLines) {
+    const prefixMatch = line.match(listPrefixRegex)
+
+    if (!prefixMatch) {
+      physicalLines.push(line)
+      continue
+    }
+
+    const prefix = prefixMatch[0] // bullet incl. trailing space(s)
+    const content = line.slice(prefix.length)
+
+    const spaceForFirstLine = maxCharsPerLine - prefix.length
+
+    if (spaceForFirstLine <= 0 || content.length <= spaceForFirstLine) {
+      physicalLines.push(line)
+      continue
+    }
+
+    // When the content exceeds the available space we wrap at *word*
+    // boundaries to avoid splitting words in the middle.  We use the
+    // "word-wrap" library for this purpose.  The approach is:
+    //   1. Word-wrap the *content* (excluding the list prefix).
+    //   2. Prepend the original prefix to the first wrapped line.
+    //   3. For every subsequent physical line, prefix an equivalent amount
+    //      of en-spaces so that the text aligns visually with the first
+    //      line's content.
+
+    const indent = VISUAL_INDENT_CHAR.repeat(prefix.length)
+
+    // Wrap only the content (without prefix) so that the calculated width
+    // matches the available characters of the *content* section.
+    const wrappedContent = wrap(content, {
+      width: spaceForFirstLine, // identical for first and subsequent lines
+      trim: false,
+      cut: false, // do not split a word unless it exceeds the width itself
+      indent: '', // override word-wrap's default two-space indent
+      newline: '\n',
+    })
+
+    const wrappedLines = wrappedContent.split('\n')
+
+    // First physical line keeps the bullet prefix.
+    physicalLines.push(prefix + wrappedLines[0])
+
+    // Remaining physical lines receive the visual indent.
+    for (let i = 1; i < wrappedLines.length; i++) {
+      physicalLines.push(indent + wrappedLines[i])
+    }
+  }
+
+  return physicalLines.join('\n')
+}
+
+/**
+ * Helper to apply a string transformation and adjust the cursor position
+ * based on how the transformation changed the overall length.
+ */
+function applyTransformWithCursor(
+  raw: string,
+  cursorPos: number,
+  transform: (input: string) => string,
+): { value: string; cursor: number } {
+  const transformedValue = transform(raw)
+  // No change → cursor stays the same
+  if (transformedValue.length === raw.length) {
+    return { value: transformedValue, cursor: cursorPos }
+  }
+  // Otherwise, re-run transform on the prefix up to the original cursor to compute new cursor
+  const transformedPrefix = transform(raw.slice(0, cursorPos))
+  return { value: transformedValue, cursor: transformedPrefix.length }
+}
+
+export function stripVisualIndents(
+  value: string,
+  cursorPos: number,
+): { sanitizedValue: string; sanitizedCursorPos: number } {
+  const { value: sanitizedValue, cursor: sanitizedCursorPos } =
+    applyTransformWithCursor(value, cursorPos, stripString)
+
+  return { sanitizedValue, sanitizedCursorPos }
+}
+
 export function injectVisualIndents(
   rawValue: string,
   rawCursorPos: number,
   maxCharsPerLine: number,
 ): { injectedValue: string; injectedCursorPos: number } {
-  // Core injection logic (ignores cursor)
-  const injectString = (raw: string): string => {
-    if (!raw) return raw
-
-    const listPrefixRegex = /^(\s*)(?:([-+*])|(\d+[.)]))\s+/
-
-    const physicalLines: string[] = []
-
-    const logicalLines = raw.split('\n')
-
-    for (const line of logicalLines) {
-      const prefixMatch = line.match(listPrefixRegex)
-
-      if (!prefixMatch) {
-        physicalLines.push(line)
-        continue
-      }
-
-      const prefix = prefixMatch[0] // bullet incl. trailing space(s)
-      const content = line.slice(prefix.length)
-
-      const spaceForFirstLine = maxCharsPerLine - prefix.length
-
-      if (spaceForFirstLine <= 0 || content.length <= spaceForFirstLine) {
-        physicalLines.push(line)
-        continue
-      }
-
-      // When the content exceeds the available space we wrap at *word*
-      // boundaries to avoid splitting words in the middle.  We use the
-      // "word-wrap" library for this purpose.  The approach is:
-      //   1. Word-wrap the *content* (excluding the list prefix).
-      //   2. Prepend the original prefix to the first wrapped line.
-      //   3. For every subsequent physical line, prefix an equivalent amount
-      //      of en-spaces so that the text aligns visually with the first
-      //      line's content.
-
-      const indent = VISUAL_INDENT_CHAR.repeat(prefix.length)
-
-      // Wrap only the content (without prefix) so that the calculated width
-      // matches the available characters of the *content* section.
-      const wrappedContent = wrap(content, {
-        width: spaceForFirstLine, // identical for first and subsequent lines
-        trim: false,
-        cut: false, // do not split a word unless it exceeds the width itself
-        indent: '', // override word-wrap's default two-space indent
-        newline: '\n',
-      })
-
-      const wrappedLines = wrappedContent.split('\n')
-
-      // First physical line keeps the bullet prefix.
-      physicalLines.push(prefix + wrappedLines[0])
-
-      // Remaining physical lines receive the visual indent.
-      for (let i = 1; i < wrappedLines.length; i++) {
-        physicalLines.push(indent + wrappedLines[i])
-      }
-    }
-
-    return physicalLines.join('\n')
-  }
+  const injectStringWithMaxChars = (raw: string): string =>
+    injectString(raw, maxCharsPerLine)
 
   const { value: injectedValue, cursor: injectedCursorPos } =
-    applyTransformWithCursor(rawValue, rawCursorPos, injectString)
+    applyTransformWithCursor(rawValue, rawCursorPos, injectStringWithMaxChars)
 
   return { injectedValue, injectedCursorPos }
 }
