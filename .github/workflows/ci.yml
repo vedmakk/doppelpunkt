@@ -39,4 +39,4 @@ jobs:
           sleep 5
 
       - name: Accessibility check with pa11y-ci
-        run: bunx pa11y-ci http://localhost:4173/
+        run: bunx pa11y-ci
