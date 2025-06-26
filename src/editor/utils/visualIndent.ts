@@ -20,6 +20,25 @@ export const VISUAL_INDENT_CHAR = '\u2002' // en-space – visually consistent a
 const VISUAL_INDENT_PATTERN = new RegExp(`\n${VISUAL_INDENT_CHAR}+`, 'g')
 
 /**
+ * Helper to apply a string transformation and adjust the cursor position
+ * based on how the transformation changed the overall length.
+ */
+function applyTransformWithCursor(
+  raw: string,
+  cursorPos: number,
+  transform: (input: string) => string,
+): { value: string; cursor: number } {
+  const transformedValue = transform(raw)
+  // No change → cursor stays the same
+  if (transformedValue.length === raw.length) {
+    return { value: transformedValue, cursor: cursorPos }
+  }
+  // Otherwise, re-run transform on the prefix up to the original cursor to compute new cursor
+  const transformedPrefix = transform(raw.slice(0, cursorPos))
+  return { value: transformedValue, cursor: transformedPrefix.length }
+}
+
+/**
  * Removes any artificial visual indents from the supplied string so that the
  * returned value only contains the *logical* Markdown content.
  */
@@ -30,24 +49,10 @@ export function stripVisualIndents(
   const stripString = (raw: string): string =>
     raw.replace(VISUAL_INDENT_PATTERN, '')
 
-  const sanitizedValue = stripString(value)
+  const { value: sanitizedValue, cursor: sanitizedCursorPos } =
+    applyTransformWithCursor(value, cursorPos, stripString)
 
-  // Fast-path: no visual indent present – return original inputs unchanged.
-  if (sanitizedValue.length === value.length) {
-    return {
-      sanitizedValue,
-      sanitizedCursorPos: cursorPos,
-    }
-  }
-
-  const strippedPrefix = stripString(value.slice(0, cursorPos))
-
-  const strippedCursorPos = strippedPrefix.length
-
-  return {
-    sanitizedValue,
-    sanitizedCursorPos: strippedCursorPos,
-  }
+  return { sanitizedValue, sanitizedCursorPos }
 }
 
 /**
@@ -73,9 +78,7 @@ export function injectVisualIndents(
   rawCursorPos: number,
   maxCharsPerLine: number,
 ): { injectedValue: string; injectedCursorPos: number } {
-  // Helper that performs the original injection (without caring about the
-  // caret). We use it twice – once for the full string and once for the
-  // substring up to the caret – to calculate the cursor shift.
+  // Core injection logic (ignores cursor)
   const injectString = (raw: string): string => {
     if (!raw) return raw
 
@@ -138,22 +141,8 @@ export function injectVisualIndents(
     return physicalLines.join('\n')
   }
 
-  // Perform the actual injections.
-  const injectedValue = injectString(rawValue)
-
-  // Fast-path: no visual indent present – return original inputs unchanged.
-  if (injectedValue.length === rawValue.length) {
-    return {
-      injectedValue,
-      injectedCursorPos: rawCursorPos,
-    }
-  }
-
-  // Inject only the part before (and including) the cursor to determine how
-  // many characters were added.
-  const injectedPrefix = injectString(rawValue.slice(0, rawCursorPos))
-
-  const injectedCursorPos = injectedPrefix.length
+  const { value: injectedValue, cursor: injectedCursorPos } =
+    applyTransformWithCursor(rawValue, rawCursorPos, injectString)
 
   return { injectedValue, injectedCursorPos }
 }
