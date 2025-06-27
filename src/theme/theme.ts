@@ -129,7 +129,7 @@ export const LIGHT_THEME: CustomTheme = {
     shadow: 'rgba(0, 0, 0, 0.1)',
     modal: 'rgba(255, 255, 255, 1)',
     modalBackdrop: 'rgba(255, 255, 255, 0.8)',
-    punctuation: 'rgba(156, 109, 255, 0.5)',
+    punctuation: 'rgba(123, 76, 228, 1)',
     editorFocus: 'rgba(156, 109, 255, 0.3)',
   },
   opacity: {
@@ -141,7 +141,7 @@ export const DARK_THEME: CustomTheme = {
   ...BASE_THEME,
   mode: 'dark',
   colors: {
-    primary: 'rgba(156, 109, 255, 1)',
+    primary: 'rgba(165, 122, 255, 1)',
     secondary: 'rgba(200, 200, 200, 0.7)',
     title: 'rgba(255, 255, 255, 1)',
     text: 'rgba(255, 255, 255, 0.87)',
@@ -153,7 +153,7 @@ export const DARK_THEME: CustomTheme = {
     shadow: 'rgba(255, 255, 255, 0.05)',
     modal: 'rgba(44, 44, 44, 1)',
     modalBackdrop: 'rgba(34, 34, 34, 0.9)',
-    punctuation: 'rgba(156, 109, 255, 0.5)',
+    punctuation: 'rgba(165, 122, 255, 1)',
     editorFocus: 'rgba(156, 109, 255, 0.3)',
   },
   opacity: {
