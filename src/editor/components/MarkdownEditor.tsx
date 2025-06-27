@@ -72,7 +72,7 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   backgroundColor: theme.colors.page,
   transition: `background-color ${theme.animations.transition}`,
   '& > pre > *': {
-    transition: `color ${theme.animations.transition}`,
+    transition: `color ${theme.animations.transition}, background-color ${theme.animations.transition}`,
   },
   whiteSpace: 'pre-wrap',
   '& textarea': {
@@ -131,6 +131,7 @@ const CaptureLabel = styled(Label)(({ theme }) => ({
   color: theme.colors.primary,
   padding: theme.spacing(0.5),
   borderRadius: theme.spacing(0.5),
+  transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
   opacity: 0,
   animation: `${fadeInOut} 2s ease-in-out`,
 }))

@@ -1,6 +1,8 @@
 import { useAppSelector } from '../store'
 
-import { selectCustomTheme, selectTheme, TOOLBAR_BREAKPOINT } from './selectors'
+import { selectCustomTheme, selectTheme } from './selectors'
+
+import { TOOLBAR_BREAKPOINT } from './theme'
 
 // WARNING: You should never need to use this hook, it is only needed to
 // initialize Emotionss `ThemeProvider` (inside `App`)
