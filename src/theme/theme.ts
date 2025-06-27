@@ -118,7 +118,7 @@ export const LIGHT_THEME: CustomTheme = {
   mode: 'light',
   colors: {
     primary: 'rgba(156, 109, 255, 1)',
-    secondary: 'rgba(55, 55, 55, 0.5)',
+    secondary: 'rgba(55, 55, 55, 0.7)',
     title: 'rgba(55, 55, 55, 1)',
     text: 'rgba(55, 55, 55, 1)',
     link: 'rgba(55, 55, 55, 1)',
@@ -142,7 +142,7 @@ export const DARK_THEME: CustomTheme = {
   mode: 'dark',
   colors: {
     primary: 'rgba(156, 109, 255, 1)', // Keeping primary color unchanged
-    secondary: 'rgba(200, 200, 200, 0.5)',
+    secondary: 'rgba(200, 200, 200, 0.7)',
     title: 'rgba(255, 255, 255, 1)',
     text: 'rgba(255, 255, 255, 0.87)', // Text is generally lighter in dark themes
     link: 'rgba(255, 255, 255, 0.87)', // Same as text

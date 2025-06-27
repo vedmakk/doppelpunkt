@@ -4,9 +4,11 @@ import styled from '@emotion/styled'
 import { HotkeyId, hotkeys } from '../registry'
 
 import { Label } from '../../app/components/Label'
-import HotkeysInfoItem from './HotkeysInfoItem'
 import { Button } from '../../app/components/Button'
 import { Appear } from '../../app/components/Appear'
+
+import { MutedLabel } from '../../menu/components/MutedLabel'
+import HotkeysInfoItem from './HotkeysInfoItem'
 
 interface Props {
   isEditing: boolean
@@ -62,9 +64,6 @@ export const HotkeysInfo = ({
 }: Props) => {
   return (
     <>
-      <Label size="small" css={(theme) => ({ color: theme.colors.secondary })}>
-        Keyboard Shortcuts
-      </Label>
       <List>
         {hotkeys.map((hk) => (
           <ListItem key={hk.id}>
@@ -97,14 +96,7 @@ export const HotkeysInfo = ({
         </Appear>
       ) : (
         <Appear>
-          <Label
-            size="tiny"
-            css={(theme) => ({
-              color: theme.colors.secondary,
-            })}
-          >
-            Click a shortcut to change.
-          </Label>
+          <MutedLabel size="tiny">Click a shortcut to change.</MutedLabel>
         </Appear>
       )}
     </>

@@ -11,6 +11,8 @@ import { Button } from '../../app/components/Button'
 import Tooltip from '../../app/components/Tooltip'
 import Switch from '../../app/components/Switch'
 import { Label } from '../../app/components/Label'
+import { MutedLabel } from './MutedLabel'
+import { SectionTitle } from './SectionTitle'
 import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 
 interface Props {
@@ -153,12 +155,7 @@ const Toolbar: React.FC<Props> = ({
         <ThemeSwitch size={24} />
       </ToolbarItemContainer>
       <ToolbarItemContainer as="section" aria-label="Editor stats">
-        <Label
-          size="small"
-          css={(theme) => ({ color: theme.colors.secondary })}
-        >
-          Stats
-        </Label>
+        <SectionTitle>Stats</SectionTitle>
         <List>
           <ListItem>
             <Label size="tiny">
@@ -179,17 +176,18 @@ const Toolbar: React.FC<Props> = ({
       </ToolbarItemContainer>
       {hasKeyboard && (
         <ToolbarItemContainer as="aside" aria-label="Keyboard Shortcuts">
+          <SectionTitle>Keyboard Shortcuts</SectionTitle>
           <HotkeysInfo />
         </ToolbarItemContainer>
       )}
       <ToolbarItemContainer as="section" aria-label="Editor info">
-        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+        <MutedLabel size="tiny">
           Everything you write stays in your browser. No data is ever uploaded
           or tracked.
-        </Label>
-        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+        </MutedLabel>
+        <MutedLabel size="tiny">
           This project is open source under the MIT License.
-        </Label>
+        </MutedLabel>
         <Button
           href="https://github.com/vedmakk/doppelpunkt"
           label="GitHub"
@@ -202,10 +200,10 @@ const Toolbar: React.FC<Props> = ({
         />
       </ToolbarItemContainer>
       <ToolbarItemContainer as="footer" aria-label="Editor footer">
-        <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
+        <MutedLabel size="tiny">
           © 2025 <br />
           Jan Mittelman
-        </Label>
+        </MutedLabel>
       </ToolbarItemContainer>
     </ToolbarContainer>
   )

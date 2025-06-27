@@ -6,6 +6,7 @@ import { useStoredHotkey } from '../hooks'
 import { HotkeyDefinition, HotkeyId } from '../registry'
 
 import { Label } from '../../app/components/Label'
+import { MutedLabel } from '../../menu/components/MutedLabel'
 import KbdShortcut from './KbdShortcut'
 
 interface Props {
@@ -55,9 +56,7 @@ const HotkeysInfoItem = ({
           disabled={isEditing}
         />
       </Container>
-      <Label size="tiny" css={(theme) => ({ color: theme.colors.secondary })}>
-        {hotkey.description}
-      </Label>
+      <MutedLabel size="tiny">{hotkey.description}</MutedLabel>
     </LabelContainer>
   )
 }
