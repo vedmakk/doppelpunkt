@@ -22,7 +22,7 @@ interface Props {
 
 const List = styled.ul(({ theme }) => ({
   listStyle: 'none',
-  margin: 0,
+  margin: `0 0 ${theme.spacing(1)} 0`,
   padding: 0,
   display: 'flex',
   flexDirection: 'column',
@@ -97,7 +97,9 @@ export const HotkeysInfo = ({
         </Appear>
       ) : (
         <Appear>
-          <MutedLabel size="tiny">Click a shortcut to change.</MutedLabel>
+          <MutedLabel size="tiny" css={{ fontStyle: 'italic' }}>
+            Click shortcut to adjust.
+          </MutedLabel>
         </Appear>
       )}
     </>

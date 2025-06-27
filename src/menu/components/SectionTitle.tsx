@@ -11,7 +11,7 @@ interface SectionTitleProps {
 const SectionLabel = styled(Label)(({ theme }) => ({
   color: theme.colors.secondary,
   fontWeight: 600,
-  margin: 0,
+  margin: `0 0 ${theme.spacing(1)} 0`,
 }))
 
 export const SectionTitle: React.FC<SectionTitleProps> = ({
