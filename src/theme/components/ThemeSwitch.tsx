@@ -93,6 +93,8 @@ export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
               viewBox="0 0 48 48"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              focusable="false"
             >
               <g id="sun">
                 <path
@@ -112,6 +114,8 @@ export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
               viewBox="0 0 48 48"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              focusable="false"
             >
               <g id="moon">
                 <path
