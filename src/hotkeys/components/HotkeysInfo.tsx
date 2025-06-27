@@ -42,6 +42,7 @@ const EditContainer = styled.div(({ theme }) => ({
   padding: theme.spacing(1),
   marginTop: theme.spacing(1),
   borderRadius: theme.spacing(1),
+  transition: `background-color ${theme.animations.transition}`,
 }))
 
 const EditButtonsContainer = styled.div(({ theme }) => ({

@@ -117,13 +117,13 @@ export const LIGHT_THEME: CustomTheme = {
   ...BASE_THEME,
   mode: 'light',
   colors: {
-    primary: 'rgba(156, 109, 255, 1)',
+    primary: 'rgba(123, 76, 228, 1)',
     secondary: 'rgba(55, 55, 55, 0.7)',
     title: 'rgba(55, 55, 55, 1)',
     text: 'rgba(55, 55, 55, 1)',
     link: 'rgba(55, 55, 55, 1)',
     backdrop: 'rgba(0, 0, 0, 0.075)',
-    paper: 'rgba(156, 109, 255, 0.1)',
+    paper: 'rgba(241, 235, 255, 1)',
     background: 'rgb(248, 248, 248)',
     page: 'rgba(255, 255, 255, 1)',
     shadow: 'rgba(0, 0, 0, 0.1)',
@@ -141,14 +141,14 @@ export const DARK_THEME: CustomTheme = {
   ...BASE_THEME,
   mode: 'dark',
   colors: {
-    primary: 'rgba(156, 109, 255, 1)', // Keeping primary color unchanged
+    primary: 'rgba(156, 109, 255, 1)',
     secondary: 'rgba(200, 200, 200, 0.7)',
     title: 'rgba(255, 255, 255, 1)',
-    text: 'rgba(255, 255, 255, 0.87)', // Text is generally lighter in dark themes
-    link: 'rgba(255, 255, 255, 0.87)', // Same as text
-    backdrop: 'rgba(255, 255, 255, 0.1)', // A lighter backdrop for dark theme
-    paper: 'rgba(156, 109, 255, 0.2)', // A slightly more prominent shade for paper in dark theme
-    background: 'rgba(34, 34, 34, 1)', // Dark grey background color
+    text: 'rgba(255, 255, 255, 0.87)',
+    link: 'rgba(255, 255, 255, 0.87)',
+    backdrop: 'rgba(255, 255, 255, 0.1)',
+    paper: 'rgba(19, 0, 61, 1)',
+    background: 'rgba(34, 34, 34, 1)',
     page: 'rgba(44, 44, 44, 1)',
     shadow: 'rgba(255, 255, 255, 0.05)',
     modal: 'rgba(44, 44, 44, 1)',
