@@ -55,10 +55,7 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   [theme.breakpoints.toolbar]: {
     width: theme.layout.pageWidth,
     minHeight: theme.layout.pageHeight,
-    boxShadow:
-      theme.mode === 'dark'
-        ? `none`
-        : `0 0 ${theme.spacing(1)} 0 ${theme.colors.shadow}`,
+    boxShadow: `0 0 ${theme.spacing(1)} 0 ${theme.colors.shadow}`,
     borderRadius: theme.spacing(0.5),
   },
   '@media print': {
