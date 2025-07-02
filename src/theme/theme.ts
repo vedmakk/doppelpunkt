@@ -143,9 +143,9 @@ export const DARK_THEME: CustomTheme = {
   colors: {
     primary: '#9c6dff',
     secondary: 'rgba(200, 200, 200, 0.7)',
-    title: '#ffffff',
-    text: '#ffffff',
-    link: '#ffffff',
+    title: '#e4e4e4',
+    text: '#e4e4e4',
+    link: '#e4e4e4',
     backdrop: 'rgba(255, 255, 255, 0.1)',
     paper: '#281c43',
     background: '#1c1c1c',
