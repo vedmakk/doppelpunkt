@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import {
+  FloatingFocusManager,
   FloatingPortal,
   autoUpdate,
   useDismiss,
@@ -81,25 +82,33 @@ export const Modal: React.FC<Props> = ({
   if (!isOpen) return null
 
   return (
-    <FloatingPortal id="floating-portal">
-      <Overlay onClick={onClose}>
-        <ModalContainer
-          ref={refs.setFloating}
-          {...getFloatingProps({
-            onClick: (e: React.MouseEvent) => e.stopPropagation(),
-          })}
-          aria-modal="true"
-          aria-label={title}
-        >
-          {title && (
-            <Header>
-              <Title>{title}</Title>
-              <Button label="Close" onClick={onClose} />
-            </Header>
-          )}
-          <Body>{children}</Body>
-        </ModalContainer>
-      </Overlay>
+    <FloatingPortal id="modal-portal">
+      <FloatingFocusManager
+        context={context}
+        guards={false}
+        modal
+        returnFocus
+        outsideElementsInert
+      >
+        <Overlay onClick={onClose}>
+          <ModalContainer
+            ref={refs.setFloating}
+            {...getFloatingProps({
+              onClick: (e: React.MouseEvent) => e.stopPropagation(),
+            })}
+            aria-modal="true"
+            aria-label={title}
+          >
+            {title && (
+              <Header>
+                <Title>{title}</Title>
+                <Button label="Close" onClick={onClose} />
+              </Header>
+            )}
+            <Body>{children}</Body>
+          </ModalContainer>
+        </Overlay>
+      </FloatingFocusManager>
     </FloatingPortal>
   )
 }
