@@ -12,8 +12,10 @@ import { Button } from '../../app/components/Button'
 
 interface Props {
   readonly isOpen: boolean
+  readonly shouldRender: boolean
   readonly activePage: SettingsPage
   readonly onClose: () => void
+  readonly setShouldRender: (shouldRender: boolean) => void
   readonly onChangePage: (page: SettingsPage) => void
   readonly autoSaveEnabled: boolean
   readonly onToggleAutoSave: () => void
@@ -54,14 +56,22 @@ const Col = styled.div(({ theme }) => ({
 
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
+  shouldRender,
   activePage,
   onClose,
+  setShouldRender,
   onChangePage,
   autoSaveEnabled,
   onToggleAutoSave,
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Settings">
+    <Modal
+      isOpen={isOpen}
+      shouldRender={shouldRender}
+      setShouldRender={setShouldRender}
+      onClose={onClose}
+      title="Settings"
+    >
       <Container>
         <Nav aria-label="Settings pages">
           <Button

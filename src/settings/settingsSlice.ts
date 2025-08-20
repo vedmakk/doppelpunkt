@@ -4,12 +4,14 @@ export type SettingsPage = 'general' | 'hotkeys'
 
 export interface SettingsState {
   readonly isOpen: boolean
+  readonly shouldRender: boolean
   readonly activePage: SettingsPage
   readonly activeSection?: string
 }
 
 const initialState: SettingsState = {
   isOpen: false,
+  shouldRender: false,
   activePage: 'general',
   activeSection: undefined,
 }
@@ -29,6 +31,7 @@ const settingsSlice = createSlice({
       return {
         ...state,
         isOpen: true,
+        shouldRender: true,
         activePage: page,
         activeSection: section,
       }
@@ -38,6 +41,12 @@ const settingsSlice = createSlice({
         ...state,
         isOpen: false,
         activeSection: undefined,
+      }
+    },
+    setShouldRender(state, action: PayloadAction<boolean>) {
+      return {
+        ...state,
+        shouldRender: action.payload,
       }
     },
     setActivePage(state, action: PayloadAction<SettingsPage>) {
@@ -59,6 +68,7 @@ export const settingsReducer = settingsSlice.reducer
 export const {
   openSettings,
   closeSettings,
+  setShouldRender,
   setActivePage,
   clearActiveSection,
 } = settingsSlice.actions

@@ -1,8 +1,17 @@
-import { useAppSelector, RootState } from '../store'
+import { useAppSelector } from '../store'
+
 import { SettingsPage } from './settingsSlice'
 
-export const useIsSettingsOpen = () =>
-  useAppSelector((state: RootState) => state.settings.isOpen)
+import {
+  selectIsSettingsOpen,
+  selectShouldRenderSettings,
+  selectSettingsActivePage,
+} from './selectors'
+
+export const useIsSettingsOpen = () => useAppSelector(selectIsSettingsOpen)
 
 export const useActiveSettingsPage = (): SettingsPage =>
-  useAppSelector((state: RootState) => state.settings.activePage)
+  useAppSelector(selectSettingsActivePage)
+
+export const useShouldRenderSettings = () =>
+  useAppSelector(selectShouldRenderSettings)

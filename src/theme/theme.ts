@@ -128,7 +128,7 @@ export const LIGHT_THEME: CustomTheme = {
     page: '#ffffff',
     shadow: 'rgba(0, 0, 0, 0.1)',
     modal: '#ffffff',
-    modalBackdrop: 'rgba(255, 255, 255, 0.8)',
+    modalBackdrop: 'rgba(200, 200, 200, 0.7)',
     punctuation: '#7f42ff',
     editorFocus: 'rgba(156, 109, 255, 0.3)',
   },

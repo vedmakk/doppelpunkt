@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from '@emotion/styled'
+import { keyframes } from '@emotion/react'
 import {
   FloatingFocusManager,
   FloatingPortal,
@@ -13,12 +14,35 @@ import { Button } from './Button'
 
 interface Props {
   readonly isOpen: boolean
+  readonly shouldRender: boolean
   readonly onClose: () => void
+  readonly setShouldRender: (shouldRender: boolean) => void
   readonly title?: string
   readonly children: React.ReactNode
 }
 
-const Overlay = styled.div(({ theme }) => ({
+// Fade-in background animation
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`
+// Fade-out background animation
+const fadeOut = keyframes`
+  from { opacity: 1; }
+  to { opacity: 0; }
+`
+// Scale-up animation for slider container
+const scaleUp = keyframes`
+  from { opacity: 0; transform: scale(0.44); }
+  to { opacity: 1; transform: scale(1); }
+`
+// Scale-down animation for slider container
+const scaleDown = keyframes`
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.44); }
+`
+
+const Overlay = styled.div<{ isOpen: boolean }>(({ theme, isOpen }) => ({
   position: 'fixed',
   inset: 0,
   backgroundColor: theme.colors.modalBackdrop,
@@ -27,9 +51,10 @@ const Overlay = styled.div(({ theme }) => ({
   justifyContent: 'center',
   zIndex: 1000,
   transition: `background-color ${theme.animations.transition}`,
+  animation: `${isOpen ? fadeIn : fadeOut} ${theme.animations.transition} forwards`,
 }))
 
-const ModalContainer = styled.div(({ theme }) => ({
+const ModalContainer = styled.div<{ isOpen: boolean }>(({ theme, isOpen }) => ({
   backgroundColor: theme.colors.modal,
   color: theme.colors.text,
   border: `1px solid ${theme.colors.primary}`,
@@ -39,6 +64,7 @@ const ModalContainer = styled.div(({ theme }) => ({
   maxHeight: '80vh',
   overflow: 'auto',
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
+  animation: `${isOpen ? scaleUp : scaleDown} ${theme.animations.transition} forwards`,
 }))
 
 const Header = styled.div(({ theme }) => ({
@@ -60,7 +86,9 @@ const Body = styled.div(({ theme }) => ({
 
 export const Modal: React.FC<Props> = ({
   isOpen,
+  shouldRender,
   onClose,
+  setShouldRender,
   title,
   children,
 }) => {
@@ -79,7 +107,13 @@ export const Modal: React.FC<Props> = ({
   const role = useRole(context, { role: 'dialog' })
   const { getFloatingProps } = useInteractions([dismiss, role])
 
-  if (!isOpen) return null
+  const handleAnimationEnd = useCallback(() => {
+    if (!isOpen) {
+      setShouldRender(false)
+    }
+  }, [isOpen, setShouldRender])
+
+  if (!shouldRender) return null
 
   return (
     <FloatingPortal id="modal-portal">
@@ -90,14 +124,16 @@ export const Modal: React.FC<Props> = ({
         returnFocus
         outsideElementsInert
       >
-        <Overlay onClick={onClose}>
+        <Overlay isOpen={isOpen} onClick={onClose}>
           <ModalContainer
+            isOpen={isOpen}
             ref={refs.setFloating}
             {...getFloatingProps({
               onClick: (e: React.MouseEvent) => e.stopPropagation(),
             })}
             aria-modal="true"
             aria-label={title}
+            onAnimationEnd={handleAnimationEnd}
           >
             {title && (
               <Header>
