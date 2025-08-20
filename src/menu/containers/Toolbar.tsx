@@ -1,21 +1,17 @@
 import React, { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 
-import { clear, load, toggleAutoSave } from '../../editor/editorSlice'
+import { clear, load } from '../../editor/editorSlice'
 import { closeMenu } from '../menuSlice'
+import { openSettings } from '../../settings/settingsSlice'
 
-import {
-  useEditorText,
-  useAutoSaveEnabled,
-  useEditorContentStats,
-} from '../../editor/hooks'
+import { useEditorText, useEditorContentStats } from '../../editor/hooks'
 import { useFullMenuWidth } from '../../theme/hooks'
 
 import ToolbarComponent from '../components/Toolbar'
 
 const Toolbar: React.FC = () => {
   const content = useEditorText()
-  const autoSaveEnabled = useAutoSaveEnabled()
   const stats = useEditorContentStats()
 
   const isFullMenuWidth = useFullMenuWidth()
@@ -41,17 +37,26 @@ const Toolbar: React.FC = () => {
     [dispatch, isFullMenuWidth],
   )
 
-  const handleToggleAutoSave = useCallback(
-    () => dispatch(toggleAutoSave(!autoSaveEnabled)),
-    [dispatch, autoSaveEnabled],
+  const handleOpenSettings = useCallback(
+    () => dispatch(openSettings({ page: 'general' })),
+    [dispatch],
+  )
+  const handleOpenAutoSaveSettings = useCallback(
+    () => dispatch(openSettings({ page: 'general', section: 'autoSave' })),
+    [dispatch],
+  )
+  const handleOpenHotkeysSettings = useCallback(
+    () => dispatch(openSettings({ page: 'hotkeys' })),
+    [dispatch],
   )
 
   return (
     <ToolbarComponent
       content={content}
-      autoSaveEnabled={autoSaveEnabled}
       stats={stats}
-      onToggleAutoSave={handleToggleAutoSave}
+      onOpenSettings={handleOpenSettings}
+      onOpenAutoSaveSettings={handleOpenAutoSaveSettings}
+      onOpenHotkeysSettings={handleOpenHotkeysSettings}
       onNew={handleNew}
       onOpen={handleOpen}
     />

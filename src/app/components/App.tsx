@@ -3,6 +3,7 @@ import styled from '@emotion/styled'
 
 import Menu from '../../menu/containers/Menu'
 import MarkdownEditor from '../../editor/containers/MarkdownEditor'
+import SettingsModal from '../../settings/containers/SettingsModal'
 
 const AppContainer = styled.div({
   display: 'flex',
@@ -34,6 +35,7 @@ export const App: React.FC = () => (
         <MarkdownEditor />
       </main>
       <Menu />
+      <SettingsModal />
     </LayoutContainer>
   </AppContainer>
 )

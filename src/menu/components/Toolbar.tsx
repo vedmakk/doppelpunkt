@@ -4,22 +4,19 @@ import styled from '@emotion/styled'
 import { EditorStats } from '../../shared/types'
 
 import { HotkeyId } from '../../hotkeys/registry'
-import { useCustomHotkey, useHasKeyboard } from '../../hotkeys/hooks'
+import { useCustomHotkey } from '../../hotkeys/hooks'
 
-import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { Button } from '../../app/components/Button'
-import Tooltip from '../../app/components/Tooltip'
-import Switch from '../../app/components/Switch'
 import { Label } from '../../app/components/Label'
 import { MutedLabel } from './MutedLabel'
 import { SectionTitle } from './SectionTitle'
-import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 
 interface Props {
   content: string
-  autoSaveEnabled: boolean
   stats: EditorStats
-  onToggleAutoSave: () => void
+  onOpenSettings: () => void
+  onOpenAutoSaveSettings: () => void
+  onOpenHotkeysSettings: () => void
   onNew: () => void
   onOpen: (text: string) => void
 }
@@ -56,15 +53,14 @@ const HiddenInput = styled.input({
 
 const Toolbar: React.FC<Props> = ({
   content,
-  autoSaveEnabled,
   stats,
-  onToggleAutoSave,
+  onOpenSettings,
+  onOpenAutoSaveSettings,
+  onOpenHotkeysSettings,
   onNew,
   onOpen,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const hasKeyboard = useHasKeyboard()
 
   const handleNew = useCallback(() => {
     if (
@@ -137,22 +133,11 @@ const Toolbar: React.FC<Props> = ({
         <Button label="Export" onClick={handleExport} />
         <Button label="PDF" onClick={handlePDF} />
       </ToolbarItemContainer>
-      <ToolbarItemContainer
-        as="nav"
-        aria-label="Editor settings"
-        css={(theme) => ({
-          gap: theme.spacing(2),
-        })}
-      >
-        <Tooltip label="Enabling this will save your content in your browser’s local storage, so you can pick up where you left off. Nothing is shared or stored online – everything stays on your device.">
-          <Switch
-            label="Auto-save"
-            checked={autoSaveEnabled}
-            onChange={onToggleAutoSave}
-            size={24}
-          />
-        </Tooltip>
-        <ThemeSwitch size={24} />
+      <ToolbarItemContainer as="nav" aria-label="Editor settings">
+        <SectionTitle>Settings</SectionTitle>
+        <Button label="General" onClick={onOpenSettings} />
+        <Button label="Auto-save" onClick={onOpenAutoSaveSettings} />
+        <Button label="Shortcuts" onClick={onOpenHotkeysSettings} />
       </ToolbarItemContainer>
       <ToolbarItemContainer as="section" aria-label="Editor stats">
         <SectionTitle>Stats</SectionTitle>
@@ -174,12 +159,6 @@ const Toolbar: React.FC<Props> = ({
           </ListItem>
         </List>
       </ToolbarItemContainer>
-      {hasKeyboard && (
-        <ToolbarItemContainer as="aside" aria-label="Keyboard Shortcuts">
-          <SectionTitle>Keyboard Shortcuts</SectionTitle>
-          <HotkeysInfo />
-        </ToolbarItemContainer>
-      )}
       <ToolbarItemContainer as="section" aria-label="Editor info">
         <MutedLabel size="tiny">
           Everything you write stays in your browser. No data is ever uploaded
