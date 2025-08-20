@@ -34,6 +34,10 @@ const Nav = styled.nav(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  [theme.breakpoints.toolbar]: {
+    marginBottom: 0,
+  },
 }))
 
 const Page = styled.section(({ theme }) => ({

@@ -132,7 +132,7 @@ export const ThemeSwitch = ({ selectedTheme, onToggleTheme, size }: Props) => {
       </IconButtonWrapper>
       <Appear key={selectedTheme}>
         <InteractiveLabel
-          label={selectedTheme === 'light' ? 'Light' : 'Dark'}
+          label={selectedTheme === 'light' ? 'Light theme' : 'Dark theme'}
         />
       </Appear>
     </StyledButtonContainer>
