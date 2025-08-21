@@ -76,7 +76,10 @@ export const cloudListenerMiddleware = createListenerMiddleware()
 async function attachAuthListener(dispatch: (a: any) => void) {
   const { auth } = await getFirebase()
   const { onAuthStateChanged } = await import('firebase/auth')
-  if (authUnsubscribe) authUnsubscribe()
+  if (authUnsubscribe) {
+    authUnsubscribe()
+    authUnsubscribe = null
+  }
   authUnsubscribe = onAuthStateChanged(auth, (user) => {
     if (user) {
       dispatch(setCloudUser(serializeUser(user)))
@@ -209,7 +212,10 @@ cloudListenerMiddleware.startListening({
       } catch {
         /* ignore */
       }
-      if (authUnsubscribe) authUnsubscribe()
+      if (authUnsubscribe) {
+        authUnsubscribe()
+        authUnsubscribe = null
+      }
       Object.values(snapshotUnsubscribes).forEach((fn) => fn && fn())
       snapshotUnsubscribes = {}
       api.dispatch(setCloudUser(null))
@@ -227,6 +233,10 @@ cloudListenerMiddleware.startListening({
       const { GoogleAuthProvider, signInWithPopup } = await import(
         'firebase/auth'
       )
+      // Ensure auth listener is attached so UI reflects auth changes immediately
+      if (!authUnsubscribe) {
+        await attachAuthListener(api.dispatch)
+      }
       const provider = new GoogleAuthProvider()
       await signInWithPopup(auth, provider)
     } catch {
@@ -276,7 +286,6 @@ cloudListenerMiddleware.startListening({
                 : 'Failed to delete account',
             ),
           )
-          if (authUnsubscribe) authUnsubscribe()
           Object.values(snapshotUnsubscribes).forEach((fn) => fn && fn())
           snapshotUnsubscribes = {}
           api.dispatch(setCloudUser(null))
@@ -291,7 +300,6 @@ cloudListenerMiddleware.startListening({
       } catch {
         /* ignore */
       }
-      if (authUnsubscribe) authUnsubscribe()
       Object.values(snapshotUnsubscribes).forEach((fn) => fn && fn())
       snapshotUnsubscribes = {}
       api.dispatch(setCloudUser(null))
