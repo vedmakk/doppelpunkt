@@ -2,6 +2,10 @@ import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { editorReducer } from './editor/editorSlice'
+import {
+  editorListenerMiddleware,
+  hydrateEditorStateFromStorage,
+} from './editor/persistence'
 import { themeReducer } from './theme/themeSlice'
 import { menuReducer } from './menu/menuSlice'
 import { hotkeysReducer } from './hotkeys/hotkeysSlice'
@@ -16,6 +20,9 @@ export const createStore = () =>
       hotkeys: hotkeysReducer,
       settings: settingsReducer,
     },
+    preloadedState: hydrateEditorStateFromStorage(),
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().prepend(editorListenerMiddleware.middleware),
   })
 
 export const store = createStore()
