@@ -133,12 +133,6 @@ const Toolbar: React.FC<Props> = ({
         <Button label="Export" onClick={handleExport} />
         <Button label="PDF" onClick={handlePDF} />
       </ToolbarItemContainer>
-      <ToolbarItemContainer as="nav" aria-label="Editor settings">
-        <SectionTitle>Settings</SectionTitle>
-        <Button label="General" onClick={onOpenSettings} />
-        <Button label="Auto-save" onClick={onOpenAutoSaveSettings} />
-        <Button label="Shortcuts" onClick={onOpenHotkeysSettings} />
-      </ToolbarItemContainer>
       <ToolbarItemContainer as="section" aria-label="Editor stats">
         <SectionTitle>Stats</SectionTitle>
         <List>
@@ -159,7 +153,13 @@ const Toolbar: React.FC<Props> = ({
           </ListItem>
         </List>
       </ToolbarItemContainer>
-      <ToolbarItemContainer as="section" aria-label="Editor info">
+      <ToolbarItemContainer as="nav" aria-label="Settings">
+        <SectionTitle>Settings</SectionTitle>
+        <Button label="General" onClick={onOpenSettings} />
+        <Button label="Auto-save" onClick={onOpenAutoSaveSettings} />
+        <Button label="Shortcuts" onClick={onOpenHotkeysSettings} />
+      </ToolbarItemContainer>
+      <ToolbarItemContainer as="section" aria-label="Project info">
         <MutedLabel size="tiny">
           Everything you write stays in your browser. No data is ever uploaded
           or tracked.
@@ -178,7 +178,7 @@ const Toolbar: React.FC<Props> = ({
           externalLink
         />
       </ToolbarItemContainer>
-      <ToolbarItemContainer as="footer" aria-label="Editor footer">
+      <ToolbarItemContainer as="footer" aria-label="Footer">
         <MutedLabel size="tiny">
           © 2025 <br />
           Jan Mittelman
