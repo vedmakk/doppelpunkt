@@ -128,7 +128,12 @@ async function attachSnapshotListeners(
 }
 
 cloudListenerMiddleware.startListening({
-  predicate: (_action, currentState, previousState) => {
+  predicate: (action, currentState, previousState) => {
+    // Ignore cloud slice actions to prevent recursive triggering from within effects
+    const actionType = (action as any)?.type
+    if (typeof actionType === 'string' && actionType.startsWith('cloud/')) {
+      return false
+    }
     // Activate middleware only if cloud enabled
     const wasEnabled = (previousState as any)?.cloud?.enabled
     const isEnabled = (currentState as any).cloud?.enabled
@@ -140,7 +145,9 @@ cloudListenerMiddleware.startListening({
     const state: any = api.getState()
     if (!state?.cloud?.enabled) return
     if (authUnsubscribe) return
-    api.dispatch(setCloudStatus('initializing'))
+    if (state.cloud.status !== 'initializing') {
+      api.dispatch(setCloudStatus('initializing'))
+    }
     try {
       await attachAuthListener(api.dispatch)
       // If user opened via email link, complete sign-in
