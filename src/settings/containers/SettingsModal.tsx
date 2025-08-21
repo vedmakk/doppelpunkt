@@ -16,7 +16,11 @@ import {
 
 import { useAutoSaveEnabled } from '../../editor/hooks'
 import { toggleAutoSave } from '../../editor/editorSlice'
-import { useCloudEnabled, useCloudUser } from '../../cloudSync/hooks'
+import {
+  useCloudEnabled,
+  useCloudStatus,
+  useCloudUser,
+} from '../../cloudSync/hooks'
 import {
   requestEmailLinkSignIn,
   requestGoogleSignIn,
@@ -31,6 +35,7 @@ const SettingsModal: React.FC = () => {
   const autoSaveEnabled = useAutoSaveEnabled()
   const cloudEnabled = useCloudEnabled()
   const cloudUser = useCloudUser()
+  const cloudStatus = useCloudStatus()
 
   const dispatch = useDispatch()
 
@@ -86,6 +91,7 @@ const SettingsModal: React.FC = () => {
       onSignInWithGoogle={onSignInWithGoogle}
       onSignInWithEmailLink={onSignInWithEmailLink}
       onSignOut={onSignOut}
+      cloudStatus={cloudStatus}
     />
   )
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from '@emotion/styled'
 
 import Modal from '../../app/components/Modal'
@@ -6,9 +6,12 @@ import Switch from '../../app/components/Switch'
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 
 import { SettingsPage } from '../settingsSlice'
+import { CloudStatus } from '../../cloudSync/cloudSlice'
+
 import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 import { MutedLabel } from '../../menu/components/MutedLabel'
 import { Button } from '../../app/components/Button'
+import { Label } from '../../app/components/Label'
 
 interface Props {
   readonly isOpen: boolean
@@ -30,6 +33,7 @@ interface Props {
   readonly onSignInWithGoogle: () => void
   readonly onSignInWithEmailLink: (email: string) => void
   readonly onSignOut: () => void
+  readonly cloudStatus: CloudStatus
 }
 
 const Container = styled.div(({ theme }) => ({
@@ -69,29 +73,45 @@ const Col = styled.div(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
-const EmailLinkSignIn: React.FC<{ onSubmitEmail: (email: string) => void }> = ({
-  onSubmitEmail,
-}) => {
-  const [email, setEmail] = useState('')
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        if (email) onSubmitEmail(email)
-      }}
-      style={{ display: 'flex', gap: 8, alignItems: 'center' }}
-    >
-      <input
-        type="email"
-        placeholder="Email for magic link"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ padding: '8px 10px' }}
-      />
-      <Button label="Send link" onClick={() => email && onSubmitEmail(email)} />
-    </form>
-  )
-}
+// const EmailLinkSignIn: React.FC<{ onSubmitEmail: (email: string) => void }> = ({
+//   onSubmitEmail,
+// }) => {
+//   const [email, setEmail] = useState('')
+//   return (
+//     <form
+//       onSubmit={(e) => {
+//         e.preventDefault()
+//         if (email) onSubmitEmail(email)
+//       }}
+//       css={(theme) => ({
+//         display: 'flex',
+//         gap: theme.spacing(2),
+//         alignItems: 'center',
+//       })}
+//     >
+//       <input
+//         type="email"
+//         placeholder="Email for magic link"
+//         value={email}
+//         onChange={(e) => setEmail(e.target.value)}
+//         css={(theme) => ({
+//           padding: `${theme.spacing(1)}`,
+//           fontFamily: 'inherit',
+//           fontSize: theme.fontSize.small,
+//           border: `1px solid ${theme.colors.secondary}`,
+//           borderRadius: theme.spacing(1),
+//           backgroundColor: theme.colors.background,
+//           color: theme.colors.text,
+//           outline: 'none',
+//           '&:focus': {
+//             borderColor: theme.colors.primary,
+//           },
+//         })}
+//       />
+//       <Button label="Send link" onClick={() => email && onSubmitEmail(email)} />
+//     </form>
+//   )
+// }
 
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
@@ -106,8 +126,9 @@ export const SettingsModal: React.FC<Props> = ({
   onToggleCloud,
   cloudUser,
   onSignInWithGoogle,
-  onSignInWithEmailLink,
+  //onSignInWithEmailLink,
   onSignOut,
+  cloudStatus,
 }) => {
   return (
     <Modal
@@ -162,41 +183,63 @@ export const SettingsModal: React.FC<Props> = ({
                   size={24}
                 />
                 <MutedLabel size="tiny">
-                  Sync your documents across devices using Firebase.
-                  Authentication is loaded only when enabled.
+                  Enabling this will sync your documents across devices using
+                  cloud services. You will need to sign in with your account.
+                  Cookies will be stored in your browser.
                 </MutedLabel>
                 {cloudEnabled && (
-                  <div
-                    style={{ display: 'flex', gap: 12, alignItems: 'center' }}
-                  >
-                    {cloudUser ? (
-                      <>
-                        <span>
-                          Signed in as{' '}
-                          {cloudUser.displayName ||
-                            cloudUser.email ||
-                            cloudUser.uid}
-                        </span>
-                        <Button label="Sign out" onClick={onSignOut} />
-                      </>
-                    ) : (
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: 8,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Button
-                          label="Sign in with Google"
-                          onClick={onSignInWithGoogle}
-                        />
-                        <EmailLinkSignIn
-                          onSubmitEmail={onSignInWithEmailLink}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <>
+                    <div
+                      css={(theme) => ({
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: theme.spacing(2),
+                        alignItems: 'flex-start',
+                        marginTop: theme.spacing(1),
+                      })}
+                    >
+                      <MutedLabel size="tiny">
+                        Status:{' '}
+                        {cloudStatus === 'connected'
+                          ? 'Connected to cloud (Syncing)'
+                          : 'Not connected to cloud (Not syncing)'}
+                      </MutedLabel>
+                      {cloudUser ? (
+                        <div
+                          css={(theme) => ({
+                            display: 'flex',
+                            gap: theme.spacing(2),
+                            alignItems: 'center',
+                          })}
+                        >
+                          <Label size="small">
+                            Signed in as{' '}
+                            {cloudUser.displayName ||
+                              cloudUser.email ||
+                              cloudUser.uid}
+                          </Label>
+                          <Button label="Sign out" onClick={onSignOut} />
+                        </div>
+                      ) : (
+                        <div
+                          css={(theme) => ({
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: theme.spacing(2),
+                            alignItems: 'flex-start',
+                          })}
+                        >
+                          <Button
+                            label="Sign in with Google"
+                            onClick={onSignInWithGoogle}
+                          />
+                          {/* <EmailLinkSignIn
+                            onSubmitEmail={onSignInWithEmailLink}
+                          /> */}
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </Col>
             </Row>

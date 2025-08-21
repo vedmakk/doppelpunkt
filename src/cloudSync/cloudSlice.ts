@@ -9,9 +9,11 @@ export interface CloudUserInfo {
   photoURL?: string | null
 }
 
+export type CloudStatus = 'idle' | 'initializing' | 'connected' | 'error'
+
 export interface CloudState {
   enabled: boolean
-  status: 'idle' | 'initializing' | 'connected' | 'error'
+  status: CloudStatus
   user: CloudUserInfo | null
   error?: string
 }
