@@ -18,7 +18,11 @@ export async function getFirebase(): Promise<FirebaseServices> {
     return { app: _app, auth: _auth, db: _db }
   }
 
-  const [{ initializeApp }, { getAuth }, { getFirestore }] = await Promise.all([
+  const [
+    { initializeApp },
+    { getAuth },
+    { initializeFirestore, persistentLocalCache, persistentMultipleTabManager },
+  ] = await Promise.all([
     import('firebase/app'),
     import('firebase/auth'),
     import('firebase/firestore'),
@@ -36,7 +40,11 @@ export async function getFirebase(): Promise<FirebaseServices> {
 
   _app = initializeApp(config)
   _auth = getAuth(_app)
-  _db = getFirestore(_app)
+  _db = initializeFirestore(_app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
+  })
 
   // Connect to emulators during development if configured
   try {

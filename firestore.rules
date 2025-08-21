@@ -11,9 +11,16 @@ service cloud.firestore {
       allow write: if request.auth != null
                    && request.auth.uid == userId
                    && (docId == 'editor' || docId == 'todo')
-                   && request.resource.data.keys().hasOnly(['text', 'updatedAt', 'version'])
+                   && request.resource.data.keys().hasOnly(['text', 'updatedAt', 'rev'])
                    && request.resource.data.text is string
-                   && request.resource.data.version is int;
+                   && request.resource.data.rev is int
+                   // Enforce optimistic locking: rev must increment by exactly 1
+                   && (
+                     // If the document already exists, require +1 increment
+                     (resource.data.rev is int && request.resource.data.rev == resource.data.rev + 1)
+                     // If creating a new document, require rev == 1
+                     || (!(resource.data.rev is int) && request.resource.data.rev == 1)
+                   );
 
       // Allow deletes only to the known docs and authenticated user
       allow delete: if request.auth != null

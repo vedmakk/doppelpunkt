@@ -35,6 +35,7 @@ interface Props {
   readonly onSignOut: () => void
   readonly onDeleteUser: () => void
   readonly cloudStatus: CloudStatus
+  readonly cloudSyncStatusText?: string
 }
 
 const Container = styled.div(({ theme }) => ({
@@ -131,6 +132,7 @@ export const SettingsModal: React.FC<Props> = ({
   onSignOut,
   onDeleteUser,
   cloudStatus,
+  cloudSyncStatusText,
 }) => {
   return (
     <Modal
@@ -202,9 +204,10 @@ export const SettingsModal: React.FC<Props> = ({
                     >
                       <MutedLabel size="tiny">
                         Status:{' '}
-                        {cloudStatus === 'connected'
-                          ? 'Connected to cloud (Syncing)'
-                          : 'Not connected to cloud (Not syncing)'}
+                        {cloudSyncStatusText ||
+                          (cloudStatus === 'connected'
+                            ? 'Connected to cloud'
+                            : 'Not connected')}
                       </MutedLabel>
                       {cloudUser ? (
                         <div

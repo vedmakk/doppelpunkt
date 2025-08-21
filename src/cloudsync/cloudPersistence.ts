@@ -1,4 +1,8 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
+import { type Timestamp } from 'firebase/firestore'
+import { getFirebase, type FirebaseUser } from './firebase'
+import DiffMatchPatch from 'diff-match-patch'
+
 import { type EditorState, setText } from '../editor/editorSlice'
 import { type WritingMode } from '../mode/modeSlice'
 import {
@@ -11,36 +15,119 @@ import {
   setCloudError,
   setCloudStatus,
   setCloudUser,
+  setCloudDocBase,
+  setCloudDocSnapshotMeta,
 } from './cloudSlice'
-import { getFirebase, type FirebaseUser } from './firebase'
+
+type ModeDoc = {
+  text: string
+  updatedAt: Timestamp
+  rev: number
+}
+
+type Unsubscribe = () => void
 
 // Firestore helpers and paths
 function docPathFor(userId: string, mode: WritingMode) {
   return `users/${userId}/doc/${mode}`
 }
 
-async function writeModeDocument(
+async function saveModeDocumentWithMerge(
   userId: string,
   mode: WritingMode,
-  text: string,
-  version?: number,
+  localText: string,
+  baseRev: number,
+  baseText: string,
+  dispatch: (a: any) => void,
+  getState: () => any,
 ) {
   const { db } = await getFirebase()
-  const { doc, serverTimestamp, setDoc } = await import('firebase/firestore')
-
-  const docRef = doc(db, docPathFor(userId, mode))
-  await setDoc(
-    docRef,
-    {
-      text,
-      updatedAt: serverTimestamp(),
-      version: (version ?? 0) + 1,
-    },
-    { merge: true },
+  const { doc, serverTimestamp, runTransaction, getDoc } = await import(
+    'firebase/firestore'
   )
-}
+  const ref = doc(db, docPathFor(userId, mode))
 
-type Unsubscribe = () => void
+  async function transactionalSave(
+    expectedBaseRev: number,
+    textToSave: string,
+  ) {
+    const newRev = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref)
+      const remoteData = (snap.data() as Partial<ModeDoc> | undefined) ?? {}
+      const remoteRev = typeof remoteData.rev === 'number' ? remoteData.rev : 0
+      if (remoteRev !== expectedBaseRev) {
+        throw new Error('conflict')
+      }
+      const nextRev = remoteRev + 1
+      tx.set(
+        ref,
+        {
+          text: textToSave,
+          updatedAt: serverTimestamp(),
+          rev: nextRev,
+        },
+        { merge: true },
+      )
+      return nextRev
+    })
+    return newRev
+  }
+
+  try {
+    const newRev = await transactionalSave(baseRev, localText)
+    dispatch(setCloudDocBase({ mode, baseRev: newRev, baseText: localText }))
+    return
+  } catch (err: any) {
+    if ((err?.message ?? '') !== 'conflict') {
+      throw err
+    }
+  }
+
+  // Handle conflict with 3-way merge
+  try {
+    const remoteSnap = await getDoc(ref)
+    const remoteData = remoteSnap.data() as Partial<ModeDoc> | undefined
+    const remoteText =
+      typeof remoteData?.text === 'string' ? remoteData!.text : ''
+    const remoteRev = typeof remoteData?.rev === 'number' ? remoteData!.rev : 0
+
+    const dmp = new DiffMatchPatch()
+    const diffs = dmp.diff_main(baseText, localText)
+    dmp.diff_cleanupSemantic(diffs)
+    const patches = dmp.patch_make(baseText, diffs)
+    const applyResult = dmp.patch_apply(patches, remoteText)
+    const mergedText: string = applyResult[0]
+    const results: boolean[] = applyResult[1]
+
+    // If too many failures, prefer local text appended to remote as fallback
+    const successRatio = results.length
+      ? results.filter((b) => b).length / results.length
+      : 1
+    const textToSave = successRatio < 0.5 ? localText : mergedText
+
+    // Try once more using the latest remoteRev
+    const newRev = await transactionalSave(remoteRev, textToSave)
+    dispatch(setCloudDocBase({ mode, baseRev: newRev, baseText: textToSave }))
+
+    // Update local editor text to reflect merged resolution if it changed
+    const state = getState() as any
+    const localDoc = state.editor.documents[mode] as {
+      text: string
+      cursorPos: number
+    }
+    if (localDoc.text !== textToSave) {
+      dispatch(
+        setText({
+          mode,
+          text: textToSave,
+          cursorPos: Math.min(localDoc.cursorPos, textToSave.length),
+        }),
+      )
+    }
+  } catch {
+    dispatch(setCloudError('Failed to resolve edit conflict'))
+  }
+}
 
 let authUnsubscribe: Unsubscribe | null = null
 // reserved for future editor-level subscriptions (keep declared for potential cleanup semantics)
@@ -59,15 +146,62 @@ export function hydrateCloudStateFromStorage(): {
     status: 'idle' | 'initializing' | 'connected' | 'error'
     user: null
     error?: string
+    docs: Record<
+      WritingMode,
+      {
+        baseRev: number
+        baseText: string
+        hasPendingWrites: boolean
+        fromCache: boolean
+      }
+    >
   }
 } {
   try {
     const value = localStorage.getItem(CLOUD_ENABLED_KEY)
     return {
-      cloud: { enabled: value === 'true', status: 'idle', user: null } as any,
+      cloud: {
+        enabled: value === 'true',
+        status: 'idle',
+        user: null,
+        docs: {
+          editor: {
+            baseRev: 0,
+            baseText: '',
+            hasPendingWrites: false,
+            fromCache: false,
+          },
+          todo: {
+            baseRev: 0,
+            baseText: '',
+            hasPendingWrites: false,
+            fromCache: false,
+          },
+        },
+      } as any,
     }
   } catch {
-    return { cloud: { enabled: false, status: 'idle', user: null } as any }
+    return {
+      cloud: {
+        enabled: false,
+        status: 'idle',
+        user: null,
+        docs: {
+          editor: {
+            baseRev: 0,
+            baseText: '',
+            hasPendingWrites: false,
+            fromCache: false,
+          },
+          todo: {
+            baseRev: 0,
+            baseText: '',
+            hasPendingWrites: false,
+            fromCache: false,
+          },
+        },
+      } as any,
+    }
   }
 }
 
@@ -112,10 +246,20 @@ async function attachSnapshotListeners(
     if (snapshotUnsubscribes[mode]) snapshotUnsubscribes[mode]!()
     const ref = doc(db, docPathFor(userId, mode))
     snapshotUnsubscribes[mode] = onSnapshot(ref, (snap) => {
+      const meta = snap.metadata
+      dispatch(
+        setCloudDocSnapshotMeta({
+          mode,
+          hasPendingWrites: meta.hasPendingWrites,
+          fromCache: meta.fromCache,
+        }),
+      )
       const data = snap.data() as
-        | { text?: string; version?: number; updatedAt?: unknown }
+        | { text?: string; rev?: number; updatedAt?: unknown }
         | undefined
       if (!data || typeof data.text !== 'string') return
+      const rev = typeof data.rev === 'number' ? data.rev : 0
+      dispatch(setCloudDocBase({ mode, baseRev: rev, baseText: data.text }))
       const local = (getState().editor as EditorState).documents[mode]
       if (local.text !== data.text) {
         dispatch(
@@ -395,7 +539,19 @@ cloudListenerMiddleware.startListening({
       if (pendingTimers[mode]) window.clearTimeout(pendingTimers[mode])
       pendingTimers[mode] = window.setTimeout(async () => {
         try {
-          await writeModeDocument(userId, mode, text)
+          const cloudDoc = (api.getState() as any).cloud.docs[mode] as {
+            baseRev: number
+            baseText: string
+          }
+          await saveModeDocumentWithMerge(
+            userId,
+            mode,
+            text,
+            cloudDoc.baseRev,
+            cloudDoc.baseText,
+            api.dispatch,
+            api.getState,
+          )
         } catch {
           api.dispatch(setCloudError('Failed to write to cloud'))
         }
@@ -427,14 +583,30 @@ cloudListenerMiddleware.startListening({
         try {
           const ref = doc(db, docPathFor(userId, mode))
           const snap = await getDoc(ref)
-          const remote = snap.data() as { text?: string } | undefined
+          const remote = snap.data() as
+            | { text?: string; rev?: number }
+            | undefined
           const localText = (api.getState() as any).editor.documents[mode].text
           if (
             !remote ||
             typeof remote.text !== 'string' ||
             remote.text === ''
           ) {
-            await writeModeDocument(userId, mode, localText)
+            const base = (api.getState() as any).cloud.docs[mode]
+            await saveModeDocumentWithMerge(
+              userId,
+              mode,
+              localText,
+              base.baseRev,
+              base.baseText,
+              api.dispatch,
+              api.getState,
+            )
+          } else {
+            const rev = typeof remote.rev === 'number' ? remote.rev : 0
+            api.dispatch(
+              setCloudDocBase({ mode, baseRev: rev, baseText: remote.text }),
+            )
           }
         } catch {
           console.error('Failed to perform initial sync')

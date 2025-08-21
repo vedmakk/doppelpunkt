@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { type WritingMode } from '../mode/modeSlice'
+
 // WritingMode is not needed directly in reducers; keep slice decoupled
 
 export interface CloudUserInfo {
@@ -16,6 +18,16 @@ export interface CloudState {
   status: CloudStatus
   user: CloudUserInfo | null
   error?: string
+  // Per-document sync metadata and optimistic concurrency base
+  docs: Record<
+    WritingMode,
+    {
+      baseRev: number
+      baseText: string
+      hasPendingWrites: boolean
+      fromCache: boolean
+    }
+  >
 }
 
 const initialState: CloudState = {
@@ -23,6 +35,20 @@ const initialState: CloudState = {
   status: 'idle',
   user: null,
   error: undefined,
+  docs: {
+    editor: {
+      baseRev: 0,
+      baseText: '',
+      hasPendingWrites: false,
+      fromCache: false,
+    },
+    todo: {
+      baseRev: 0,
+      baseText: '',
+      hasPendingWrites: false,
+      fromCache: false,
+    },
+  },
 }
 
 const cloudSlice = createSlice({
@@ -40,6 +66,30 @@ const cloudSlice = createSlice({
     },
     setCloudError(state, action: PayloadAction<string | undefined>) {
       state.error = action.payload
+    },
+    setCloudDocBase(
+      state,
+      action: PayloadAction<{
+        mode: WritingMode
+        baseRev: number
+        baseText: string
+      }>,
+    ) {
+      const { mode, baseRev, baseText } = action.payload
+      state.docs[mode].baseRev = baseRev
+      state.docs[mode].baseText = baseText
+    },
+    setCloudDocSnapshotMeta(
+      state,
+      action: PayloadAction<{
+        mode: WritingMode
+        hasPendingWrites: boolean
+        fromCache: boolean
+      }>,
+    ) {
+      const { mode, hasPendingWrites, fromCache } = action.payload
+      state.docs[mode].hasPendingWrites = hasPendingWrites
+      state.docs[mode].fromCache = fromCache
     },
     // UI intents that the middleware will handle
     requestGoogleSignIn: (state) => state,
@@ -65,6 +115,8 @@ export const {
   setCloudStatus,
   setCloudUser,
   setCloudError,
+  setCloudDocBase,
+  setCloudDocSnapshotMeta,
   requestGoogleSignIn,
   requestEmailLinkSignIn,
   completeEmailLinkSignIn,

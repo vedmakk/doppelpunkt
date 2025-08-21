@@ -20,6 +20,7 @@ import {
   useCloudEnabled,
   useCloudStatus,
   useCloudUser,
+  useCloudSyncStatusText,
 } from '../../cloudsync/hooks'
 import {
   requestEmailLinkSignIn,
@@ -37,6 +38,7 @@ const SettingsModal: React.FC = () => {
   const cloudEnabled = useCloudEnabled()
   const cloudUser = useCloudUser()
   const cloudStatus = useCloudStatus()
+  const cloudSyncStatusText = useCloudSyncStatusText()
 
   const dispatch = useDispatch()
 
@@ -99,6 +101,7 @@ const SettingsModal: React.FC = () => {
       onSignOut={onSignOut}
       onDeleteUser={onDeleteUser}
       cloudStatus={cloudStatus}
+      cloudSyncStatusText={cloudSyncStatusText}
     />
   )
 }
