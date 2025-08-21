@@ -32,9 +32,19 @@
       }
     ]
   },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "emulators": {
     "hosting": {
-      "port": 5000
+      "port": 5001
+    },
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
     },
     "ui": {
       "enabled": true

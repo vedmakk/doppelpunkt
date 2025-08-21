@@ -16,12 +16,21 @@ import {
 
 import { useAutoSaveEnabled } from '../../editor/hooks'
 import { toggleAutoSave } from '../../editor/editorSlice'
+import { useCloudEnabled, useCloudUser } from '../../cloudSync/hooks'
+import {
+  requestEmailLinkSignIn,
+  requestGoogleSignIn,
+  requestSignOut,
+  setCloudEnabled,
+} from '../../cloudSync/cloudSlice'
 
 const SettingsModal: React.FC = () => {
   const isOpen = useIsSettingsOpen()
   const shouldRender = useShouldRenderSettings()
   const activePage = useActiveSettingsPage()
   const autoSaveEnabled = useAutoSaveEnabled()
+  const cloudEnabled = useCloudEnabled()
+  const cloudUser = useCloudUser()
 
   const dispatch = useDispatch()
 
@@ -44,6 +53,23 @@ const SettingsModal: React.FC = () => {
     [dispatch, autoSaveEnabled],
   )
 
+  const onToggleCloud = useCallback(
+    () => dispatch(setCloudEnabled(!cloudEnabled)),
+    [dispatch, cloudEnabled],
+  )
+
+  const onSignInWithGoogle = useCallback(
+    () => dispatch(requestGoogleSignIn()),
+    [dispatch],
+  )
+
+  const onSignInWithEmailLink = useCallback(
+    (email: string) => dispatch(requestEmailLinkSignIn({ email })),
+    [dispatch],
+  )
+
+  const onSignOut = useCallback(() => dispatch(requestSignOut()), [dispatch])
+
   return (
     <SettingsModalComponent
       isOpen={isOpen}
@@ -54,6 +80,12 @@ const SettingsModal: React.FC = () => {
       onChangePage={onChangePage}
       autoSaveEnabled={autoSaveEnabled}
       onToggleAutoSave={onToggleAutoSave}
+      cloudEnabled={cloudEnabled}
+      onToggleCloud={onToggleCloud}
+      cloudUser={cloudUser}
+      onSignInWithGoogle={onSignInWithGoogle}
+      onSignInWithEmailLink={onSignInWithEmailLink}
+      onSignOut={onSignOut}
     />
   )
 }

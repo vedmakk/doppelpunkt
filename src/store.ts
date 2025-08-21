@@ -6,6 +6,11 @@ import {
   editorListenerMiddleware,
   hydrateAppStateFromStorage,
 } from './editor/persistence'
+import { cloudReducer } from './cloudSync/cloudSlice'
+import {
+  cloudListenerMiddleware,
+  hydrateCloudStateFromStorage,
+} from './cloudSync/cloudPersistence'
 import { themeReducer } from './theme/themeSlice'
 import { menuReducer } from './menu/menuSlice'
 import { hotkeysReducer } from './hotkeys/hotkeysSlice'
@@ -17,14 +22,22 @@ export const createStore = () =>
     reducer: {
       theme: themeReducer,
       editor: editorReducer,
+      cloud: cloudReducer,
       mode: modeReducer,
       menu: menuReducer,
       hotkeys: hotkeysReducer,
       settings: settingsReducer,
     },
-    preloadedState: hydrateAppStateFromStorage(),
-    middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().prepend(editorListenerMiddleware.middleware),
+    preloadedState: {
+      ...hydrateAppStateFromStorage(),
+      ...hydrateCloudStateFromStorage(),
+    },
+    middleware: (getDefaultMiddleware) => {
+      const defaults = getDefaultMiddleware()
+      return defaults
+        .prepend(cloudListenerMiddleware.middleware)
+        .prepend(editorListenerMiddleware.middleware)
+    },
   })
 
 export const store = createStore()

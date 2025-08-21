@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from '@emotion/styled'
 
 import Modal from '../../app/components/Modal'
@@ -19,6 +19,17 @@ interface Props {
   readonly onChangePage: (page: SettingsPage) => void
   readonly autoSaveEnabled: boolean
   readonly onToggleAutoSave: () => void
+  readonly cloudEnabled: boolean
+  readonly onToggleCloud: () => void
+  readonly cloudUser: {
+    uid: string
+    displayName?: string | null
+    email?: string | null
+    photoURL?: string | null
+  } | null
+  readonly onSignInWithGoogle: () => void
+  readonly onSignInWithEmailLink: (email: string) => void
+  readonly onSignOut: () => void
 }
 
 const Container = styled.div(({ theme }) => ({
@@ -58,6 +69,30 @@ const Col = styled.div(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
+const EmailLinkSignIn: React.FC<{ onSubmitEmail: (email: string) => void }> = ({
+  onSubmitEmail,
+}) => {
+  const [email, setEmail] = useState('')
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (email) onSubmitEmail(email)
+      }}
+      style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+    >
+      <input
+        type="email"
+        placeholder="Email for magic link"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ padding: '8px 10px' }}
+      />
+      <Button label="Send link" onClick={() => email && onSubmitEmail(email)} />
+    </form>
+  )
+}
+
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
   shouldRender,
@@ -67,6 +102,12 @@ export const SettingsModal: React.FC<Props> = ({
   onChangePage,
   autoSaveEnabled,
   onToggleAutoSave,
+  cloudEnabled,
+  onToggleCloud,
+  cloudUser,
+  onSignInWithGoogle,
+  onSignInWithEmailLink,
+  onSignOut,
 }) => {
   return (
     <Modal
@@ -110,6 +151,53 @@ export const SettingsModal: React.FC<Props> = ({
                   storage, so you can pick up where you left off. Nothing is
                   shared or stored online – everything stays on your device.
                 </MutedLabel>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Switch
+                  label="Cloud sync"
+                  checked={cloudEnabled}
+                  onChange={onToggleCloud}
+                  size={24}
+                />
+                <MutedLabel size="tiny">
+                  Sync your documents across devices using Firebase.
+                  Authentication is loaded only when enabled.
+                </MutedLabel>
+                {cloudEnabled && (
+                  <div
+                    style={{ display: 'flex', gap: 12, alignItems: 'center' }}
+                  >
+                    {cloudUser ? (
+                      <>
+                        <span>
+                          Signed in as{' '}
+                          {cloudUser.displayName ||
+                            cloudUser.email ||
+                            cloudUser.uid}
+                        </span>
+                        <Button label="Sign out" onClick={onSignOut} />
+                      </>
+                    ) : (
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: 8,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Button
+                          label="Sign in with Google"
+                          onClick={onSignInWithGoogle}
+                        />
+                        <EmailLinkSignIn
+                          onSubmitEmail={onSignInWithEmailLink}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </Col>
             </Row>
           </Page>
