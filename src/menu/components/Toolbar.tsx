@@ -10,6 +10,9 @@ import { Button } from '../../app/components/Button'
 import { Label } from '../../app/components/Label'
 import { MutedLabel } from './MutedLabel'
 import { SectionTitle } from './SectionTitle'
+import WritingModeSwitch from '../../mode/containers/WritingModeSwitch'
+import { WritingMode } from '../../mode/modeSlice'
+import TodoToolbarSection from './TodoToolbarSection'
 
 interface Props {
   content: string
@@ -19,6 +22,7 @@ interface Props {
   onOpenHotkeysSettings: () => void
   onNew: () => void
   onOpen: (text: string) => void
+  mode: WritingMode
 }
 
 const ToolbarContainer = styled.div(({ theme }) => ({
@@ -59,6 +63,7 @@ const Toolbar: React.FC<Props> = ({
   onOpenHotkeysSettings,
   onNew,
   onOpen,
+  mode,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -106,10 +111,10 @@ const Toolbar: React.FC<Props> = ({
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'document.md'
+    a.download = mode === 'editor' ? 'document.md' : 'todo.md'
     a.click()
     URL.revokeObjectURL(url)
-  }, [content])
+  }, [content, mode])
 
   const handlePDF = useCallback(() => {
     window.print()
@@ -121,38 +126,49 @@ const Toolbar: React.FC<Props> = ({
 
   return (
     <ToolbarContainer id="toolbar">
-      <ToolbarItemContainer as="nav" aria-label="Editor actions">
-        <Button label="New" onClick={handleNew} />
-        <Button label="Open" onClick={handleOpen} />
-        <HiddenInput
-          type="file"
-          accept=".md"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-        />
-        <Button label="Export" onClick={handleExport} />
-        <Button label="PDF" onClick={handlePDF} />
+      <ToolbarItemContainer>
+        <WritingModeSwitch />
       </ToolbarItemContainer>
-      <ToolbarItemContainer as="section" aria-label="Editor stats">
-        <SectionTitle>Stats</SectionTitle>
-        <List>
-          <ListItem>
-            <Label size="tiny">
-              {stats.wordCount === 1 ? '1 word' : `${stats.wordCount} words`}
-            </Label>
-          </ListItem>
-          <ListItem>
-            <Label size="tiny">
-              {stats.characterCount === 1
-                ? '1 character'
-                : `${stats.characterCount} characters`}
-            </Label>
-          </ListItem>
-          <ListItem>
-            <Label size="tiny">{stats.readingTime}</Label>
-          </ListItem>
-        </List>
-      </ToolbarItemContainer>
+      {mode === 'editor' ? (
+        <>
+          <ToolbarItemContainer as="nav" aria-label="Editor actions">
+            <Button label="New" onClick={handleNew} />
+            <Button label="Open" onClick={handleOpen} />
+            <HiddenInput
+              type="file"
+              accept=".md"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+            <Button label="Export" onClick={handleExport} />
+            <Button label="PDF" onClick={handlePDF} />
+          </ToolbarItemContainer>
+          <ToolbarItemContainer as="section" aria-label="Editor stats">
+            <SectionTitle>Stats</SectionTitle>
+            <List>
+              <ListItem>
+                <Label size="tiny">
+                  {stats.wordCount === 1
+                    ? '1 word'
+                    : `${stats.wordCount} words`}
+                </Label>
+              </ListItem>
+              <ListItem>
+                <Label size="tiny">
+                  {stats.characterCount === 1
+                    ? '1 character'
+                    : `${stats.characterCount} characters`}
+                </Label>
+              </ListItem>
+              <ListItem>
+                <Label size="tiny">{stats.readingTime}</Label>
+              </ListItem>
+            </List>
+          </ToolbarItemContainer>
+        </>
+      ) : (
+        <TodoToolbarSection />
+      )}
       <ToolbarItemContainer as="nav" aria-label="Settings">
         <SectionTitle>Settings</SectionTitle>
         <Button label="General" onClick={onOpenSettings} />

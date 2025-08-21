@@ -15,6 +15,7 @@ import {
   useEditorCursorPos,
 } from '../hooks'
 import { setText, setCaptureTab } from '../editorSlice'
+import { useWritingMode } from '../../mode/hooks'
 import { useCustomHotkey } from '../../hotkeys/hooks'
 import { HotkeyId } from '../../hotkeys/registry'
 
@@ -28,6 +29,7 @@ const MarkdownEditor: React.FC = () => {
   const content = useEditorText()
   const cursorPos = useEditorCursorPos()
   const captureTab = useCaptureTabEnabled()
+  const mode = useWritingMode()
 
   const dispatch = useDispatch()
 
@@ -53,11 +55,15 @@ const MarkdownEditor: React.FC = () => {
         )
 
         dispatch(
-          setText({ text: sanitizedValue, cursorPos: sanitizedCursorPos }),
+          setText({
+            mode,
+            text: sanitizedValue,
+            cursorPos: sanitizedCursorPos,
+          }),
         )
       }
     },
-    [dispatch],
+    [dispatch, mode],
   )
 
   const toggleCaptureTab = useCallback(() => {

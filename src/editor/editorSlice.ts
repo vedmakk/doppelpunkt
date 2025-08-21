@@ -1,18 +1,25 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { WritingMode } from '../mode/modeSlice'
 
 import { TUTORIAL_PLACEHOLDER } from './tutorial'
 
-export interface EditorState {
+export interface EditorDocument {
   text: string
   cursorPos: number
+}
+
+export interface EditorState {
+  documents: Record<WritingMode, EditorDocument>
   autoSave: boolean
   captureTab: boolean
 }
 
 // Initial state is a safe default. Actual persisted values are hydrated at store creation.
 const initialState: EditorState = {
-  text: TUTORIAL_PLACEHOLDER,
-  cursorPos: 0,
+  documents: {
+    editor: { text: TUTORIAL_PLACEHOLDER, cursorPos: 0 },
+    todo: { text: TUTORIAL_PLACEHOLDER, cursorPos: 0 },
+  },
   autoSave: false,
   captureTab: true,
 }
@@ -21,21 +28,28 @@ const editorSlice = createSlice({
   name: 'editor',
   initialState,
   reducers: {
-    setText(state, action: PayloadAction<{ text: string; cursorPos: number }>) {
-      const { text, cursorPos } = action.payload
-      if (text === state.text) {
+    setText(
+      state,
+      action: PayloadAction<{
+        mode: WritingMode
+        text: string
+        cursorPos: number
+      }>,
+    ) {
+      const { mode, text, cursorPos } = action.payload
+      const current = state.documents[mode]
+      if (text === current.text) {
         return
       }
-      state.text = text
-      state.cursorPos = cursorPos
+      state.documents[mode] = { text, cursorPos }
     },
-    clear(state) {
-      state.text = ''
-      state.cursorPos = 0
+    clear(state, action: PayloadAction<{ mode: WritingMode }>) {
+      const { mode } = action.payload
+      state.documents[mode] = { text: '', cursorPos: 0 }
     },
-    load(state, action: PayloadAction<string>) {
-      state.text = action.payload
-      state.cursorPos = action.payload.length
+    load(state, action: PayloadAction<{ mode: WritingMode; text: string }>) {
+      const { mode, text } = action.payload
+      state.documents[mode] = { text, cursorPos: text.length }
     },
     toggleAutoSave(state, action: PayloadAction<boolean>) {
       const enabled = action.payload

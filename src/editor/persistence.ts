@@ -10,25 +10,38 @@ import {
 import { TUTORIAL_PLACEHOLDER } from './tutorial'
 
 const EDITOR_KEY = 'editor'
-const MARKDOWN_KEY = `${EDITOR_KEY}.markdown`
+const MARKDOWN_KEY_EDITOR = `${EDITOR_KEY}.markdown.editor`
+const MARKDOWN_KEY_TODO = `${EDITOR_KEY}.markdown.todo`
 const AUTO_SAVE_KEY = `${EDITOR_KEY}.autoSave`
 
 export const editorStorageKeys = {
-  MARKDOWN_KEY,
+  MARKDOWN_KEY_EDITOR,
+  MARKDOWN_KEY_TODO,
   AUTO_SAVE_KEY,
 }
 
-export function hydrateEditorStateFromStorage(): { editor: EditorState } {
+export function hydrateAppStateFromStorage(): { editor: EditorState } {
   try {
-    const storedText = localStorage.getItem(MARKDOWN_KEY)
+    const storedTextEditor = localStorage.getItem(MARKDOWN_KEY_EDITOR)
+    const storedTextTodo = localStorage.getItem(MARKDOWN_KEY_TODO)
     const storedAutoSave = localStorage.getItem(AUTO_SAVE_KEY)
 
-    const text = storedText || TUTORIAL_PLACEHOLDER
+    const textEditor = storedTextEditor || TUTORIAL_PLACEHOLDER
+    const textTodo = storedTextTodo || TUTORIAL_PLACEHOLDER
     const autoSave = storedAutoSave === 'true'
 
     const editor: EditorState = {
-      text,
-      cursorPos: text === TUTORIAL_PLACEHOLDER ? 0 : text.length,
+      documents: {
+        editor: {
+          text: textEditor,
+          cursorPos:
+            textEditor === TUTORIAL_PLACEHOLDER ? 0 : textEditor.length,
+        },
+        todo: {
+          text: textTodo,
+          cursorPos: textTodo === TUTORIAL_PLACEHOLDER ? 0 : textTodo.length,
+        },
+      },
       autoSave,
       captureTab: true,
     }
@@ -37,8 +50,10 @@ export function hydrateEditorStateFromStorage(): { editor: EditorState } {
   } catch {
     // In non-browser or restricted environments, fall back to defaults
     const editor: EditorState = {
-      text: TUTORIAL_PLACEHOLDER,
-      cursorPos: 0,
+      documents: {
+        editor: { text: TUTORIAL_PLACEHOLDER, cursorPos: 0 },
+        todo: { text: TUTORIAL_PLACEHOLDER, cursorPos: 0 },
+      },
       autoSave: false,
       captureTab: true,
     }
@@ -55,10 +70,18 @@ editorListenerMiddleware.startListening({
     try {
       if (state.editor.autoSave) {
         localStorage.setItem(AUTO_SAVE_KEY, 'true')
-        localStorage.setItem(MARKDOWN_KEY, state.editor.text)
+        localStorage.setItem(
+          MARKDOWN_KEY_EDITOR,
+          state.editor.documents.editor.text,
+        )
+        localStorage.setItem(
+          MARKDOWN_KEY_TODO,
+          state.editor.documents.todo.text,
+        )
       } else {
         localStorage.removeItem(AUTO_SAVE_KEY)
-        localStorage.removeItem(MARKDOWN_KEY)
+        localStorage.removeItem(MARKDOWN_KEY_EDITOR)
+        localStorage.removeItem(MARKDOWN_KEY_TODO)
       }
     } catch {
       // Ignore storage failures

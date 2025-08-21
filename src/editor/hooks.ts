@@ -11,23 +11,27 @@ import {
   selectEditorCursorPos,
 } from './selectors'
 
-import { tutorial, TUTORIAL_PLACEHOLDER } from './tutorial'
+import { tutorialEditor, tutorialTodo, TUTORIAL_PLACEHOLDER } from './tutorial'
+import { useWritingMode } from '../mode/hooks'
 
 export const useEditorText = () => {
+  const mode = useWritingMode()
   const text = useAppSelector(selectEditorText)
 
   if (text === TUTORIAL_PLACEHOLDER) {
-    return tutorial
+    return mode === 'editor' ? tutorialEditor : tutorialTodo
   }
 
   return text
 }
 
 export const useEditorCursorPos = () => {
+  const mode = useWritingMode()
   const { text, cursorPos } = useAppSelector(selectEditorCursorPos)
 
   if (cursorPos === 0 && text === TUTORIAL_PLACEHOLDER) {
-    return tutorial.length
+    const t = mode === 'editor' ? tutorialEditor : tutorialTodo
+    return t.length
   }
 
   return cursorPos
