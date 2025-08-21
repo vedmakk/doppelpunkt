@@ -2,7 +2,18 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId}/doc/{docId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow reads to only the two known docs for the authenticated user
+      allow read: if request.auth != null
+                  && request.auth.uid == userId
+                  && (docId == 'editor' || docId == 'todo');
+
+      // Allow writes only to the known docs and validate the schema
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && (docId == 'editor' || docId == 'todo')
+                   && request.resource.data.keys().hasOnly(['text', 'updatedAt', 'version'])
+                   && request.resource.data.text is string
+                   && request.resource.data.version is int;
     }
   }
 }

@@ -229,7 +229,7 @@ cloudListenerMiddleware.startListening({
       )
       const email = (action as unknown as { payload: { email: string } })
         .payload.email
-      const url = window.location.href
+      const url = `${window.location.origin}/` // canonical action URL
       await sendSignInLinkToEmail(auth, email, { url, handleCodeInApp: true })
       window.localStorage.setItem('cloud.emailForSignIn', email)
       // If user clicks link and returns, the app should call completeEmailLinkSignIn
