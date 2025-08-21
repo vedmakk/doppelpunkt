@@ -6,7 +6,7 @@ import Switch from '../../app/components/Switch'
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 
 import { SettingsPage } from '../settingsSlice'
-import { CloudStatus } from '../../cloud-sync/cloudSlice'
+import { CloudStatus } from '../../cloudsync/cloudSlice'
 
 import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 import { MutedLabel } from '../../menu/components/MutedLabel'

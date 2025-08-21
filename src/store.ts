@@ -6,11 +6,11 @@ import {
   editorListenerMiddleware,
   hydrateAppStateFromStorage,
 } from './editor/persistence'
-import { cloudReducer } from './cloud-sync/cloudSlice'
+import { cloudReducer } from './cloudsync/cloudSlice'
 import {
   cloudListenerMiddleware,
   hydrateCloudStateFromStorage,
-} from './cloud-sync/cloudPersistence'
+} from './cloudsync/cloudPersistence'
 import { themeReducer } from './theme/themeSlice'
 import { menuReducer } from './menu/menuSlice'
 import { hotkeysReducer } from './hotkeys/hotkeysSlice'
