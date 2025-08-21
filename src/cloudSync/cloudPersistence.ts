@@ -133,7 +133,30 @@ cloudListenerMiddleware.startListening({
     const isEnabled = (currentState as any).cloud?.enabled
     return Boolean(isEnabled || wasEnabled)
   },
-  effect: async () => {},
+  effect: async (_action, api) => {
+    // On app init or any action, if cloud is enabled but auth listener
+    // is not yet attached (e.g. page reload with enabled=true), attach it.
+    const state: any = api.getState()
+    if (!state?.cloud?.enabled) return
+    if (authUnsubscribe) return
+    api.dispatch(setCloudStatus('initializing'))
+    try {
+      await attachAuthListener(api.dispatch)
+      // If user opened via email link, complete sign-in
+      try {
+        const { auth } = await getFirebase()
+        const { isSignInWithEmailLink } = await import('firebase/auth')
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+          api.dispatch(completeEmailLinkSignIn())
+        }
+      } catch {
+        /* ignore */
+      }
+    } catch {
+      api.dispatch(setCloudError('Failed to initialize auth'))
+      api.dispatch(setCloudStatus('error'))
+    }
+  },
 })
 
 // Enable/disable toggling
