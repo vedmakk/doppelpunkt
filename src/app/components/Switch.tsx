@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState, useId } from 'react'
 import styled from '@emotion/styled'
 
 import { outlineStyles } from '../../shared/styles'
@@ -67,6 +67,7 @@ const Thumb = styled.div<{ checked: boolean; size: number }>(
 
 const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
   const [isFocusVisible, setIsFocusVisible] = useState(false)
+  const checkboxId = useId()
 
   const checkboxRef = useRef<HTMLInputElement>(null)
 
@@ -88,7 +89,7 @@ const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
         <SwitchWrapper>
           <HiddenInput
             ref={checkboxRef}
-            id="switch-checkbox"
+            id={checkboxId}
             type="checkbox"
             checked={checked}
             onChange={(e) => onChange(e.target.checked)}
@@ -98,7 +99,7 @@ const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
           <Track checked={checked} size={size} />
           <Thumb checked={checked} size={size} />
         </SwitchWrapper>
-        {label && <InteractiveLabel label={label} htmlFor="switch-checkbox" />}
+        {label && <InteractiveLabel label={label} htmlFor={checkboxId} />}
       </SwitchContainer>
     </Appear>
   )
