@@ -13,3 +13,5 @@ Use the container / component pattern. E.g. access the store in the container an
 When selecting data from the redux store, create selectors in a selectors.ts file and consume them in hooks. See `src/theme` for examples.
 
 Create state slices in the `src/<feature>/featureSlice.ts` file (as seen in `src/theme/themeSlice.ts`).
+
+This project uses `bun.sh` for builds, tests, package manager, etc….
