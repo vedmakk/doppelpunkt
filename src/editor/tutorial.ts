@@ -6,6 +6,6 @@ A **minimalist**, **distraction-free** Markdown editor – ready the moment you 
 
 Just start typing...`
 
-export const tutorialTodo = `# ✅ Welcome to Todo mode
+export const tutorialTodo = `# ✅ Welcome to \`todo\` mode
 
-Capture quick tasks as Markdown. This placeholder will be replaced with your todo document.`
+Jot down tasks in a simple, Markdown-friendly \`todo.txt\` format.`
