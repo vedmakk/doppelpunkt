@@ -33,6 +33,7 @@ interface Props {
   readonly onSignInWithGoogle: () => void
   readonly onSignInWithEmailLink: (email: string) => void
   readonly onSignOut: () => void
+  readonly onDeleteUser: () => void
   readonly cloudStatus: CloudStatus
 }
 
@@ -128,6 +129,7 @@ export const SettingsModal: React.FC<Props> = ({
   onSignInWithGoogle,
   //onSignInWithEmailLink,
   onSignOut,
+  onDeleteUser,
   cloudStatus,
 }) => {
   return (
@@ -208,8 +210,9 @@ export const SettingsModal: React.FC<Props> = ({
                         <div
                           css={(theme) => ({
                             display: 'flex',
-                            gap: theme.spacing(2),
-                            alignItems: 'center',
+                            flexDirection: 'column',
+                            gap: theme.spacing(1),
+                            alignItems: 'flex-start',
                           })}
                         >
                           <Label size="small">
@@ -218,7 +221,13 @@ export const SettingsModal: React.FC<Props> = ({
                               cloudUser.email ||
                               cloudUser.uid}
                           </Label>
-                          <Button label="Sign out" onClick={onSignOut} />
+                          <Row>
+                            <Button label="Sign out" onClick={onSignOut} />
+                            <Button
+                              label="Delete account"
+                              onClick={onDeleteUser}
+                            />
+                          </Row>
                         </div>
                       ) : (
                         <div

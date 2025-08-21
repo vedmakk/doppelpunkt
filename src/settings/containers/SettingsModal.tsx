@@ -27,6 +27,7 @@ import {
   requestSignOut,
   setCloudEnabled,
 } from '../../cloudsync/cloudSlice'
+import { requestDeleteUser } from '../../cloudsync/cloudSlice'
 
 const SettingsModal: React.FC = () => {
   const isOpen = useIsSettingsOpen()
@@ -75,6 +76,11 @@ const SettingsModal: React.FC = () => {
 
   const onSignOut = useCallback(() => dispatch(requestSignOut()), [dispatch])
 
+  const onDeleteUser = useCallback(
+    () => dispatch(requestDeleteUser()),
+    [dispatch],
+  )
+
   return (
     <SettingsModalComponent
       isOpen={isOpen}
@@ -91,6 +97,7 @@ const SettingsModal: React.FC = () => {
       onSignInWithGoogle={onSignInWithGoogle}
       onSignInWithEmailLink={onSignInWithEmailLink}
       onSignOut={onSignOut}
+      onDeleteUser={onDeleteUser}
       cloudStatus={cloudStatus}
     />
   )

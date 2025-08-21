@@ -52,6 +52,8 @@ const cloudSlice = createSlice({
     },
     completeEmailLinkSignIn: (state) => state,
     requestSignOut: (state) => state,
+    // Delete user account and associated data
+    requestDeleteUser: (state) => state,
     // Trigger sync for a specific mode (used by middleware internally)
     requestSync: (state) => state,
   },
@@ -67,5 +69,6 @@ export const {
   requestEmailLinkSignIn,
   completeEmailLinkSignIn,
   requestSignOut,
+  requestDeleteUser,
   requestSync,
 } = cloudSlice.actions

@@ -6,6 +6,7 @@ import {
   requestEmailLinkSignIn,
   requestGoogleSignIn,
   requestSignOut,
+  requestDeleteUser,
   setCloudEnabled,
   setCloudError,
   setCloudStatus,
@@ -193,6 +194,14 @@ cloudListenerMiddleware.startListening({
       } catch {
         /* ignore */
       }
+      // Also sign out user when disabling cloud sync
+      try {
+        const { auth } = await getFirebase()
+        const { signOut } = await import('firebase/auth')
+        await signOut(auth)
+      } catch {
+        /* ignore */
+      }
       if (authUnsubscribe) authUnsubscribe()
       Object.values(snapshotUnsubscribes).forEach((fn) => fn && fn())
       snapshotUnsubscribes = {}
@@ -215,6 +224,73 @@ cloudListenerMiddleware.startListening({
       await signInWithPopup(auth, provider)
     } catch {
       api.dispatch(setCloudError('Sign-in failed'))
+    }
+  },
+})
+
+// Delete user account and Firestore entries
+cloudListenerMiddleware.startListening({
+  matcher: isAnyOf(requestDeleteUser),
+  effect: async (_action, api) => {
+    const state: any = api.getState()
+    const userId = state?.cloud?.user?.uid
+    if (!userId) {
+      api.dispatch(setCloudError('No signed-in user to delete'))
+      return
+    }
+    try {
+      const { auth, db } = await getFirebase()
+      const { deleteDoc, doc } = await import('firebase/firestore')
+
+      // Delete editor docs
+      await Promise.all(
+        (['editor', 'todo'] as WritingMode[]).map((mode) =>
+          deleteDoc(doc(db, docPathFor(userId, mode))),
+        ),
+      )
+
+      // Delete user doc
+      await deleteDoc(doc(db, 'users', userId))
+
+      const { deleteUser, signOut } = await import('firebase/auth')
+      if (auth.currentUser && auth.currentUser.uid === userId) {
+        try {
+          await deleteUser(auth.currentUser)
+        } catch (err: any) {
+          try {
+            await signOut(auth)
+          } catch {
+            /* ignore */
+          }
+          api.dispatch(
+            setCloudError(
+              err?.code === 'auth/requires-recent-login'
+                ? 'Please sign in again to delete your account'
+                : 'Failed to delete account',
+            ),
+          )
+          if (authUnsubscribe) authUnsubscribe()
+          Object.values(snapshotUnsubscribes).forEach((fn) => fn && fn())
+          snapshotUnsubscribes = {}
+          api.dispatch(setCloudUser(null))
+          api.dispatch(setCloudStatus('idle'))
+          return
+        }
+      }
+
+      try {
+        const { signOut } = await import('firebase/auth')
+        await signOut(auth)
+      } catch {
+        /* ignore */
+      }
+      if (authUnsubscribe) authUnsubscribe()
+      Object.values(snapshotUnsubscribes).forEach((fn) => fn && fn())
+      snapshotUnsubscribes = {}
+      api.dispatch(setCloudUser(null))
+      api.dispatch(setCloudStatus('idle'))
+    } catch {
+      api.dispatch(setCloudError('Failed to delete user'))
     }
   },
 })

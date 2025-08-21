@@ -14,6 +14,16 @@ service cloud.firestore {
                    && request.resource.data.keys().hasOnly(['text', 'updatedAt', 'version'])
                    && request.resource.data.text is string
                    && request.resource.data.version is int;
+
+      // Allow deletes only to the known docs and authenticated user
+      allow delete: if request.auth != null
+                   && request.auth.uid == userId
+                   && (docId == 'editor' || docId == 'todo');
+    }
+    match /users/{userId} {
+      // Allow deletes only for the authenticated user
+      allow delete: if request.auth != null
+                   && request.auth.uid == userId;
     }
   }
 }
