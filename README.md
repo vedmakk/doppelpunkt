@@ -56,6 +56,9 @@ bun install
 
 # Start development server
 bun run dev
+
+# Optional: Run Firebase Emulators in another terminal
+firebase emulators:start
 ```
 
 ## ☁️ Cloud Sync Setup
