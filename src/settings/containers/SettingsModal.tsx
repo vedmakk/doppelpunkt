@@ -20,14 +20,14 @@ import {
   useCloudEnabled,
   useCloudStatus,
   useCloudUser,
-} from '../../cloudSync/hooks'
+} from '../../cloud-sync/hooks'
 import {
   requestEmailLinkSignIn,
   requestGoogleSignIn,
   requestSignOut,
   setCloudEnabled,
-} from '../../cloudSync/cloudSlice'
-import { requestDeleteUser } from '../../cloudSync/cloudSlice'
+} from '../../cloud-sync/cloudSlice'
+import { requestDeleteUser } from '../../cloud-sync/cloudSlice'
 
 const SettingsModal: React.FC = () => {
   const isOpen = useIsSettingsOpen()
