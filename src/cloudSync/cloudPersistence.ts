@@ -397,5 +397,30 @@ cloudListenerMiddleware.startListening({
     const userId = state.cloud.user?.uid
     if (!userId) return
     await attachSnapshotListeners(userId, api.getState, api.dispatch)
+    try {
+      const { db } = await getFirebase()
+      const { doc, getDoc } = await import('firebase/firestore')
+      ;(['editor', 'todo'] as WritingMode[]).forEach(async (mode) => {
+        try {
+          const ref = doc(db, docPathFor(userId, mode))
+          const snap = await getDoc(ref)
+          const remote = snap.data() as { text?: string } | undefined
+          const localText = (api.getState() as any).editor.documents[mode].text
+          if (
+            !remote ||
+            typeof remote.text !== 'string' ||
+            remote.text === ''
+          ) {
+            await writeModeDocument(userId, mode, localText)
+          }
+        } catch {
+          console.error('Failed to perform initial sync')
+          api.dispatch(setCloudError('Failed to perform initial sync'))
+        }
+      })
+    } catch {
+      console.error('Failed to perform initial sync 2')
+      api.dispatch(setCloudError('Failed to perform initial sync'))
+    }
   },
 })
