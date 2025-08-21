@@ -14,10 +14,11 @@ export const useCloudSyncStatusText = (): string =>
   useAppSelector((s) => {
     const enabled = s.cloud.enabled
     const status = s.cloud.status
-    if (!enabled) return 'Cloud sync off'
+
+    if (!enabled) return 'Disabled'
     if (status === 'initializing') return 'Connecting…'
     if (status === 'error') return 'Error'
-    if (status !== 'connected') return 'Not connected'
+    if (status !== 'connected') return 'Disconnected'
 
     const docs = s.cloud.docs
     const anyPending =
@@ -25,5 +26,9 @@ export const useCloudSyncStatusText = (): string =>
     if (anyPending) return 'Syncing…'
     const allFromCache = docs.editor.fromCache && docs.todo.fromCache
     if (allFromCache) return 'Offline'
-    return 'Saved'
+
+    const error = s.cloud.error
+    if (error) return 'Error'
+
+    return 'Synced'
   })

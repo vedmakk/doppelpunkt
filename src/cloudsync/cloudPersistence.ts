@@ -609,13 +609,22 @@ cloudListenerMiddleware.startListening({
             )
           }
         } catch {
-          console.error('Failed to perform initial sync')
           api.dispatch(setCloudError('Failed to perform initial sync'))
         }
       })
     } catch {
-      console.error('Failed to perform initial sync 2')
       api.dispatch(setCloudError('Failed to perform initial sync'))
+    }
+  },
+})
+
+// Cloud error logging
+cloudListenerMiddleware.startListening({
+  matcher: isAnyOf(setCloudError),
+  effect: async (action) => {
+    const error = (action as unknown as { payload: string }).payload
+    if (import.meta.env.DEV) {
+      console.error('Cloud sync error:', error)
     }
   },
 })

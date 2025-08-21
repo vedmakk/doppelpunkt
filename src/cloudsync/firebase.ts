@@ -6,6 +6,8 @@ import type { User } from 'firebase/auth'
 let _app: import('firebase/app').FirebaseApp | null = null
 let _auth: import('firebase/auth').Auth | null = null
 let _db: import('firebase/firestore').Firestore | null = null
+let _initPromise: Promise<FirebaseServices> | null = null
+let _emulatorsConnected = false
 
 export type FirebaseServices = {
   app: import('firebase/app').FirebaseApp
@@ -18,52 +20,76 @@ export async function getFirebase(): Promise<FirebaseServices> {
     return { app: _app, auth: _auth, db: _db }
   }
 
-  const [
-    { initializeApp },
-    { getAuth },
-    { initializeFirestore, persistentLocalCache, persistentMultipleTabManager },
-  ] = await Promise.all([
-    import('firebase/app'),
-    import('firebase/auth'),
-    import('firebase/firestore'),
-  ])
+  if (_initPromise) return _initPromise
 
-  // Expect config via Vite env. Documented in README.
-  const config = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  }
+  _initPromise = (async (): Promise<FirebaseServices> => {
+    const [
+      { initializeApp, getApp, getApps },
+      { getAuth },
+      {
+        initializeFirestore,
+        getFirestore,
+        persistentLocalCache,
+        persistentMultipleTabManager,
+      },
+    ] = await Promise.all([
+      import('firebase/app'),
+      import('firebase/auth'),
+      import('firebase/firestore'),
+    ])
 
-  _app = initializeApp(config)
-  _auth = getAuth(_app)
-  _db = initializeFirestore(_app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager(),
-    }),
-  })
-
-  // Connect to emulators during development if configured
-  try {
-    if (
-      import.meta.env.DEV &&
-      import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true'
-    ) {
-      const { connectAuthEmulator } = await import('firebase/auth')
-      const { connectFirestoreEmulator } = await import('firebase/firestore')
-      connectAuthEmulator(_auth, 'http://localhost:9099', {
-        disableWarnings: true,
-      })
-      connectFirestoreEmulator(_db, 'localhost', 8080)
+    // Expect config via Vite env. Documented in README.
+    const config = {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID,
     }
-  } catch {
-    // ignore emulator connection errors
-  }
 
-  return { app: _app, auth: _auth, db: _db }
+    const app = getApps().length > 0 ? getApp() : initializeApp(config)
+    const auth = getAuth(app)
+
+    let db: import('firebase/firestore').Firestore
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      })
+    } catch {
+      // Firestore already initialized (possibly with same or different options).
+      // Reuse existing instance to avoid duplicate initialization errors.
+      db = getFirestore(app)
+    }
+
+    // Connect to emulators during development if configured
+    try {
+      if (
+        !_emulatorsConnected &&
+        import.meta.env.DEV &&
+        import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true'
+      ) {
+        const { connectAuthEmulator } = await import('firebase/auth')
+        const { connectFirestoreEmulator } = await import('firebase/firestore')
+        connectAuthEmulator(auth, 'http://localhost:9099', {
+          disableWarnings: true,
+        })
+        connectFirestoreEmulator(db, 'localhost', 8080)
+        _emulatorsConnected = true
+      }
+    } catch {
+      // ignore emulator connection errors
+    }
+
+    _app = app
+    _auth = auth
+    _db = db
+    return { app, auth, db }
+  })()
+
+  return _initPromise
 }
 
 export type FirebaseUser = User
