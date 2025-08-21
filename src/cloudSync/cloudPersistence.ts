@@ -318,6 +318,10 @@ cloudListenerMiddleware.startListening({
       const { sendSignInLinkToEmail, isSignInWithEmailLink } = await import(
         'firebase/auth'
       )
+      // Ensure auth listener is attached so UI reflects auth changes immediately
+      if (!authUnsubscribe) {
+        await attachAuthListener(api.dispatch)
+      }
       const email = (action as unknown as { payload: { email: string } })
         .payload.email
       const url = `${window.location.origin}/` // canonical action URL
@@ -341,6 +345,10 @@ cloudListenerMiddleware.startListening({
       const { isSignInWithEmailLink, signInWithEmailLink } = await import(
         'firebase/auth'
       )
+      // Ensure auth listener is attached so UI reflects auth changes immediately
+      if (!authUnsubscribe) {
+        await attachAuthListener(api.dispatch)
+      }
       if (!isSignInWithEmailLink(auth, window.location.href)) return
       const email = window.localStorage.getItem('cloud.emailForSignIn')
       if (!email) return
