@@ -55,7 +55,7 @@ Current date for reference: ${new Date().toISOString()}`
 
       // Use standard completion API with structured JSON
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-nano-2025-08-07',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: todoText },
