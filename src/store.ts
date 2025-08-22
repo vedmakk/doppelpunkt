@@ -5,12 +5,12 @@ import { editorReducer } from './editor/editorSlice'
 import {
   editorListenerMiddleware,
   hydrateAppStateFromStorage,
-} from './editor/persistence'
+} from './editor/persistenceMiddleware'
 import { cloudReducer } from './cloudsync/cloudSlice'
 import {
   cloudListenerMiddleware,
   hydrateCloudStateFromStorage,
-} from './cloudsync/cloudPersistence'
+} from './cloudsync/cloudPersistenceMiddleware'
 import { themeReducer } from './theme/themeSlice'
 import { menuReducer } from './menu/menuSlice'
 import { hotkeysReducer } from './hotkeys/hotkeysSlice'
