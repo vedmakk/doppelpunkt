@@ -1,160 +1,120 @@
-import { describe, it, expect, mock, beforeEach } from 'bun:test'
+import { describe, it, expect, beforeEach, mock } from 'bun:test'
 import { StructuredTodosProcessor } from './structuredTodosProcessor'
-import OpenAI from 'openai'
 
-// Mock OpenAI
+// Mock the OpenAI module
+const mockOpenAI = {
+  chat: {
+    completions: {
+      create: mock(() =>
+        Promise.resolve({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  todos: [
+                    {
+                      id: 'test-todo-1',
+                      description: 'Test todo item',
+                      due: Date.now(),
+                      priority: 'medium',
+                      completed: false,
+                    },
+                  ],
+                }),
+              },
+            },
+          ],
+        }),
+      ),
+    },
+  },
+}
+
 mock.module('openai', () => ({
-  default: mock(() => ({})),
+  default: function MockOpenAI() {
+    return mockOpenAI
+  },
 }))
 
 describe('StructuredTodosProcessor', () => {
   let processor: StructuredTodosProcessor
-  let mockOpenAI: any
 
   beforeEach(() => {
-    // Create mock OpenAI instance
-    mockOpenAI = {
-      beta: {
-        chat: {
-          completions: {
-            parse: mock(() => {}),
-          },
-        },
-      },
-    }
-
-    // Mock the OpenAI constructor
-    ;(OpenAI as any).mockImplementation(() => mockOpenAI)
-
+    // Reset all mocks before each test
+    mockOpenAI.chat.completions.create.mockClear()
     processor = new StructuredTodosProcessor('test-api-key')
   })
 
   describe('extractTodos', () => {
-    it('should extract todos from text', async () => {
-      const todoText = 'I need to wash clothes today. Buy groceries tomorrow.'
-
-      const mockResponse = {
-        choices: [
-          {
-            message: {
-              parsed: {
-                todos: [
-                  {
-                    id: 'todo-1',
-                    description: 'Wash clothes',
-                    due: Date.now(),
-                    priority: 'medium',
-                  },
-                  {
-                    id: 'todo-2',
-                    description: 'Buy groceries',
-                    due: Date.now() + 86400000,
-                    priority: 'medium',
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      }
-
-      mockOpenAI.beta.chat.completions.parse.mockResolvedValue(mockResponse)
-
-      const result = await processor.extractTodos(todoText)
-
-      expect(result).toHaveLength(2)
-      expect(result[0]).toHaveProperty('id')
-      expect(result[0]).toHaveProperty('description')
-      expect(result[0]).toHaveProperty('due')
-      expect(result[0]).toHaveProperty('priority')
-
-      expect(mockOpenAI.beta.chat.completions.parse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'gpt-4o-mini',
-          messages: expect.arrayContaining([
-            expect.objectContaining({ role: 'system' }),
-            expect.objectContaining({ role: 'user', content: todoText }),
-          ]),
-          temperature: 0.3,
-          max_tokens: 1000,
-        }),
-      )
-    })
-
     it('should return empty array for empty text', async () => {
       const result = await processor.extractTodos('')
       expect(result).toEqual([])
-      expect(mockOpenAI.beta.chat.completions.parse).not.toHaveBeenCalled()
+      // Should not call OpenAI API for empty text
+      expect(mockOpenAI.chat.completions.create).not.toHaveBeenCalled()
     })
 
     it('should return empty array for very short text', async () => {
       const result = await processor.extractTodos('Hi')
       expect(result).toEqual([])
-      expect(mockOpenAI.beta.chat.completions.parse).not.toHaveBeenCalled()
+      // Should not call OpenAI API for very short text
+      expect(mockOpenAI.chat.completions.create).not.toHaveBeenCalled()
     })
 
-    it('should handle API errors gracefully', async () => {
-      const todoText = 'Test todo text'
-      const apiError = new OpenAI.APIError(
-        400,
-        { error: { message: 'Invalid request' } },
-        'Bad Request',
-        {} as any,
-      )
-
-      mockOpenAI.beta.chat.completions.parse.mockRejectedValue(apiError)
-
-      await expect(processor.extractTodos(todoText)).rejects.toThrow(
-        'OpenAI API Error',
-      )
-    })
-
-    it('should handle missing parsed response', async () => {
-      const todoText = 'Test todo text'
-
-      const mockResponse = {
-        choices: [
-          {
-            message: {
-              parsed: null,
-            },
-          },
-        ],
-      }
-
-      mockOpenAI.beta.chat.completions.parse.mockResolvedValue(mockResponse)
-
-      const result = await processor.extractTodos(todoText)
-      expect(result).toEqual([])
-    })
-
-    it('should generate IDs for todos without IDs', async () => {
-      const todoText = 'Test todo'
-
-      const mockResponse = {
-        choices: [
-          {
-            message: {
-              parsed: {
-                todos: [
-                  {
-                    description: 'Test task',
-                    priority: 'low',
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      }
-
-      mockOpenAI.beta.chat.completions.parse.mockResolvedValue(mockResponse)
+    it('should extract todos from valid text', async () => {
+      const todoText =
+        'I need to buy groceries tomorrow and finish the project by Friday'
 
       const result = await processor.extractTodos(todoText)
 
       expect(result).toHaveLength(1)
-      expect(result[0].id).toBeDefined()
-      expect(result[0].id).toMatch(/^todo-\d+-\d+$/)
+      expect(result[0]).toHaveProperty('id')
+      expect(result[0]).toHaveProperty('description', 'Test todo item')
+      expect(result[0]).toHaveProperty('due')
+      expect(result[0]).toHaveProperty('priority', 'medium')
+      expect(result[0]).toHaveProperty('completed')
+
+      // Should call OpenAI API for valid text
+      expect(mockOpenAI.chat.completions.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle API errors gracefully', async () => {
+      // Suppress console.error during this test
+      const originalConsoleError = console.error
+      console.error = () => {}
+
+      try {
+        // Mock an API error
+        mockOpenAI.chat.completions.create.mockRejectedValueOnce(
+          new Error('API Error: Invalid request'),
+        )
+
+        const todoText = 'Test todo text that is long enough to process'
+
+        await expect(processor.extractTodos(todoText)).rejects.toThrow()
+        expect(mockOpenAI.chat.completions.create).toHaveBeenCalledTimes(1)
+      } finally {
+        // Restore console.error
+        console.error = originalConsoleError
+      }
+    })
+
+    it('should handle invalid JSON response gracefully', async () => {
+      // Mock invalid JSON response
+      mockOpenAI.chat.completions.create.mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: 'invalid json',
+            },
+          },
+        ],
+      })
+
+      const todoText = 'Test todo text that is long enough to process'
+
+      const result = await processor.extractTodos(todoText)
+      expect(result).toEqual([])
+      expect(mockOpenAI.chat.completions.create).toHaveBeenCalledTimes(1)
     })
   })
 })

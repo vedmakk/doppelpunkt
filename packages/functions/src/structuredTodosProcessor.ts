@@ -9,13 +9,13 @@ const TodoSchema = z.object({
   description: z.string().describe('A clear, concise description of the task'),
   due: z
     .number()
-    .optional()
+    .nullable()
     .describe('Unix timestamp in milliseconds for when the task is due'),
   priority: z
     .enum(['low', 'medium', 'high'])
-    .optional()
+    .nullable()
     .describe('Priority level of the task'),
-  completed: z.boolean().optional().describe('Whether the task is completed'),
+  completed: z.boolean().nullable().describe('Whether the task is completed'),
 })
 
 const TodosResponseSchema = z.object({
@@ -64,8 +64,6 @@ Current date for reference: ${new Date().toISOString()}`
           TodosResponseSchema,
           'todos_extraction',
         ),
-        temperature: 0.3,
-        max_tokens: 1000,
       })
 
       const message = completion.choices[0].message
@@ -88,16 +86,26 @@ Current date for reference: ${new Date().toISOString()}`
         return []
       }
 
-      // Ensure all todos have valid IDs
-      return result.todos.map((todo: StructuredTodo, index: number) => ({
-        ...todo,
-        id: todo.id || `todo-${Date.now()}-${index}`,
-      }))
+      // Ensure all todos have valid IDs and convert null to undefined
+      return result.todos.map(
+        (todo: any, index: number): StructuredTodo => ({
+          id: todo.id || `todo-${Date.now()}-${index}`,
+          description: todo.description,
+          due: todo.due || undefined,
+          priority: todo.priority || undefined,
+          completed: todo.completed || undefined,
+        }),
+      )
     } catch (error) {
       console.error('Error extracting todos:', error)
 
       // If it's an API error, we might want to handle it differently
-      if (error instanceof OpenAI.APIError) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'status' in error &&
+        'message' in error
+      ) {
         console.error('OpenAI API Error:', error.status, error.message)
         throw new Error(`OpenAI API Error: ${error.message}`)
       }
