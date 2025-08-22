@@ -11,6 +11,7 @@
     "build": "bun run --filter '*' build",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun run --filter '*' test:ci --passWithNoTests",
+    "preview": "bun run --filter 'app' preview",
     "preserve": "bun run build",
     "serve": "firebase emulators:start",
     "deploy": "firebase deploy"
