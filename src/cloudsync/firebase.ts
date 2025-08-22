@@ -3,42 +3,59 @@
 
 import type { User } from 'firebase/auth'
 
-let _app: import('firebase/app').FirebaseApp | null = null
-let _auth: import('firebase/auth').Auth | null = null
-let _db: import('firebase/firestore').Firestore | null = null
-let _initPromise: Promise<FirebaseServices> | null = null
-let _emulatorsConnected = false
-
 export type FirebaseServices = {
   app: import('firebase/app').FirebaseApp
   auth: import('firebase/auth').Auth
   db: import('firebase/firestore').Firestore
 }
 
-export async function getFirebase(): Promise<FirebaseServices> {
-  if (_app && _auth && _db) {
-    return { app: _app, auth: _auth, db: _db }
+export type FirebaseUser = User
+
+// Singleton state for lazy initialization
+class FirebaseManager {
+  private services: FirebaseServices | null = null
+  private initPromise: Promise<FirebaseServices> | null = null
+  private emulatorsConnected = false
+
+  async getServices(): Promise<FirebaseServices> {
+    if (this.services) {
+      return this.services
+    }
+
+    if (this.initPromise) {
+      return this.initPromise
+    }
+
+    this.initPromise = this.initializeServices()
+    return this.initPromise
   }
 
-  if (_initPromise) return _initPromise
-
-  _initPromise = (async (): Promise<FirebaseServices> => {
-    const [
-      { initializeApp, getApp, getApps },
-      { getAuth },
-      {
-        initializeFirestore,
-        getFirestore,
-        persistentLocalCache,
-        persistentMultipleTabManager,
-      },
-    ] = await Promise.all([
+  private async initializeServices(): Promise<FirebaseServices> {
+    // Dynamically import Firebase modules to avoid loading them until needed
+    const [firebaseApp, firebaseAuth, firebaseFirestore] = await Promise.all([
       import('firebase/app'),
       import('firebase/auth'),
       import('firebase/firestore'),
     ])
 
-    // Expect config via Vite env. Documented in README.
+    const app = this.initializeApp(firebaseApp)
+    const auth = firebaseAuth.getAuth(app)
+    const db = this.initializeFirestore(app, firebaseFirestore)
+
+    await this.connectEmulatorsIfNeeded(auth, db)
+
+    const services = { app, auth, db }
+    this.services = services
+    return services
+  }
+
+  private initializeApp(firebaseApp: typeof import('firebase/app')) {
+    const { getApps, getApp, initializeApp } = firebaseApp
+
+    if (getApps().length > 0) {
+      return getApp()
+    }
+
     const config = {
       apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
       authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -48,48 +65,67 @@ export async function getFirebase(): Promise<FirebaseServices> {
       appId: import.meta.env.VITE_FIREBASE_APP_ID,
     }
 
-    const app = getApps().length > 0 ? getApp() : initializeApp(config)
-    const auth = getAuth(app)
+    return initializeApp(config)
+  }
 
-    let db: import('firebase/firestore').Firestore
+  private initializeFirestore(
+    app: import('firebase/app').FirebaseApp,
+    firebaseFirestore: typeof import('firebase/firestore'),
+  ) {
+    const {
+      initializeFirestore,
+      getFirestore,
+      persistentLocalCache,
+      persistentMultipleTabManager,
+    } = firebaseFirestore
+
     try {
-      db = initializeFirestore(app, {
+      return initializeFirestore(app, {
         localCache: persistentLocalCache({
           tabManager: persistentMultipleTabManager(),
         }),
       })
     } catch {
-      // Firestore already initialized (possibly with same or different options).
-      // Reuse existing instance to avoid duplicate initialization errors.
-      db = getFirestore(app)
+      // Firestore already initialized - reuse existing instance
+      return getFirestore(app)
+    }
+  }
+
+  private async connectEmulatorsIfNeeded(
+    auth: import('firebase/auth').Auth,
+    db: import('firebase/firestore').Firestore,
+  ) {
+    const shouldConnectEmulators =
+      !this.emulatorsConnected &&
+      import.meta.env.DEV &&
+      import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true'
+
+    if (!shouldConnectEmulators) {
+      return
     }
 
-    // Connect to emulators during development if configured
     try {
-      if (
-        !_emulatorsConnected &&
-        import.meta.env.DEV &&
-        import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true'
-      ) {
-        const { connectAuthEmulator } = await import('firebase/auth')
-        const { connectFirestoreEmulator } = await import('firebase/firestore')
-        connectAuthEmulator(auth, 'http://localhost:9099', {
-          disableWarnings: true,
-        })
-        connectFirestoreEmulator(db, 'localhost', 8080)
-        _emulatorsConnected = true
-      }
+      const [{ connectAuthEmulator }, { connectFirestoreEmulator }] =
+        await Promise.all([
+          import('firebase/auth'),
+          import('firebase/firestore'),
+        ])
+
+      connectAuthEmulator(auth, 'http://localhost:9099', {
+        disableWarnings: true,
+      })
+      connectFirestoreEmulator(db, 'localhost', 8080)
+      this.emulatorsConnected = true
     } catch {
-      // ignore emulator connection errors
+      // Silently ignore emulator connection errors
     }
-
-    _app = app
-    _auth = auth
-    _db = db
-    return { app, auth, db }
-  })()
-
-  return _initPromise
+  }
 }
 
-export type FirebaseUser = User
+// Create singleton instance
+const firebaseManager = new FirebaseManager()
+
+// Public API - maintains the same interface as before
+export async function getFirebase(): Promise<FirebaseServices> {
+  return firebaseManager.getServices()
+}
