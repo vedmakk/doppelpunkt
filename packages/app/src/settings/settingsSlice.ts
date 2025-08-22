@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type SettingsPage = 'general' | 'hotkeys'
+export type SettingsPage = 'general' | 'hotkeys' | 'structuredTodos'
 
 export interface SettingsState {
   readonly isOpen: boolean

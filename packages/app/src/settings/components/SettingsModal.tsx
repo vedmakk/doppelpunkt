@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from '@emotion/styled'
 
 import Modal from '../../app/components/Modal'
@@ -35,6 +35,11 @@ interface Props {
   readonly onDeleteUser: () => void
   readonly cloudStatus: CloudStatus
   readonly cloudSyncStatusText?: string
+  readonly structuredTodosEnabled: boolean
+  readonly onToggleStructuredTodos: (enabled: boolean) => void
+  readonly structuredTodosApiKey: string | null
+  readonly onUpdateApiKey: (key: string) => void
+  readonly onClearApiKey: () => void
 }
 
 const Container = styled.div(({ theme }) => ({
@@ -96,6 +101,28 @@ const SignInContainer = styled.div(({ theme }) => ({
   alignItems: 'flex-start',
 }))
 
+const InputContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  width: '100%',
+  maxWidth: '400px',
+}))
+
+const Input = styled.input(({ theme }) => ({
+  padding: theme.spacing(1),
+  borderRadius: '4px',
+  border: `1px solid ${theme.colors.secondary}`,
+  background: theme.colors.background,
+  color: theme.colors.text,
+  fontSize: theme.fontSize.small,
+  fontFamily: 'monospace',
+  '&:focus': {
+    outline: 'none',
+    borderColor: theme.colors.primary,
+  },
+}))
+
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
   shouldRender,
@@ -113,7 +140,25 @@ export const SettingsModal: React.FC<Props> = ({
   onDeleteUser,
   cloudStatus,
   cloudSyncStatusText,
+  structuredTodosEnabled,
+  onToggleStructuredTodos,
+  structuredTodosApiKey,
+  onUpdateApiKey,
+  onClearApiKey,
 }) => {
+  const [apiKeyInput, setApiKeyInput] = useState(structuredTodosApiKey || '')
+  const [showApiKey, setShowApiKey] = useState(false)
+
+  const handleApiKeySubmit = () => {
+    if (apiKeyInput.trim()) {
+      onUpdateApiKey(apiKeyInput.trim())
+    }
+  }
+
+  const handleApiKeyClear = () => {
+    setApiKeyInput('')
+    onClearApiKey()
+  }
   return (
     <Modal
       isOpen={isOpen}
@@ -135,6 +180,12 @@ export const SettingsModal: React.FC<Props> = ({
             onClick={() => onChangePage('hotkeys')}
             aria-current={activePage === 'hotkeys'}
             label="Keyboard Shortcuts"
+          />
+          <Button
+            active={activePage === 'structuredTodos'}
+            onClick={() => onChangePage('structuredTodos')}
+            aria-current={activePage === 'structuredTodos'}
+            label="Structured Todos"
           />
         </Nav>
 
@@ -216,6 +267,80 @@ export const SettingsModal: React.FC<Props> = ({
         {activePage === 'hotkeys' && (
           <Page aria-label="Keyboard shortcuts settings">
             <HotkeysInfo />
+          </Page>
+        )}
+
+        {activePage === 'structuredTodos' && (
+          <Page aria-label="Structured todos settings">
+            <Row>
+              <Col>
+                <Switch
+                  label="Enable Structured Todos"
+                  checked={structuredTodosEnabled}
+                  onChange={onToggleStructuredTodos}
+                  size={24}
+                />
+                <MutedLabel size="tiny">
+                  Uses AI to automatically extract and organize todos from your
+                  todo document. Requires an OpenAI API key and cloud sync to be
+                  enabled.
+                </MutedLabel>
+              </Col>
+            </Row>
+
+            {structuredTodosEnabled && (
+              <>
+                <Row>
+                  <Col>
+                    <Label size="small">OpenAI API Key</Label>
+                    <MutedLabel size="tiny">
+                      Your API key is stored securely in the cloud and never
+                      synced back to your device.
+                    </MutedLabel>
+                    <InputContainer>
+                      <Input
+                        type={showApiKey ? 'text' : 'password'}
+                        value={apiKeyInput}
+                        onChange={(e) => setApiKeyInput(e.target.value)}
+                        placeholder="sk-..."
+                        aria-label="OpenAI API Key"
+                      />
+                      <Row>
+                        <Button
+                          label={showApiKey ? 'Hide' : 'Show'}
+                          onClick={() => setShowApiKey(!showApiKey)}
+                        />
+                        <Button
+                          label="Save Key"
+                          onClick={handleApiKeySubmit}
+                          disabled={!apiKeyInput.trim()}
+                        />
+                        {structuredTodosApiKey && (
+                          <Button
+                            label="Clear Key"
+                            onClick={handleApiKeyClear}
+                          />
+                        )}
+                      </Row>
+                    </InputContainer>
+                    {structuredTodosApiKey && (
+                      <MutedLabel size="tiny">✓ API key is set</MutedLabel>
+                    )}
+                  </Col>
+                </Row>
+
+                {!cloudEnabled && (
+                  <Row>
+                    <Col>
+                      <MutedLabel size="tiny">
+                        ⚠️ Cloud sync must be enabled for structured todos to
+                        work. Please enable cloud sync in the General settings.
+                      </MutedLabel>
+                    </Col>
+                  </Row>
+                )}
+              </>
+            )}
           </Page>
         )}
       </Container>

@@ -1,14 +1,25 @@
 import React from 'react'
 
 import { SectionTitle } from './SectionTitle'
-import { MutedLabel } from './MutedLabel'
 import { SectionContainer } from './SectionContainer'
+import { StructuredTodosList } from '../../structuredTodos/containers/StructuredTodosList'
+import { useAppSelector } from '../../store'
+import { selectStructuredTodosEnabled } from '../../structuredTodos/selectors'
+import { MutedLabel } from './MutedLabel'
 
 const ToolbarTodoSection: React.FC = () => {
+  const structuredTodosEnabled = useAppSelector(selectStructuredTodosEnabled)
+
   return (
     <SectionContainer as="section" aria-label="Todo tools">
       <SectionTitle>Todo</SectionTitle>
-      <MutedLabel size="tiny">Todo toolbar placeholder</MutedLabel>
+      {structuredTodosEnabled ? (
+        <StructuredTodosList />
+      ) : (
+        <MutedLabel size="tiny">
+          Enable Structured Todos in settings to see your organized tasks here.
+        </MutedLabel>
+      )}
     </SectionContainer>
   )
 }

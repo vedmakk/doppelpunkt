@@ -28,6 +28,7 @@ import {
   setCloudEnabled,
 } from '../../cloudsync/cloudSlice'
 import { requestDeleteUser } from '../../cloudsync/cloudSlice'
+import { useStructuredTodos } from '../../structuredTodos/hooks'
 
 const SettingsModal: React.FC = () => {
   const isOpen = useIsSettingsOpen()
@@ -38,6 +39,14 @@ const SettingsModal: React.FC = () => {
   const cloudUser = useCloudUser()
   const cloudStatus = useCloudStatus()
   const cloudSyncStatusText = useCloudSyncStatusText()
+
+  const {
+    enabled: structuredTodosEnabled,
+    apiKey: structuredTodosApiKey,
+    toggleEnabled: toggleStructuredTodos,
+    updateApiKey,
+    clearKey: clearApiKey,
+  } = useStructuredTodos()
 
   const dispatch = useDispatch()
 
@@ -95,6 +104,11 @@ const SettingsModal: React.FC = () => {
       onDeleteUser={onDeleteUser}
       cloudStatus={cloudStatus}
       cloudSyncStatusText={cloudSyncStatusText}
+      structuredTodosEnabled={structuredTodosEnabled}
+      onToggleStructuredTodos={toggleStructuredTodos}
+      structuredTodosApiKey={structuredTodosApiKey}
+      onUpdateApiKey={updateApiKey}
+      onClearApiKey={clearApiKey}
     />
   )
 }

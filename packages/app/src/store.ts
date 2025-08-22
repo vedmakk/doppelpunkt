@@ -16,6 +16,8 @@ import { menuReducer } from './menu/menuSlice'
 import { hotkeysReducer } from './hotkeys/hotkeysSlice'
 import { settingsReducer } from './settings/settingsSlice'
 import { modeReducer } from './mode/modeSlice'
+import { structuredTodosReducer } from './structuredTodos/structuredTodosSlice'
+import { structuredTodosListenerMiddleware } from './structuredTodos/persistenceMiddleware'
 
 export const createStore = () =>
   configureStore({
@@ -27,6 +29,7 @@ export const createStore = () =>
       menu: menuReducer,
       hotkeys: hotkeysReducer,
       settings: settingsReducer,
+      structuredTodos: structuredTodosReducer,
     },
     preloadedState: {
       ...hydrateAppStateFromStorage(),
@@ -37,6 +40,7 @@ export const createStore = () =>
       return defaults
         .prepend(cloudListenerMiddleware.middleware)
         .prepend(editorListenerMiddleware.middleware)
+        .prepend(structuredTodosListenerMiddleware.middleware)
     },
   })
 
