@@ -10,6 +10,8 @@ export interface DocumentData {
   text: string
   updatedAt: Timestamp
   rev: number
+  structuredTodos?: Array<{ description: string; due: Timestamp | null }>
+  structuredUpdatedAt?: Timestamp
 }
 
 export interface SaveResult {
@@ -114,6 +116,8 @@ export async function loadDocument(
     text: data.text ?? '',
     updatedAt: data.updatedAt as Timestamp,
     rev: data.rev ?? 0,
+    structuredTodos: (data as any).structuredTodos,
+    structuredUpdatedAt: (data as any).structuredUpdatedAt as Timestamp,
   }
 }
 
@@ -167,6 +171,8 @@ export function listenToDocument(
         text: data.text ?? '',
         updatedAt: data.updatedAt as Timestamp,
         rev: data.rev ?? 0,
+        structuredTodos: (data as any).structuredTodos,
+        structuredUpdatedAt: (data as any).structuredUpdatedAt as Timestamp,
       }
 
       onUpdate(documentData, metadata)

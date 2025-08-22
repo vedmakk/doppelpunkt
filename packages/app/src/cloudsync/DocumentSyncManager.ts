@@ -8,6 +8,7 @@ import {
   setCloudDocBase,
   setCloudDocSnapshotMeta,
 } from './cloudSlice'
+import { setStructuredTodos } from '../structured/structuredSlice'
 import {
   saveDocumentWithConflictResolution,
   deleteDocument,
@@ -69,6 +70,24 @@ export class DocumentSyncManager {
                 ),
               }),
             )
+          }
+
+          // If this is the todo doc and contains structuredTodos, forward them to structured slice
+          if (
+            mode === 'todo' &&
+            ((snapshot) => !!snapshot)(documentData as any) // type guard noop
+          ) {
+            // Re-fetch snapshot to access raw fields without types
+            // We already have the data in documentData, but types hide extra fields
+            // The listener above provides the same data; we access via any cast
+            const anyData = documentData as any
+            if (Array.isArray(anyData.structuredTodos)) {
+              const todos = anyData.structuredTodos.map((t: any) => ({
+                description: String(t.description || ''),
+                due: t.due ?? null,
+              }))
+              dispatch(setStructuredTodos({ todos, updatedAt: Date.now() }))
+            }
           }
         },
       )

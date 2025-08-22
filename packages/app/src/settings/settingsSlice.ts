@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type SettingsPage = 'general' | 'hotkeys'
+// TODO: Rename 'ai'
+export type SettingsPage = 'general' | 'hotkeys' | 'ai'
 
 export interface SettingsState {
   readonly isOpen: boolean

@@ -1,4 +1,5 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
+import { setStructuredTodos } from '../structured/structuredSlice'
 
 import {
   type EditorState,
@@ -85,6 +86,35 @@ editorListenerMiddleware.startListening({
       }
     } catch {
       // Ignore storage failures
+    }
+  },
+})
+
+// Structured todos local caching (piggyback on auto-save setting)
+const STRUCTURED_KEY = 'structured.todos'
+export function hydrateStructuredFromStorage() {
+  try {
+    const raw = localStorage.getItem(STRUCTURED_KEY)
+    if (!raw) return undefined
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return undefined
+    return parsed
+  } catch {
+    return undefined
+  }
+}
+
+editorListenerMiddleware.startListening({
+  matcher: isAnyOf(setStructuredTodos),
+  effect: async (action, listenerApi) => {
+    const state = listenerApi.getState() as { editor: EditorState }
+    try {
+      if (state.editor.autoSave) {
+        const todos = (action as any).payload?.todos ?? []
+        localStorage.setItem(STRUCTURED_KEY, JSON.stringify(todos))
+      }
+    } catch {
+      // ignore
     }
   },
 })

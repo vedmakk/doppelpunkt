@@ -8,6 +8,8 @@ import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 import { SettingsPage } from '../settingsSlice'
 import { CloudStatus } from '../../cloudsync/cloudSlice'
 
+import StructuredSettings from '../containers/StructuredSettings'
+
 import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 import { MutedLabel } from '../../menu/components/MutedLabel'
 import { Button } from '../../app/components/Button'
@@ -136,6 +138,12 @@ export const SettingsModal: React.FC<Props> = ({
             aria-current={activePage === 'hotkeys'}
             label="Keyboard Shortcuts"
           />
+          <Button
+            active={activePage === 'ai'}
+            onClick={() => onChangePage('ai')}
+            aria-current={activePage === 'ai'}
+            label="Structured Todos"
+          />
         </Nav>
 
         {activePage === 'general' && (
@@ -216,6 +224,22 @@ export const SettingsModal: React.FC<Props> = ({
         {activePage === 'hotkeys' && (
           <Page aria-label="Keyboard shortcuts settings">
             <HotkeysInfo />
+          </Page>
+        )}
+
+        {activePage === 'ai' && (
+          <Page aria-label="Structured Todos settings">
+            <Col>
+              <Label size="small">
+                Manage OpenAI integration for Structured Todos
+              </Label>
+              <MutedLabel size="tiny">
+                Provide your own OpenAI API key. Your key is stored in your
+                cloud user config and used by the cloud function to extract
+                todos. You can disable this anytime.
+              </MutedLabel>
+            </Col>
+            <StructuredSettings />
           </Page>
         )}
       </Container>

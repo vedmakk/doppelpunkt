@@ -16,6 +16,12 @@ import {
 // Import our manager classes
 import { AuthManager } from './AuthManager'
 import { DocumentSyncManager } from './DocumentSyncManager'
+import { isAnyOf as isAnyOfRTK } from '@reduxjs/toolkit'
+import {
+  setStructuredEnabled,
+  setStructuredApiKey,
+  requestSaveStructuredConfig,
+} from '../structured/structuredSlice'
 
 const CLOUD_ENABLED_KEY = 'cloud.enabled'
 
@@ -260,6 +266,38 @@ cloudListenerMiddleware.startListening({
     const error = (action as any).payload
     if (import.meta.env.DEV) {
       console.error('Cloud sync error:', error)
+    }
+  },
+})
+
+// === Structured Todos: sync user config to Firestore ===
+cloudListenerMiddleware.startListening({
+  matcher: isAnyOfRTK(
+    setStructuredEnabled,
+    setStructuredApiKey,
+    requestSaveStructuredConfig,
+  ),
+  effect: async (_action, api) => {
+    const state: any = api.getState()
+    if (!state.cloud.enabled || state.cloud.status !== 'connected') return
+    const userId = state.cloud.user?.uid
+    if (!userId) return
+
+    try {
+      const { db } = await (await import('./firebase')).getFirebase()
+      const { doc, setDoc } = await import('firebase/firestore')
+      const ref = doc(db, 'users', userId, 'meta', 'config')
+      await setDoc(
+        ref,
+        {
+          structuredEnabled: Boolean(state.structured.enabled),
+          openaiApiKey: state.structured.apiKey ?? null,
+        },
+        { merge: true },
+      )
+    } catch {
+      // silent
+      // TODO: Handle error
     }
   },
 })

@@ -5,6 +5,7 @@ import { editorReducer } from './editor/editorSlice'
 import {
   editorListenerMiddleware,
   hydrateAppStateFromStorage,
+  hydrateStructuredFromStorage,
 } from './editor/persistenceMiddleware'
 import { cloudReducer } from './cloudsync/cloudSlice'
 import {
@@ -16,6 +17,7 @@ import { menuReducer } from './menu/menuSlice'
 import { hotkeysReducer } from './hotkeys/hotkeysSlice'
 import { settingsReducer } from './settings/settingsSlice'
 import { modeReducer } from './mode/modeSlice'
+import { structuredTodosReducer } from './structured/structuredSlice'
 
 export const createStore = () =>
   configureStore({
@@ -27,10 +29,16 @@ export const createStore = () =>
       menu: menuReducer,
       hotkeys: hotkeysReducer,
       settings: settingsReducer,
+      structured: structuredTodosReducer,
     },
     preloadedState: {
       ...hydrateAppStateFromStorage(),
       ...hydrateCloudStateFromStorage(),
+      structured: {
+        enabled: false,
+        apiKey: null,
+        todos: hydrateStructuredFromStorage() ?? [],
+      },
     },
     middleware: (getDefaultMiddleware) => {
       const defaults = getDefaultMiddleware()

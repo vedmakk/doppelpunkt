@@ -29,6 +29,9 @@ Text is auto-saved in **LocalStorage** between sessions. Auto-save is disabled b
 ☁️ **Cloud Sync (opt‑in)**  
 Sync your `editor` and `todo` documents across devices using Firebase Auth + Firestore. Disabled by default and only loads Auth/Firestore when enabled.
 
+✅ **Structured Todos (opt‑in)**  
+Extract actionable tasks from your `todo` document using OpenAI and show them grouped in the toolbar. Requires enabling the feature and providing your own OpenAI API key in Settings.
+
 ↩️↪️ **Undo/Redo**  
 Supports full undo/redo history for text changes.
 
@@ -110,6 +113,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId}/doc/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId}/meta/config {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
