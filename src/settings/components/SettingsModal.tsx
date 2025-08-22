@@ -74,6 +74,28 @@ const Col = styled.div(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
+const CloudStatusContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+  alignItems: 'flex-start',
+  marginTop: theme.spacing(1),
+}))
+
+const UserInfoContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  alignItems: 'flex-start',
+}))
+
+const SignInContainer = styled.div(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+  alignItems: 'flex-start',
+}))
+
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
   shouldRender,
@@ -151,15 +173,7 @@ export const SettingsModal: React.FC<Props> = ({
                 </MutedLabel>
                 {cloudEnabled && (
                   <>
-                    <div
-                      css={(theme) => ({
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: theme.spacing(2),
-                        alignItems: 'flex-start',
-                        marginTop: theme.spacing(1),
-                      })}
-                    >
+                    <CloudStatusContainer>
                       <MutedLabel size="tiny">
                         Status:{' '}
                         {cloudSyncStatusText ||
@@ -168,14 +182,7 @@ export const SettingsModal: React.FC<Props> = ({
                             : 'Not connected')}
                       </MutedLabel>
                       {cloudUser ? (
-                        <div
-                          css={(theme) => ({
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: theme.spacing(1),
-                            alignItems: 'flex-start',
-                          })}
-                        >
+                        <UserInfoContainer>
                           <Label size="small">
                             Signed in as{' '}
                             {cloudUser.displayName ||
@@ -189,23 +196,16 @@ export const SettingsModal: React.FC<Props> = ({
                               onClick={onDeleteUser}
                             />
                           </Row>
-                        </div>
+                        </UserInfoContainer>
                       ) : (
-                        <div
-                          css={(theme) => ({
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: theme.spacing(2),
-                            alignItems: 'flex-start',
-                          })}
-                        >
+                        <SignInContainer>
                           <Button
                             label="Sign in with Google"
                             onClick={onSignInWithGoogle}
                           />
-                        </div>
+                        </SignInContainer>
                       )}
-                    </div>
+                    </CloudStatusContainer>
                   </>
                 )}
               </Col>
