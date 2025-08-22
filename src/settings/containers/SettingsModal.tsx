@@ -23,7 +23,6 @@ import {
   useCloudSyncStatusText,
 } from '../../cloudsync/hooks'
 import {
-  requestEmailLinkSignIn,
   requestGoogleSignIn,
   requestSignOut,
   setCloudEnabled,
@@ -71,11 +70,6 @@ const SettingsModal: React.FC = () => {
     [dispatch],
   )
 
-  const onSignInWithEmailLink = useCallback(
-    (email: string) => dispatch(requestEmailLinkSignIn({ email })),
-    [dispatch],
-  )
-
   const onSignOut = useCallback(() => dispatch(requestSignOut()), [dispatch])
 
   const onDeleteUser = useCallback(
@@ -97,7 +91,6 @@ const SettingsModal: React.FC = () => {
       onToggleCloud={onToggleCloud}
       cloudUser={cloudUser}
       onSignInWithGoogle={onSignInWithGoogle}
-      onSignInWithEmailLink={onSignInWithEmailLink}
       onSignOut={onSignOut}
       onDeleteUser={onDeleteUser}
       cloudStatus={cloudStatus}

@@ -31,7 +31,6 @@ interface Props {
     photoURL?: string | null
   } | null
   readonly onSignInWithGoogle: () => void
-  readonly onSignInWithEmailLink: (email: string) => void
   readonly onSignOut: () => void
   readonly onDeleteUser: () => void
   readonly cloudStatus: CloudStatus
@@ -75,46 +74,6 @@ const Col = styled.div(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
-// const EmailLinkSignIn: React.FC<{ onSubmitEmail: (email: string) => void }> = ({
-//   onSubmitEmail,
-// }) => {
-//   const [email, setEmail] = useState('')
-//   return (
-//     <form
-//       onSubmit={(e) => {
-//         e.preventDefault()
-//         if (email) onSubmitEmail(email)
-//       }}
-//       css={(theme) => ({
-//         display: 'flex',
-//         gap: theme.spacing(2),
-//         alignItems: 'center',
-//       })}
-//     >
-//       <input
-//         type="email"
-//         placeholder="Email for magic link"
-//         value={email}
-//         onChange={(e) => setEmail(e.target.value)}
-//         css={(theme) => ({
-//           padding: `${theme.spacing(1)}`,
-//           fontFamily: 'inherit',
-//           fontSize: theme.fontSize.small,
-//           border: `1px solid ${theme.colors.secondary}`,
-//           borderRadius: theme.spacing(1),
-//           backgroundColor: theme.colors.background,
-//           color: theme.colors.text,
-//           outline: 'none',
-//           '&:focus': {
-//             borderColor: theme.colors.primary,
-//           },
-//         })}
-//       />
-//       <Button label="Send link" onClick={() => email && onSubmitEmail(email)} />
-//     </form>
-//   )
-// }
-
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
   shouldRender,
@@ -128,7 +87,6 @@ export const SettingsModal: React.FC<Props> = ({
   onToggleCloud,
   cloudUser,
   onSignInWithGoogle,
-  //onSignInWithEmailLink,
   onSignOut,
   onDeleteUser,
   cloudStatus,
@@ -245,9 +203,6 @@ export const SettingsModal: React.FC<Props> = ({
                             label="Sign in with Google"
                             onClick={onSignInWithGoogle}
                           />
-                          {/* <EmailLinkSignIn
-                            onSubmitEmail={onSignInWithEmailLink}
-                          /> */}
                         </div>
                       )}
                     </div>

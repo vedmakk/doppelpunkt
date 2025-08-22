@@ -93,14 +93,6 @@ const cloudSlice = createSlice({
     },
     // UI intents that the middleware will handle
     requestGoogleSignIn: (state) => state,
-    requestEmailLinkSignIn: (
-      state,
-      _action: PayloadAction<{ email: string }>,
-    ) => {
-      void _action
-      return state
-    },
-    completeEmailLinkSignIn: (state) => state,
     requestSignOut: (state) => state,
     // Delete user account and associated data
     requestDeleteUser: (state) => state,
@@ -118,8 +110,6 @@ export const {
   setCloudDocBase,
   setCloudDocSnapshotMeta,
   requestGoogleSignIn,
-  requestEmailLinkSignIn,
-  completeEmailLinkSignIn,
   requestSignOut,
   requestDeleteUser,
   requestSync,

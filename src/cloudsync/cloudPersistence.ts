@@ -6,8 +6,6 @@ import DiffMatchPatch from 'diff-match-patch'
 import { type EditorState, setText } from '../editor/editorSlice'
 import { type WritingMode } from '../mode/modeSlice'
 import {
-  completeEmailLinkSignIn,
-  requestEmailLinkSignIn,
   requestGoogleSignIn,
   requestSignOut,
   requestDeleteUser,
@@ -274,6 +272,7 @@ async function attachSnapshotListeners(
   })
 }
 
+// Attach auth listener when cloud is enabled
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore cloud slice actions to prevent recursive triggering from within effects
@@ -297,16 +296,6 @@ cloudListenerMiddleware.startListening({
     }
     try {
       await attachAuthListener(api.dispatch)
-      // If user opened via email link, complete sign-in
-      try {
-        const { auth } = await getFirebase()
-        const { isSignInWithEmailLink } = await import('firebase/auth')
-        if (isSignInWithEmailLink(auth, window.location.href)) {
-          api.dispatch(completeEmailLinkSignIn())
-        }
-      } catch {
-        /* ignore */
-      }
     } catch {
       api.dispatch(setCloudError('Failed to initialize auth'))
       api.dispatch(setCloudStatus('error'))
@@ -314,7 +303,7 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-// Enable/disable toggling
+// Enable/disable cloud sync toggling
 cloudListenerMiddleware.startListening({
   matcher: isAnyOf(setCloudEnabled),
   effect: async (action, api) => {
@@ -328,16 +317,6 @@ cloudListenerMiddleware.startListening({
           /* ignore */
         }
         await attachAuthListener(api.dispatch)
-        // If user opened via email link, complete sign-in
-        try {
-          const { auth } = await getFirebase()
-          const { isSignInWithEmailLink } = await import('firebase/auth')
-          if (isSignInWithEmailLink(auth, window.location.href)) {
-            api.dispatch(completeEmailLinkSignIn())
-          }
-        } catch {
-          /* ignore */
-        }
       } catch {
         api.dispatch(setCloudError('Failed to initialize auth'))
         api.dispatch(setCloudStatus('error'))
@@ -368,7 +347,7 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-// Auth flows
+// Sign in with Google
 cloudListenerMiddleware.startListening({
   matcher: isAnyOf(requestGoogleSignIn),
   effect: async (_action, api) => {
@@ -454,56 +433,7 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-cloudListenerMiddleware.startListening({
-  matcher: isAnyOf(requestEmailLinkSignIn),
-  effect: async (action, api) => {
-    try {
-      const { auth } = await getFirebase()
-      const { sendSignInLinkToEmail, isSignInWithEmailLink } = await import(
-        'firebase/auth'
-      )
-      // Ensure auth listener is attached so UI reflects auth changes immediately
-      if (!authUnsubscribe) {
-        await attachAuthListener(api.dispatch)
-      }
-      const email = (action as unknown as { payload: { email: string } })
-        .payload.email
-      const url = `${window.location.origin}/` // canonical action URL
-      await sendSignInLinkToEmail(auth, email, { url, handleCodeInApp: true })
-      window.localStorage.setItem('cloud.emailForSignIn', email)
-      // If user clicks link and returns, the app should call completeEmailLinkSignIn
-      if (isSignInWithEmailLink(auth, window.location.href)) {
-        api.dispatch(completeEmailLinkSignIn())
-      }
-    } catch {
-      api.dispatch(setCloudError('Email link sign-in failed'))
-    }
-  },
-})
-
-cloudListenerMiddleware.startListening({
-  matcher: isAnyOf(completeEmailLinkSignIn),
-  effect: async (_action, api) => {
-    try {
-      const { auth } = await getFirebase()
-      const { isSignInWithEmailLink, signInWithEmailLink } = await import(
-        'firebase/auth'
-      )
-      // Ensure auth listener is attached so UI reflects auth changes immediately
-      if (!authUnsubscribe) {
-        await attachAuthListener(api.dispatch)
-      }
-      if (!isSignInWithEmailLink(auth, window.location.href)) return
-      const email = window.localStorage.getItem('cloud.emailForSignIn')
-      if (!email) return
-      await signInWithEmailLink(auth, email, window.location.href)
-      window.localStorage.removeItem('cloud.emailForSignIn')
-    } catch {
-      api.dispatch(setCloudError('Completing email link sign-in failed'))
-    }
-  },
-})
-
+// Sign out user
 cloudListenerMiddleware.startListening({
   matcher: isAnyOf(requestSignOut),
   effect: async (_action, api) => {
