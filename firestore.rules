@@ -11,19 +11,17 @@ service cloud.firestore {
       allow write: if request.auth != null
                    && request.auth.uid == userId
                    && (docId == 'editor' || docId == 'todo')
-                   // updatedAt may be applied via transform, so allow absence here
-                   && (
-                     // Standard document structure
-                     request.resource.data.keys().hasOnly(['text', 'rev']) ||
-                     request.resource.data.keys().hasOnly(['text', 'updatedAt', 'rev']) ||
-                     // Document structure with structured todos (added by Firebase Functions)
-                     request.resource.data.keys().hasOnly(['text', 'rev', 'structuredTodos']) ||
-                     request.resource.data.keys().hasOnly(['text', 'updatedAt', 'rev', 'structuredTodos'])
-                   )
+                   // Validate required fields
                    && request.resource.data.text is string
                    && request.resource.data.rev is int
-                   // If structuredTodos field exists, it must be an array
+                   // Validate optional fields if present
+                   && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp)
                    && (!('structuredTodos' in request.resource.data) || request.resource.data.structuredTodos is list)
+                   && (!('structuredTodosProcessedAt' in request.resource.data) || request.resource.data.structuredTodosProcessedAt is timestamp)
+                   && (!('structuredTodosError' in request.resource.data) || request.resource.data.structuredTodosError is string)
+                   // Ensure no unexpected fields (allow only known fields)
+                   && request.resource.data.keys().hasAll(['text', 'rev'])
+                   && request.resource.data.keys().hasOnly(['text', 'rev', 'updatedAt', 'structuredTodos', 'structuredTodosProcessedAt', 'structuredTodosError'])
                    // Enforce optimistic locking: rev must increment by exactly 1
                    && (
                      // If creating a new document, require rev == 1

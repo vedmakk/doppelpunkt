@@ -86,16 +86,26 @@ Current date for reference: ${new Date().toISOString()}`
         return []
       }
 
-      // Ensure all todos have valid IDs and convert null to undefined
-      return result.todos.map(
-        (todo: any, index: number): StructuredTodo => ({
+      // Ensure all todos have valid IDs and filter out undefined values for Firestore
+      return result.todos.map((todo: any, index: number): StructuredTodo => {
+        const structuredTodo: any = {
           id: todo.id || `todo-${Date.now()}-${index}`,
           description: todo.description,
-          due: todo.due || undefined,
-          priority: todo.priority || undefined,
-          completed: todo.completed || undefined,
-        }),
-      )
+        }
+
+        // Only include optional fields if they have actual values
+        if (todo.due !== null && todo.due !== undefined) {
+          structuredTodo.due = todo.due
+        }
+        if (todo.priority !== null && todo.priority !== undefined) {
+          structuredTodo.priority = todo.priority
+        }
+        if (todo.completed !== null && todo.completed !== undefined) {
+          structuredTodo.completed = todo.completed
+        }
+
+        return structuredTodo as StructuredTodo
+      })
     } catch (error) {
       console.error('Error extracting todos:', error)
 
