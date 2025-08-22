@@ -15,6 +15,7 @@ import {
   getDocumentPath,
 } from './documentPersistence'
 import { getFirebase } from './firebase'
+import { doc, getDoc, deleteDoc } from './firestore'
 
 export class DocumentSyncManager {
   private documentListeners: Partial<Record<WritingMode, () => void>> = {}
@@ -88,7 +89,6 @@ export class DocumentSyncManager {
     dispatch: (action: any) => void,
   ): Promise<void> {
     const { db } = await getFirebase()
-    const { doc, getDoc } = await import('firebase/firestore')
 
     const modes: WritingMode[] = ['editor', 'todo']
 
@@ -207,7 +207,6 @@ export class DocumentSyncManager {
 
   private async deleteUserProfile(userId: string): Promise<void> {
     const { db } = await getFirebase()
-    const { doc, deleteDoc } = await import('firebase/firestore')
 
     const userDocRef = doc(db, 'users', userId)
     await deleteDoc(userDocRef)

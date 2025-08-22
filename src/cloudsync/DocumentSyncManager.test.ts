@@ -65,7 +65,7 @@ mock.module('./firebase', () => ({
   getFirebase: mockGetFirebase,
 }))
 
-mock.module('firebase/firestore', () => ({
+mock.module('./firestore', () => ({
   doc: mockDoc,
   getDoc: mockGetDoc,
   serverTimestamp: mockServerTimestamp,
