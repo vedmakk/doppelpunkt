@@ -18,7 +18,9 @@ import { getFirebase } from './firebase'
 
 export class DocumentSyncManager {
   private documentListeners: Partial<Record<WritingMode, () => void>> = {}
-  private saveTimers: Partial<Record<WritingMode, number>> = {}
+  private saveTimers: Partial<
+    Record<WritingMode, ReturnType<typeof globalThis.setTimeout>>
+  > = {}
   private readonly SAVE_DEBOUNCE_MS = 1000
 
   startListening(
@@ -136,10 +138,10 @@ export class DocumentSyncManager {
     dispatch: (action: any) => void,
   ): void {
     if (this.saveTimers[mode]) {
-      window.clearTimeout(this.saveTimers[mode])
+      globalThis.clearTimeout(this.saveTimers[mode])
     }
 
-    this.saveTimers[mode] = window.setTimeout(async () => {
+    this.saveTimers[mode] = globalThis.setTimeout(async () => {
       try {
         const cloudDoc = getState().cloud.docs[mode]
         await this.saveDocument(
@@ -213,7 +215,7 @@ export class DocumentSyncManager {
 
   private clearAllSaveTimers(): void {
     Object.values(this.saveTimers).forEach((timer) => {
-      if (timer) window.clearTimeout(timer)
+      if (timer) globalThis.clearTimeout(timer)
     })
     this.saveTimers = {}
   }

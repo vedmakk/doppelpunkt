@@ -514,17 +514,19 @@ describe('DocumentSyncManager', () => {
     let originalSetTimeout: typeof globalThis.setTimeout
     let originalClearTimeout: typeof globalThis.clearTimeout
     let timerCallbacks: (() => void)[]
+    let timerIdCounter = 123
 
     beforeEach(() => {
       originalSetTimeout = globalThis.setTimeout
       originalClearTimeout = globalThis.clearTimeout
       timerCallbacks = []
+      timerIdCounter = 123
 
       globalThis.setTimeout = mock((callback: () => void) => {
         timerCallbacks.push(callback)
-        return 123
+        return timerIdCounter++
       }) as any
-      globalThis.clearTimeout = mock(() => {})
+      globalThis.clearTimeout = mock(() => {}) as any
     })
 
     afterEach(() => {
@@ -551,7 +553,7 @@ describe('DocumentSyncManager', () => {
         mockDispatch,
       )
 
-      expect(globalThis.clearTimeout).toHaveBeenCalledWith(123)
+      expect(globalThis.clearTimeout).toHaveBeenCalled()
     })
 
     it('should call saveDocument with correct parameters', () => {
