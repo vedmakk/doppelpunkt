@@ -1,34 +1,23 @@
 import { useAppSelector } from '../store'
 
-export const useCloudEnabled = () => useAppSelector((s) => s.cloud.enabled)
+import {
+  selectCloudEnabled,
+  selectCloudStatus,
+  selectCloudUser,
+  selectCloudError,
+  selectCloudDocMetas,
+  selectCloudSyncStatusText,
+} from './selectors'
 
-export const useCloudStatus = () => useAppSelector((s) => s.cloud.status)
+export const useCloudEnabled = () => useAppSelector(selectCloudEnabled)
 
-export const useCloudUser = () => useAppSelector((s) => s.cloud.user)
+export const useCloudStatus = () => useAppSelector(selectCloudStatus)
 
-export const useCloudError = () => useAppSelector((s) => s.cloud.error)
+export const useCloudUser = () => useAppSelector(selectCloudUser)
 
-export const useCloudDocMetas = () => useAppSelector((s) => s.cloud.docs)
+export const useCloudError = () => useAppSelector(selectCloudError)
+
+export const useCloudDocMetas = () => useAppSelector(selectCloudDocMetas)
 
 export const useCloudSyncStatusText = (): string =>
-  useAppSelector((s) => {
-    const enabled = s.cloud.enabled
-    const status = s.cloud.status
-
-    if (!enabled) return 'Disabled'
-    if (status === 'initializing') return 'Connecting…'
-    if (status === 'error') return 'Error'
-    if (status !== 'connected') return 'Disconnected'
-
-    const docs = s.cloud.docs
-    const anyPending =
-      docs.editor.hasPendingWrites || docs.todo.hasPendingWrites
-    if (anyPending) return 'Syncing…'
-    const allFromCache = docs.editor.fromCache && docs.todo.fromCache
-    if (allFromCache) return 'Offline'
-
-    const error = s.cloud.error
-    if (error) return 'Error'
-
-    return 'Synced'
-  })
+  useAppSelector(selectCloudSyncStatusText)
