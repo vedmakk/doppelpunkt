@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist",
+    "public": "./packages/app/dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "cleanUrls": true,
     "trailingSlash": false,
@@ -46,9 +46,26 @@
     "firestore": {
       "port": 8080
     },
+    "functions": {
+      "port": 5005
+    },
     "ui": {
       "enabled": true
     },
     "singleProjectMode": true
-  }
+  },
+  "functions": [
+    {
+      "source": "./packages/functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": ["bun run build"]
+    }
+  ]
 }
