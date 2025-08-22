@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { AuthManager } from './AuthManager'
+import type { User } from 'firebase/auth'
 
 // Mock Firebase modules
 const mockAuth = {
-  currentUser: null,
-}
+  currentUser: null as User | null,
+} as any
 
-const mockOnAuthStateChanged = mock(() => {})
+const mockOnAuthStateChanged = mock()
 const mockSignOut = mock(() => Promise.resolve())
 const mockSignInWithPopup = mock(() => Promise.resolve())
 const mockDeleteUser = mock(() => Promise.resolve())
@@ -63,9 +64,9 @@ describe('AuthManager', () => {
       }
 
       const mockUnsubscribe = mock(() => {})
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((auth: any, callback: any) => {
         // Simulate authenticated user
-        callback(mockUser)
+        callback(mockUser as any)
         return mockUnsubscribe
       })
 
@@ -83,7 +84,7 @@ describe('AuthManager', () => {
         (call) => call[0].type === 'cloud/setCloudUser',
       )
       expect(setCloudUserCall).toBeDefined()
-      expect(setCloudUserCall[0].payload).toEqual({
+      expect(setCloudUserCall![0].payload).toEqual({
         uid: 'test-uid',
         displayName: 'Test User',
         email: 'test@example.com',
@@ -95,12 +96,12 @@ describe('AuthManager', () => {
         (call) => call[0].type === 'cloud/setCloudStatus',
       )
       expect(setCloudStatusCall).toBeDefined()
-      expect(setCloudStatusCall[0].payload).toBe('connected')
+      expect(setCloudStatusCall![0].payload).toBe('connected')
     })
 
     it('should dispatch null user and idle status when user signs out', async () => {
       const mockUnsubscribe = mock(() => {})
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((auth: any, callback: any) => {
         // Simulate unauthenticated user
         callback(null)
         return mockUnsubscribe
@@ -115,14 +116,14 @@ describe('AuthManager', () => {
         (call) => call[0].type === 'cloud/setCloudUser',
       )
       expect(setCloudUserCall).toBeDefined()
-      expect(setCloudUserCall[0].payload).toBe(null)
+      expect(setCloudUserCall![0].payload).toBe(null)
 
       // Check that setCloudStatus was called with 'idle'
       const setCloudStatusCall = mockDispatch.mock.calls.find(
         (call) => call[0].type === 'cloud/setCloudStatus',
       )
       expect(setCloudStatusCall).toBeDefined()
-      expect(setCloudStatusCall[0].payload).toBe('idle')
+      expect(setCloudStatusCall![0].payload).toBe('idle')
     })
 
     it('should detach previous listener before attaching new one', async () => {
@@ -130,8 +131,8 @@ describe('AuthManager', () => {
       const mockUnsubscribe2 = mock(() => {})
 
       mockOnAuthStateChanged
-        .mockReturnValueOnce(mockUnsubscribe1)
-        .mockReturnValueOnce(mockUnsubscribe2)
+        .mockReturnValueOnce(mockUnsubscribe1 as any)
+        .mockReturnValueOnce(mockUnsubscribe2 as any)
 
       // Attach first listener
       await authManager.attachAuthListener(mockDispatch)
@@ -153,8 +154,8 @@ describe('AuthManager', () => {
         photoURL: null,
       }
 
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
-        callback(mockUser)
+      mockOnAuthStateChanged.mockImplementation((auth: any, callback: any) => {
+        callback(mockUser as any)
         return mock(() => {})
       })
 
@@ -163,7 +164,7 @@ describe('AuthManager', () => {
       const setCloudUserCall = mockDispatch.mock.calls.find(
         (call) => call[0].type === 'cloud/setCloudUser',
       )
-      expect(setCloudUserCall[0].payload).toEqual({
+      expect(setCloudUserCall![0].payload).toEqual({
         uid: 'test-uid',
         displayName: null,
         email: null,
@@ -175,7 +176,7 @@ describe('AuthManager', () => {
   describe('detachAuthListener', () => {
     it('should call unsubscribe function when listener is attached', async () => {
       const mockUnsubscribe = mock(() => {})
-      mockOnAuthStateChanged.mockReturnValue(mockUnsubscribe)
+      mockOnAuthStateChanged.mockReturnValue(mockUnsubscribe as any)
 
       await authManager.attachAuthListener(mockDispatch)
       expect(authManager.isListenerAttached()).toBe(true)
@@ -197,7 +198,7 @@ describe('AuthManager', () => {
 
     it('should be safe to call multiple times', async () => {
       const mockUnsubscribe = mock(() => {})
-      mockOnAuthStateChanged.mockReturnValue(mockUnsubscribe)
+      mockOnAuthStateChanged.mockReturnValue(mockUnsubscribe as any)
 
       await authManager.attachAuthListener(mockDispatch)
       authManager.detachAuthListener()
@@ -251,7 +252,7 @@ describe('AuthManager', () => {
 
     it('should delete the current user when signed in', async () => {
       const mockUser = { uid: 'test-uid' }
-      mockAuth.currentUser = mockUser
+      mockAuth.currentUser = mockUser as any as any
 
       await authManager.deleteCurrentUser()
 
@@ -270,9 +271,9 @@ describe('AuthManager', () => {
 
     it('should handle requires-recent-login error by signing out', async () => {
       const mockUser = { uid: 'test-uid' }
-      mockAuth.currentUser = mockUser
+      mockAuth.currentUser = mockUser as any as any
 
-      const authError = new Error('Requires recent login')
+      const authError = new Error('Requires recent login') as any
       authError.code = 'auth/requires-recent-login'
       mockDeleteUser.mockRejectedValueOnce(authError)
 
@@ -286,9 +287,9 @@ describe('AuthManager', () => {
 
     it('should propagate other Firebase errors without modification', async () => {
       const mockUser = { uid: 'test-uid' }
-      mockAuth.currentUser = mockUser
+      mockAuth.currentUser = mockUser as any as any
 
-      const otherError = new Error('Network error')
+      const otherError = new Error('Network error') as any
       otherError.code = 'auth/network-error'
       mockDeleteUser.mockRejectedValueOnce(otherError)
 
@@ -302,7 +303,7 @@ describe('AuthManager', () => {
 
     it('should handle errors without error codes', async () => {
       const mockUser = { uid: 'test-uid' }
-      mockAuth.currentUser = mockUser
+      mockAuth.currentUser = mockUser as any
 
       const genericError = new Error('Generic error')
       mockDeleteUser.mockRejectedValueOnce(genericError)
@@ -322,7 +323,7 @@ describe('AuthManager', () => {
     })
 
     it('should return true after attaching listener', async () => {
-      mockOnAuthStateChanged.mockReturnValue(mock(() => {}))
+      mockOnAuthStateChanged.mockReturnValue(mock(() => {}) as any)
 
       await authManager.attachAuthListener(mockDispatch)
 
@@ -330,7 +331,7 @@ describe('AuthManager', () => {
     })
 
     it('should return false after detaching listener', async () => {
-      mockOnAuthStateChanged.mockReturnValue(mock(() => {}))
+      mockOnAuthStateChanged.mockReturnValue(mock(() => {}) as any)
 
       await authManager.attachAuthListener(mockDispatch)
       authManager.detachAuthListener()
@@ -355,8 +356,8 @@ describe('AuthManager', () => {
         tenantId: null,
       }
 
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
-        callback(mockUser)
+      mockOnAuthStateChanged.mockImplementation((auth: any, callback: any) => {
+        callback(mockUser as any)
         return mock(() => {})
       })
 
@@ -367,7 +368,7 @@ describe('AuthManager', () => {
       )
 
       // Should only include the serialized properties
-      expect(setCloudUserCall[0].payload).toEqual({
+      expect(setCloudUserCall![0].payload).toEqual({
         uid: 'test-uid',
         displayName: 'Test User',
         email: 'test@example.com',
@@ -375,8 +376,8 @@ describe('AuthManager', () => {
       })
 
       // Should not include other Firebase User properties
-      expect(setCloudUserCall[0].payload).not.toHaveProperty('emailVerified')
-      expect(setCloudUserCall[0].payload).not.toHaveProperty('refreshToken')
+      expect(setCloudUserCall![0].payload).not.toHaveProperty('emailVerified')
+      expect(setCloudUserCall![0].payload).not.toHaveProperty('refreshToken')
     })
   })
 })

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
 import { setHotkey, setEditingHotkeyId, setDefaultHotkey } from './hotkeysSlice'
+import { HotkeyId } from './registry'
 import { createStore } from '../store'
 
 // Mock localStorage
@@ -76,11 +77,11 @@ describe('hotkeysSlice', () => {
 
       expect(getHotkeysState().editingHotkeyId).toBeUndefined()
 
-      store.dispatch(setEditingHotkeyId('toggle-menu'))
-      expect(getHotkeysState().editingHotkeyId).toBe('toggle-menu')
+      store.dispatch(setEditingHotkeyId(HotkeyId.ToggleMenu))
+      expect(getHotkeysState().editingHotkeyId).toBe(HotkeyId.ToggleMenu)
 
-      store.dispatch(setEditingHotkeyId('toggle-theme'))
-      expect(getHotkeysState().editingHotkeyId).toBe('toggle-theme')
+      store.dispatch(setEditingHotkeyId(HotkeyId.ToggleCaptureTab))
+      expect(getHotkeysState().editingHotkeyId).toBe(HotkeyId.ToggleCaptureTab)
 
       store.dispatch(setEditingHotkeyId(undefined))
       expect(getHotkeysState().editingHotkeyId).toBeUndefined()
@@ -226,8 +227,8 @@ describe('hotkeysSlice', () => {
       const getHotkeysState = () => store.getState().hotkeys
 
       // Start editing a hotkey
-      store.dispatch(setEditingHotkeyId('toggle-menu'))
-      expect(getHotkeysState().editingHotkeyId).toBe('toggle-menu')
+      store.dispatch(setEditingHotkeyId(HotkeyId.ToggleMenu))
+      expect(getHotkeysState().editingHotkeyId).toBe(HotkeyId.ToggleMenu)
 
       // Set the hotkey
       store.dispatch(setHotkey({ id: 'toggle-menu', keys: 'cmd+m' }))
@@ -238,7 +239,7 @@ describe('hotkeysSlice', () => {
       expect(getHotkeysState().editingHotkeyId).toBeUndefined()
 
       // Later, edit the same hotkey
-      store.dispatch(setEditingHotkeyId('toggle-menu'))
+      store.dispatch(setEditingHotkeyId(HotkeyId.ToggleMenu))
       store.dispatch(setHotkey({ id: 'toggle-menu', keys: 'ctrl+m' }))
       store.dispatch(setEditingHotkeyId(undefined))
 
@@ -261,8 +262,8 @@ describe('hotkeysSlice', () => {
       expect(getHotkeysState().mappings['test-key']).toBe('cmd+3')
 
       // Rapid editing state changes
-      store.dispatch(setEditingHotkeyId('test-key'))
-      store.dispatch(setEditingHotkeyId('other-key'))
+      store.dispatch(setEditingHotkeyId('test-key' as any))
+      store.dispatch(setEditingHotkeyId('other-key' as any))
       store.dispatch(setEditingHotkeyId(undefined))
 
       expect(getHotkeysState().editingHotkeyId).toBeUndefined()

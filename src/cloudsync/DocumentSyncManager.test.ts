@@ -36,7 +36,7 @@ const mockSaveDocumentWithConflictResolution = mock(() =>
 
 const mockDeleteDocument = mock(() => Promise.resolve())
 
-const mockListenToDocument = mock(() => () => {}) // Returns unsubscribe function
+const mockListenToDocument = mock() // Returns unsubscribe function
 
 const mockGetDocumentPath = mock(
   (userId: string, mode: WritingMode) => `users/${userId}/doc/${mode}`,
@@ -193,12 +193,14 @@ describe('DocumentSyncManager', () => {
       const userId = 'test-user'
       let onUpdateCallback: any
 
-      mockListenToDocument.mockImplementation((userId, mode, callback) => {
-        if (mode === 'editor') {
-          onUpdateCallback = callback
-        }
-        return mock(() => {})
-      })
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
 
       syncManager.startListening(userId, mockGetState, mockDispatch)
 
@@ -244,12 +246,14 @@ describe('DocumentSyncManager', () => {
       const userId = 'test-user'
       let onUpdateCallback: any
 
-      mockListenToDocument.mockImplementation((userId, mode, callback) => {
-        if (mode === 'editor') {
-          onUpdateCallback = callback
-        }
-        return mock(() => {})
-      })
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
 
       syncManager.startListening(userId, mockGetState, mockDispatch)
 
@@ -291,12 +295,14 @@ describe('DocumentSyncManager', () => {
       const userId = 'test-user'
       let onUpdateCallback: any
 
-      mockListenToDocument.mockImplementation((userId, mode, callback) => {
-        if (mode === 'editor') {
-          onUpdateCallback = callback
-        }
-        return mock(() => {})
-      })
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
 
       syncManager.startListening(userId, mockGetState, mockDispatch)
 
@@ -334,12 +340,14 @@ describe('DocumentSyncManager', () => {
 
       mockGetState.mockReturnValue(mockStateWithLongCursor)
 
-      mockListenToDocument.mockImplementation((userId, mode, callback) => {
-        if (mode === 'editor') {
-          onUpdateCallback = callback
-        }
-        return mock(() => {})
-      })
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
 
       syncManager.startListening(userId, mockGetState, mockDispatch)
 
@@ -463,7 +471,7 @@ describe('DocumentSyncManager', () => {
       mockGetDoc.mockResolvedValue({
         exists: () => false,
         data: () => undefined,
-      })
+      } as any)
 
       await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
 
@@ -476,7 +484,7 @@ describe('DocumentSyncManager', () => {
       mockGetDoc.mockResolvedValue({
         exists: () => true,
         data: () => ({ text: 'remote text', rev: 'invalid' }),
-      })
+      } as any)
 
       await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
 
@@ -515,7 +523,7 @@ describe('DocumentSyncManager', () => {
       globalThis.setTimeout = mock((callback: () => void) => {
         timerCallbacks.push(callback)
         return 123
-      })
+      }) as any
       globalThis.clearTimeout = mock(() => {})
     })
 
