@@ -1,8 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
 import { type WritingMode } from '../mode/modeSlice'
-
-// WritingMode is not needed directly in reducers; keep slice decoupled
 
 export interface CloudUserInfo {
   uid: string
