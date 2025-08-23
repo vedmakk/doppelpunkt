@@ -309,6 +309,7 @@ export const SettingsModal: React.FC<Props> = ({
                         <Button
                           label={showApiKey ? 'Hide' : 'Show'}
                           onClick={() => setShowApiKey(!showApiKey)}
+                          disabled={!apiKeyInput.trim()}
                         />
                         <Button
                           label="Save Key"

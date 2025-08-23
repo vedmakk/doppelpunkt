@@ -169,6 +169,10 @@ structuredTodosListenerMiddleware.startListening({
           const settings = snapshot.data() as StructuredTodosSettings
           // Only sync enabled state, not API key
           listenerApi.dispatch(setStructuredTodosEnabled(settings.enabled))
+          // Set a "dummy" API key to indicate that the API key is set!
+          if (settings.apiKey) {
+            listenerApi.dispatch(setApiKey('*'.repeat(settings.apiKey.length)))
+          }
         }
       })
 
