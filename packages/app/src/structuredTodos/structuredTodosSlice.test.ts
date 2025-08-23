@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, mock } from 'bun:test'
+import { describe, it, expect, beforeEach } from 'bun:test'
 import {
   structuredTodosReducer,
   setStructuredTodosEnabled,
@@ -11,29 +11,10 @@ import {
 } from './structuredTodosSlice'
 import { StructuredTodosState, StructuredTodo } from './types'
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: mock(() => null),
-  setItem: mock(() => {}),
-  removeItem: mock(() => {}),
-  clear: mock(() => {}),
-  length: 0,
-  key: mock(() => null),
-}
-
-// Override global localStorage for tests
-Object.defineProperty(global, 'localStorage', {
-  value: localStorageMock,
-  writable: true,
-})
-
 describe('structuredTodosSlice', () => {
   let initialState: StructuredTodosState
 
   beforeEach(() => {
-    localStorageMock.getItem.mockClear()
-    localStorageMock.setItem.mockClear()
-    localStorageMock.removeItem.mockClear()
     initialState = {
       todos: [],
       enabled: false,
@@ -51,10 +32,6 @@ describe('structuredTodosSlice', () => {
       )
 
       expect(state.enabled).toBe(true)
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'structuredTodos.enabled',
-        'true',
-      )
     })
 
     it('should disable structured todos', () => {
@@ -65,9 +42,6 @@ describe('structuredTodosSlice', () => {
       )
 
       expect(state.enabled).toBe(false)
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        'structuredTodos.enabled',
-      )
     })
   })
 
@@ -77,8 +51,7 @@ describe('structuredTodosSlice', () => {
       const state = structuredTodosReducer(initialState, setApiKey(apiKey))
 
       expect(state.apiKey).toBe(apiKey)
-      // API key should NOT be stored in localStorage
-      expect(localStorageMock.setItem).not.toHaveBeenCalled()
+      // API key should NOT be stored in localStorage (handled by middleware)
     })
 
     it('should clear API key', () => {
@@ -113,10 +86,6 @@ describe('structuredTodosSlice', () => {
 
       expect(state.todos).toEqual(mockTodos)
       expect(state.lastProcessedAt).toBeDefined()
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'structuredTodos.items',
-        JSON.stringify(mockTodos),
-      )
     })
 
     it('should clear all structured todos', () => {
@@ -132,9 +101,6 @@ describe('structuredTodosSlice', () => {
 
       expect(state.todos).toEqual([])
       expect(state.lastProcessedAt).toBeUndefined()
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        'structuredTodos.items',
-      )
     })
   })
 

@@ -4,12 +4,89 @@ import {
   setApiKey,
   clearApiKey,
   setStructuredTodos,
+  clearStructuredTodos,
 } from './structuredTodosSlice'
 import { getFirebase } from '../cloudsync/firebase'
 import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore'
-import { StructuredTodo, StructuredTodosSettings } from './types'
+import {
+  StructuredTodo,
+  StructuredTodosSettings,
+  StructuredTodosState,
+} from './types'
+
+const STRUCTURED_TODOS_KEY = 'structuredTodos'
+const STRUCTURED_TODOS_ENABLED_KEY = `${STRUCTURED_TODOS_KEY}.enabled`
+const STRUCTURED_TODOS_ITEMS_KEY = `${STRUCTURED_TODOS_KEY}.items`
+
+export const structuredTodosStorageKeys = {
+  STRUCTURED_TODOS_ENABLED_KEY,
+  STRUCTURED_TODOS_ITEMS_KEY,
+}
+
+export function hydrateStructuredTodosStateFromStorage(): {
+  structuredTodos: StructuredTodosState
+} {
+  try {
+    const enabled =
+      localStorage.getItem(STRUCTURED_TODOS_ENABLED_KEY) === 'true'
+    const storedTodos = localStorage.getItem(STRUCTURED_TODOS_ITEMS_KEY)
+    const todos = storedTodos ? JSON.parse(storedTodos) : []
+
+    const structuredTodos: StructuredTodosState = {
+      todos,
+      enabled,
+      apiKey: null, // Never loaded from storage (write-only)
+      isProcessing: false,
+      error: undefined,
+    }
+
+    return { structuredTodos }
+  } catch {
+    // In non-browser or restricted environments, fall back to defaults
+    const structuredTodos: StructuredTodosState = {
+      todos: [],
+      enabled: false,
+      apiKey: null,
+      isProcessing: false,
+      error: undefined,
+    }
+    return { structuredTodos }
+  }
+}
 
 export const structuredTodosListenerMiddleware = createListenerMiddleware()
+
+// Listen for local state changes and persist to localStorage
+structuredTodosListenerMiddleware.startListening({
+  matcher: isAnyOf(
+    setStructuredTodosEnabled,
+    setStructuredTodos,
+    clearStructuredTodos,
+  ),
+  effect: async (_action, listenerApi) => {
+    const state: any = listenerApi.getState()
+    try {
+      // Persist enabled state
+      if (state.structuredTodos.enabled) {
+        localStorage.setItem(STRUCTURED_TODOS_ENABLED_KEY, 'true')
+      } else {
+        localStorage.removeItem(STRUCTURED_TODOS_ENABLED_KEY)
+      }
+
+      // Persist todos
+      if (state.structuredTodos.todos.length > 0) {
+        localStorage.setItem(
+          STRUCTURED_TODOS_ITEMS_KEY,
+          JSON.stringify(state.structuredTodos.todos),
+        )
+      } else {
+        localStorage.removeItem(STRUCTURED_TODOS_ITEMS_KEY)
+      }
+    } catch {
+      // Ignore storage failures
+    }
+  },
+})
 
 // Listen for settings changes and sync to Firestore
 structuredTodosListenerMiddleware.startListening({
