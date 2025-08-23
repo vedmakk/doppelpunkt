@@ -39,8 +39,8 @@ export const selectCloudSyncStatusText = createSelector(
     const anyPending =
       docs.editor.hasPendingWrites || docs.todo.hasPendingWrites
     if (anyPending) return 'Syncing…'
-    const allFromCache = docs.editor.fromCache && docs.todo.fromCache
-    if (allFromCache) return 'Offline'
+    const anyFromCache = docs.editor.fromCache || docs.todo.fromCache
+    if (anyFromCache) return 'Offline'
 
     if (error) return 'Error'
 

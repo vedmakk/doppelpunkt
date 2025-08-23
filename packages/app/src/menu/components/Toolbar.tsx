@@ -13,8 +13,10 @@ import { SectionContainer } from './SectionContainer'
 interface Props {
   onOpenSettings: () => void
   onOpenAutoSaveSettings: () => void
+  onOpenCloudSyncSettings: () => void
   onOpenHotkeysSettings: () => void
   mode: WritingMode
+  cloudSyncStatusText: string
 }
 
 const ToolbarContainer = styled.div(({ theme }) => ({
@@ -27,8 +29,10 @@ const ToolbarContainer = styled.div(({ theme }) => ({
 const Toolbar: React.FC<Props> = ({
   onOpenSettings,
   onOpenAutoSaveSettings,
+  onOpenCloudSyncSettings,
   onOpenHotkeysSettings,
   mode,
+  cloudSyncStatusText,
 }) => {
   return (
     <ToolbarContainer id="toolbar">
@@ -41,6 +45,10 @@ const Toolbar: React.FC<Props> = ({
         <SectionTitle>Settings</SectionTitle>
         <Button label="General" onClick={onOpenSettings} />
         <Button label="Auto-save" onClick={onOpenAutoSaveSettings} />
+        <Button
+          label={`Cloud sync (${cloudSyncStatusText})`}
+          onClick={onOpenCloudSyncSettings}
+        />
         <Button label="Shortcuts" onClick={onOpenHotkeysSettings} />
       </SectionContainer>
       <SectionContainer as="section" aria-label="Project info">
