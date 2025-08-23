@@ -54,7 +54,7 @@ const Toolbar: React.FC<Props> = ({
       <SectionContainer as="section" aria-label="Project info">
         <MutedLabel size="tiny">
           Everything you write stays in your browser. No data is ever uploaded
-          or tracked.
+          or tracked without your permission.
         </MutedLabel>
         <MutedLabel size="tiny">
           This project is open source under the MIT License.
