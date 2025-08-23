@@ -22,14 +22,15 @@ export const selectStructuredTodosError = (state: RootState) =>
   state.structuredTodos.error
 
 // Computed selectors for grouping todos
-const isToday = (timestamp: number): boolean => {
+const isTodayOrPast = (timestamp: number): boolean => {
   const today = new Date()
   const date = new Date(timestamp)
-  return (
+  const isPast = date < today
+  const isToday =
     date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&
     date.getFullYear() === today.getFullYear()
-  )
+  return isPast || isToday
 }
 
 const isWithinDays = (timestamp: number, days: number): boolean => {
@@ -42,7 +43,7 @@ export const selectTodayTodos = createSelector(
   [selectStructuredTodos],
   (todos: StructuredTodo[]) =>
     todos
-      .filter((todo) => todo.due && isToday(todo.due) && !todo.completed)
+      .filter((todo) => todo.due && isTodayOrPast(todo.due) && !todo.completed)
       .sort((a, b) => a.due! - b.due!),
 )
 
@@ -53,7 +54,7 @@ export const selectUpcomingTodos = createSelector(
       .filter(
         (todo) =>
           todo.due &&
-          !isToday(todo.due) &&
+          !isTodayOrPast(todo.due) &&
           isWithinDays(todo.due, 7) &&
           !todo.completed,
       )
@@ -67,7 +68,7 @@ export const selectFutureTodos = createSelector(
       .filter(
         (todo) =>
           todo.due &&
-          !isToday(todo.due) &&
+          !isTodayOrPast(todo.due) &&
           !isWithinDays(todo.due, 7) &&
           !todo.completed,
       )

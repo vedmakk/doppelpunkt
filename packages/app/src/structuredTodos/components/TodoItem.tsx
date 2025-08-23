@@ -86,7 +86,17 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
         </TodoDescription>
         <TodoMeta>
           {todo.due && (
-            <MutedLabel size="tiny">{formatDate(todo.due)}</MutedLabel>
+            <MutedLabel
+              size="tiny"
+              css={(theme) => ({
+                color:
+                  todo.due && todo.due < Date.now()
+                    ? theme.colors.todoPriorityHigh
+                    : theme.colors.secondary,
+              })}
+            >
+              {formatDate(todo.due)}
+            </MutedLabel>
           )}
           {todo.priority && (
             <PriorityBadge priority={todo.priority} size="tiny">
