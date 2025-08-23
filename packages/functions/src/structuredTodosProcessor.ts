@@ -65,7 +65,7 @@ Current date for reference: ${new Date().toISOString()}`
         instructions: systemPrompt,
         input: todoText,
         reasoning: {
-          effort: 'minimal',
+          effort: 'low',
         },
         text: {
           format: zodTextFormat(TodosResponseSchema, 'todos_extraction'),
