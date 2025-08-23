@@ -1,33 +1,24 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import { StructuredTodo } from '../types'
+import { Label } from '../../app/components/Label'
+import { MutedLabel } from '../../menu/components/MutedLabel'
 
 interface Props {
   todo: StructuredTodo
 }
 
-const TodoItemContainer = styled.div(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1),
-  borderRadius: '4px',
-  transition: 'background-color 0.2s',
-  '&:hover': {
-    backgroundColor: theme.colors.backdrop,
-  },
-}))
+const TodoItemContainer = styled.li(() => ({}))
 
-const TodoContent = styled.div(({ theme }) => ({
+const TodoItemContent = styled.div(({ theme }) => ({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(0.5),
 }))
 
-const TodoDescription = styled.div<{ completed: boolean }>(
+const TodoDescription = styled(Label)<{ completed: boolean }>(
   ({ theme, completed }) => ({
-    fontSize: theme.fontSize.small,
     color: completed ? theme.colors.secondary : theme.colors.text,
     textDecoration: completed ? 'line-through' : 'none',
     wordBreak: 'break-word',
@@ -38,21 +29,18 @@ const TodoMeta = styled.div(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(1),
   alignItems: 'center',
-  fontSize: theme.fontSize.tiny,
-  color: theme.colors.secondary,
 }))
 
-const PriorityBadge = styled.span<{ priority: string }>(
+const PriorityBadge = styled(MutedLabel)<{ priority: string }>(
   ({ theme, priority }) => ({
     padding: `${theme.spacing(0.25)} ${theme.spacing(0.5)}`,
     borderRadius: '3px',
-    fontSize: theme.fontSize.tiny,
     fontWeight: 500,
     backgroundColor:
       priority === 'high'
-        ? '#ff444420' // Red with transparency
+        ? `${theme.colors.todoPriorityHigh}20`
         : priority === 'medium'
-          ? '#ffaa0020' // Orange with transparency
+          ? `${theme.colors.todoPriorityMedium}20`
           : theme.colors.backdrop,
     color:
       priority === 'high'
@@ -92,19 +80,21 @@ const formatDate = (timestamp: number): string => {
 export const TodoItem: React.FC<Props> = ({ todo }) => {
   return (
     <TodoItemContainer>
-      <TodoContent>
-        <TodoDescription completed={todo.completed || false}>
+      <TodoItemContent>
+        <TodoDescription completed={todo.completed || false} size="small">
           {todo.description}
         </TodoDescription>
         <TodoMeta>
-          {todo.due && <span>{formatDate(todo.due)}</span>}
+          {todo.due && (
+            <MutedLabel size="tiny">{formatDate(todo.due)}</MutedLabel>
+          )}
           {todo.priority && (
-            <PriorityBadge priority={todo.priority}>
+            <PriorityBadge priority={todo.priority} size="tiny">
               {todo.priority}
             </PriorityBadge>
           )}
         </TodoMeta>
-      </TodoContent>
+      </TodoItemContent>
     </TodoItemContainer>
   )
 }

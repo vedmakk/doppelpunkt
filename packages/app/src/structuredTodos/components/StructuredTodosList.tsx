@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import styled from '@emotion/styled'
+
 import { StructuredTodo } from '../types'
-import TodoItem from './TodoItem'
+
 import { MutedLabel } from '../../menu/components/MutedLabel'
+import TodoItem from './TodoItem'
 
 interface Props {
   todayTodos: StructuredTodo[]
@@ -25,24 +27,20 @@ const Section = styled.div(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
-const SectionHeader = styled.div({
+const SectionHeader = styled.div(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  justifyContent: 'flex-start',
+  gap: theme.spacing(1),
   cursor: 'pointer',
   userSelect: 'none',
-})
+}))
 
-const SectionTitle = styled.h4(({ theme }) => ({
-  fontSize: theme.fontSize.small,
-  fontWeight: 600,
-  color: theme.colors.text,
+const SectionTitle = styled(MutedLabel)(() => ({
   margin: 0,
 }))
 
-const TodoCount = styled.span(({ theme }) => ({
-  fontSize: theme.fontSize.tiny,
-  color: theme.colors.secondary,
+const TodoCount = styled(MutedLabel)(({ theme }) => ({
   marginLeft: theme.spacing(1),
 }))
 
@@ -51,42 +49,34 @@ const ExpandButton = styled.button(({ theme }) => ({
   border: 'none',
   color: theme.colors.secondary,
   cursor: 'pointer',
-  padding: theme.spacing(0.5),
   fontSize: theme.fontSize.small,
-  transition: 'transform 0.2s',
+  padding: theme.spacing(0.5),
+  transition: `transform ${theme.animations.interaction}`,
   '&[data-expanded="true"]': {
     transform: 'rotate(90deg)',
   },
 }))
 
-const TodosList = styled.div(({ theme }) => ({
+const TodosList = styled.ul(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(0.5),
-  marginLeft: theme.spacing(1),
-}))
-
-const StatusMessage = styled.div(({ theme }) => ({
+  gap: theme.spacing(2),
+  margin: 0,
   padding: theme.spacing(2),
-  textAlign: 'center',
-  color: theme.colors.secondary,
-  fontSize: theme.fontSize.small,
 }))
 
-const ErrorMessage = styled.div(({ theme }) => ({
+const StatusMessage = styled(MutedLabel)({})
+
+const ErrorMessage = styled(MutedLabel)(({ theme }) => ({
   padding: theme.spacing(1),
   borderRadius: '4px',
-  backgroundColor: '#ff444410', // Red with transparency
-  color: '#ff4444',
-  fontSize: theme.fontSize.small,
+  backgroundColor: `${theme.colors.todoPriorityHigh}10`,
+  color: theme.colors.todoPriorityHigh,
 }))
 
-const EmptyMessage = styled.div(({ theme }) => ({
-  padding: theme.spacing(1),
-  color: theme.colors.secondary,
-  fontSize: theme.fontSize.tiny,
+const EmptyMessage = styled(MutedLabel)({
   fontStyle: 'italic',
-}))
+})
 
 export const StructuredTodosList: React.FC<Props> = ({
   todayTodos,
@@ -115,7 +105,7 @@ export const StructuredTodosList: React.FC<Props> = ({
   if (error) {
     return (
       <Container>
-        <ErrorMessage>Error: {error}</ErrorMessage>
+        <ErrorMessage size="tiny">Error: {error}</ErrorMessage>
       </Container>
     )
   }
@@ -123,7 +113,7 @@ export const StructuredTodosList: React.FC<Props> = ({
   if (isProcessing) {
     return (
       <Container>
-        <StatusMessage>Processing todos...</StatusMessage>
+        <StatusMessage size="tiny">Processing todos...</StatusMessage>
       </Container>
     )
   }
@@ -138,8 +128,8 @@ export const StructuredTodosList: React.FC<Props> = ({
     return (
       <Container>
         <MutedLabel size="tiny">
-          No structured todos yet. Write some tasks in your todo document and
-          they will appear here.
+          No todos yet. Write some tasks in your todo document and they will
+          appear here.
         </MutedLabel>
       </Container>
     )
@@ -148,41 +138,35 @@ export const StructuredTodosList: React.FC<Props> = ({
   return (
     <Container>
       {/* Today Section */}
-      {(todayTodos.length > 0 || expandedSections.has('today')) && (
-        <Section>
-          <SectionHeader onClick={() => toggleSection('today')}>
-            <div>
-              <SectionTitle>
-                Today
-                <TodoCount>({todayTodos.length})</TodoCount>
-              </SectionTitle>
-            </div>
-            <ExpandButton data-expanded={expandedSections.has('today')}>
-              ›
-            </ExpandButton>
-          </SectionHeader>
-          {expandedSections.has('today') && (
-            <TodosList>
-              {todayTodos.length > 0 ? (
-                todayTodos.map((todo) => <TodoItem key={todo.id} todo={todo} />)
-              ) : (
-                <EmptyMessage>No tasks for today</EmptyMessage>
-              )}
-            </TodosList>
-          )}
-        </Section>
-      )}
+      <Section>
+        <SectionHeader onClick={() => toggleSection('today')}>
+          <SectionTitle as="h4" size="small">
+            Today
+            <TodoCount size="tiny">({todayTodos.length})</TodoCount>
+          </SectionTitle>
+          <ExpandButton data-expanded={expandedSections.has('today')}>
+            ›
+          </ExpandButton>
+        </SectionHeader>
+        {expandedSections.has('today') && (
+          <TodosList>
+            {todayTodos.length > 0 ? (
+              todayTodos.map((todo) => <TodoItem key={todo.id} todo={todo} />)
+            ) : (
+              <EmptyMessage size="tiny">No tasks for today</EmptyMessage>
+            )}
+          </TodosList>
+        )}
+      </Section>
 
       {/* Upcoming Section */}
       {(upcomingTodos.length > 0 || expandedSections.has('upcoming')) && (
         <Section>
           <SectionHeader onClick={() => toggleSection('upcoming')}>
-            <div>
-              <SectionTitle>
-                Upcoming
-                <TodoCount>({upcomingTodos.length})</TodoCount>
-              </SectionTitle>
-            </div>
+            <SectionTitle as="h4" size="small">
+              Upcoming
+              <TodoCount size="tiny">({upcomingTodos.length})</TodoCount>
+            </SectionTitle>
             <ExpandButton data-expanded={expandedSections.has('upcoming')}>
               ›
             </ExpandButton>
@@ -194,7 +178,7 @@ export const StructuredTodosList: React.FC<Props> = ({
                   <TodoItem key={todo.id} todo={todo} />
                 ))
               ) : (
-                <EmptyMessage>No upcoming tasks</EmptyMessage>
+                <EmptyMessage size="tiny">No upcoming tasks</EmptyMessage>
               )}
             </TodosList>
           )}
@@ -205,14 +189,12 @@ export const StructuredTodosList: React.FC<Props> = ({
       {(futureTodos.length > 0 || noDueDateTodos.length > 0) && (
         <Section>
           <SectionHeader onClick={() => toggleSection('more')}>
-            <div>
-              <SectionTitle>
-                More
-                <TodoCount>
-                  ({futureTodos.length + noDueDateTodos.length})
-                </TodoCount>
-              </SectionTitle>
-            </div>
+            <SectionTitle as="h4" size="small">
+              More
+              <TodoCount size="tiny">
+                ({futureTodos.length + noDueDateTodos.length})
+              </TodoCount>
+            </SectionTitle>
             <ExpandButton data-expanded={expandedSections.has('more')}>
               ›
             </ExpandButton>

@@ -75,6 +75,9 @@ export type CustomTheme = BaseTheme & {
     modalBackdrop: string
     punctuation: string
     editorFocus: string
+    todoPriorityHigh: string
+    todoPriorityMedium: string
+    todoPriorityLow: string
   }
   opacity: {
     disabled: number
@@ -131,6 +134,9 @@ export const LIGHT_THEME: CustomTheme = {
     modalBackdrop: 'rgba(200, 200, 200, 0.7)',
     punctuation: '#7f42ff',
     editorFocus: 'rgba(156, 109, 255, 0.3)',
+    todoPriorityHigh: '#d73b43',
+    todoPriorityMedium: '#9e6c00',
+    todoPriorityLow: 'rgba(0, 0, 0, 0.075)',
   },
   opacity: {
     disabled: 0.5,
@@ -155,6 +161,9 @@ export const DARK_THEME: CustomTheme = {
     modalBackdrop: 'rgba(34, 34, 34, 0.9)',
     punctuation: '#9c6dff',
     editorFocus: 'rgba(156, 109, 255, 0.3)',
+    todoPriorityHigh: '#d73b43',
+    todoPriorityMedium: '#9e6c00',
+    todoPriorityLow: 'rgba(0, 0, 0, 0.075)',
   },
   opacity: {
     disabled: 0.5,
