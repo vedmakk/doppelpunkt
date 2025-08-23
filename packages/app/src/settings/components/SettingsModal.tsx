@@ -220,7 +220,9 @@ export const SettingsModal: React.FC<Props> = ({
                 <MutedLabel size="tiny">
                   Enabling this will sync your documents across devices using
                   cloud services. You will need to sign in with your account.
-                  Cookies will be stored in your browser.
+                  Cookies will be stored in your browser and the contents of
+                  your documents will be processed by third party services
+                  (Google Firebase).
                 </MutedLabel>
                 {cloudEnabled && (
                   <>
@@ -283,7 +285,9 @@ export const SettingsModal: React.FC<Props> = ({
                 <MutedLabel size="tiny">
                   Uses AI to automatically extract and organize todos from your
                   todo document. Requires an OpenAI API key and cloud sync to be
-                  enabled.
+                  enabled. Please note that the contents of your todo document
+                  will be processed by third party services (Google Firebase,
+                  OpenAI).
                 </MutedLabel>
               </Col>
             </Row>
@@ -294,8 +298,7 @@ export const SettingsModal: React.FC<Props> = ({
                   <Col>
                     <Label size="small">OpenAI API Key</Label>
                     <MutedLabel size="tiny">
-                      Your API key is stored securely in the cloud and never
-                      synced back to your device.
+                      Your API key will be stored in the cloud.
                     </MutedLabel>
                     <InputContainer>
                       <Input
