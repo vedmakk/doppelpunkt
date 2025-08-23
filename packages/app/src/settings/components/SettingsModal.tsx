@@ -324,11 +324,15 @@ export const SettingsModal: React.FC<Props> = ({
                       </Row>
                     </InputContainer>
                     {structuredTodosApiKey && (
-                      <MutedLabel size="tiny">✓ API key is set</MutedLabel>
+                      <MutedLabel
+                        size="tiny"
+                        css={(theme) => ({ marginTop: theme.spacing(1) })}
+                      >
+                        ✅ API key is set
+                      </MutedLabel>
                     )}
                   </Col>
                 </Row>
-
                 {!cloudEnabled && (
                   <Row>
                     <Col>
