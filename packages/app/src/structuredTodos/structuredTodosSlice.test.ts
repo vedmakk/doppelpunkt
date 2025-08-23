@@ -3,6 +3,7 @@ import {
   structuredTodosReducer,
   setStructuredTodosEnabled,
   setApiKey,
+  setApiKeyIsSet,
   clearApiKey,
   setStructuredTodos,
   setProcessing,
@@ -19,6 +20,7 @@ describe('structuredTodosSlice', () => {
       todos: [],
       enabled: false,
       apiKey: null,
+      apiKeyIsSet: false,
       isProcessing: false,
       error: undefined,
     }
@@ -59,6 +61,16 @@ describe('structuredTodosSlice', () => {
       const state = structuredTodosReducer(stateWithKey, clearApiKey())
 
       expect(state.apiKey).toBeNull()
+    })
+
+    it('should set apiKeyIsSet to true', () => {
+      const state = structuredTodosReducer(initialState, setApiKeyIsSet(true))
+      expect(state.apiKeyIsSet).toBe(true)
+    })
+
+    it('should set apiKeyIsSet to false', () => {
+      const state = structuredTodosReducer(initialState, setApiKeyIsSet(false))
+      expect(state.apiKeyIsSet).toBe(false)
     })
   })
 

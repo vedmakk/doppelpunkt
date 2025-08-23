@@ -5,6 +5,7 @@ import {
   clearApiKey,
   setStructuredTodos,
   clearStructuredTodos,
+  setApiKeyIsSet,
 } from './structuredTodosSlice'
 import { getFirebase } from '../cloudsync/firebase'
 import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore'
@@ -36,6 +37,7 @@ export function hydrateStructuredTodosStateFromStorage(): {
       todos,
       enabled,
       apiKey: null, // Never loaded from storage (write-only)
+      apiKeyIsSet: false,
       isProcessing: false,
       error: undefined,
     }
@@ -47,6 +49,7 @@ export function hydrateStructuredTodosStateFromStorage(): {
       todos: [],
       enabled: false,
       apiKey: null,
+      apiKeyIsSet: false,
       isProcessing: false,
       error: undefined,
     }
@@ -113,8 +116,9 @@ structuredTodosListenerMiddleware.startListening({
       // Only include API key if it's set (write-only)
       if (state.structuredTodos.apiKey) {
         settings.apiKey = state.structuredTodos.apiKey
+      } else if (action.type === clearApiKey.type) {
+        settings.apiKey = ''
       }
-
       await setDoc(settingsRef, settings, { merge: true })
     } catch (error) {
       console.error('Failed to sync structured todos settings:', error)
@@ -171,7 +175,9 @@ structuredTodosListenerMiddleware.startListening({
           listenerApi.dispatch(setStructuredTodosEnabled(settings.enabled))
           // Set a "dummy" API key to indicate that the API key is set!
           if (settings.apiKey) {
-            listenerApi.dispatch(setApiKey('*'.repeat(settings.apiKey.length)))
+            listenerApi.dispatch(setApiKeyIsSet(true))
+          } else {
+            listenerApi.dispatch(setApiKeyIsSet(false))
           }
         }
       })

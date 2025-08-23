@@ -42,7 +42,7 @@ const SettingsModal: React.FC = () => {
 
   const {
     enabled: structuredTodosEnabled,
-    apiKey: structuredTodosApiKey,
+    apiKeyIsSet: structuredTodosApiKeyIsSet,
     toggleEnabled: toggleStructuredTodos,
     updateApiKey,
     clearKey: clearApiKey,
@@ -106,7 +106,7 @@ const SettingsModal: React.FC = () => {
       cloudSyncStatusText={cloudSyncStatusText}
       structuredTodosEnabled={structuredTodosEnabled}
       onToggleStructuredTodos={toggleStructuredTodos}
-      structuredTodosApiKey={structuredTodosApiKey}
+      structuredTodosApiKeyIsSet={structuredTodosApiKeyIsSet}
       onUpdateApiKey={updateApiKey}
       onClearApiKey={clearApiKey}
     />

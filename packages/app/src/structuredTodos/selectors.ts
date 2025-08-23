@@ -12,9 +12,6 @@ export const selectStructuredTodos = (state: RootState) =>
 export const selectStructuredTodosEnabled = (state: RootState) =>
   state.structuredTodos.enabled
 
-export const selectStructuredTodosApiKey = (state: RootState) =>
-  state.structuredTodos.apiKey
-
 export const selectIsProcessingTodos = (state: RootState) =>
   state.structuredTodos.isProcessing
 
@@ -88,3 +85,6 @@ export const selectCompletedTodos = createSelector(
       .filter((todo) => todo.completed)
       .sort((a, b) => (b.due || 0) - (a.due || 0)),
 )
+
+export const selectStructuredTodosApiKeyIsSet = (state: RootState) =>
+  state.structuredTodos.apiKeyIsSet

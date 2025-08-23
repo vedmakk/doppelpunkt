@@ -37,7 +37,7 @@ interface Props {
   readonly cloudSyncStatusText?: string
   readonly structuredTodosEnabled: boolean
   readonly onToggleStructuredTodos: (enabled: boolean) => void
-  readonly structuredTodosApiKey: string | null
+  readonly structuredTodosApiKeyIsSet: boolean
   readonly onUpdateApiKey: (key: string) => void
   readonly onClearApiKey: () => void
 }
@@ -142,11 +142,11 @@ export const SettingsModal: React.FC<Props> = ({
   cloudSyncStatusText,
   structuredTodosEnabled,
   onToggleStructuredTodos,
-  structuredTodosApiKey,
+  structuredTodosApiKeyIsSet,
   onUpdateApiKey,
   onClearApiKey,
 }) => {
-  const [apiKeyInput, setApiKeyInput] = useState(structuredTodosApiKey || '')
+  const [apiKeyInput, setApiKeyInput] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
 
   const handleApiKeySubmit = () => {
@@ -298,7 +298,45 @@ export const SettingsModal: React.FC<Props> = ({
                   <Col>
                     <Label size="small">OpenAI API Key</Label>
                     <MutedLabel size="tiny">
-                      Your API key will be stored in the cloud.
+                      <strong>🔐 Security Information:</strong>
+                      <br />
+                      Your API key will be stored in the cloud (Firestore) and
+                      is transmitted over encrypted connections. Access to your
+                      API key is restricted to your login credentials.
+                      <br />
+                      <br />
+                      <strong>⚠️ Important:</strong> Like any web application
+                      that handles API keys, there are inherent security
+                      considerations:
+                      <ul
+                        css={(theme) => ({
+                          margin: `${theme.spacing(1)} 0`,
+                          paddingLeft: theme.spacing(3),
+                        })}
+                      >
+                        <li>
+                          Avoid entering your API key on shared or public
+                          computers
+                        </li>
+                        <li>Be cautious of malicious browser extensions</li>
+                        <li>
+                          Although we give our best to follow best practices, we
+                          cannot guarantee the security of your API key
+                        </li>
+                        <li>
+                          You can delete and regenerate your API key anytime at{' '}
+                          <a
+                            href="https://platform.openai.com/api-keys"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            css={(theme) => ({ color: theme.colors.primary })}
+                          >
+                            platform.openai.com
+                          </a>
+                        </li>
+                      </ul>
+                      By using this feature, you acknowledge these
+                      considerations and agree to use your own OpenAI API key.
                     </MutedLabel>
                     <InputContainer>
                       <Input
@@ -319,7 +357,7 @@ export const SettingsModal: React.FC<Props> = ({
                           onClick={handleApiKeySubmit}
                           disabled={!apiKeyInput.trim()}
                         />
-                        {structuredTodosApiKey && (
+                        {structuredTodosApiKeyIsSet && (
                           <Button
                             label="Clear Key"
                             onClick={handleApiKeyClear}
@@ -327,7 +365,7 @@ export const SettingsModal: React.FC<Props> = ({
                         )}
                       </Row>
                     </InputContainer>
-                    {structuredTodosApiKey && (
+                    {structuredTodosApiKeyIsSet && (
                       <MutedLabel
                         size="tiny"
                         css={(theme) => ({ marginTop: theme.spacing(1) })}

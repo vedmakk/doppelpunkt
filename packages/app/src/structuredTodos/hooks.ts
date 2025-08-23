@@ -7,7 +7,6 @@ import {
 } from './structuredTodosSlice'
 import {
   selectStructuredTodosEnabled,
-  selectStructuredTodosApiKey,
   selectTodayTodos,
   selectUpcomingTodos,
   selectFutureTodos,
@@ -15,13 +14,14 @@ import {
   selectCompletedTodos,
   selectIsProcessingTodos,
   selectStructuredTodosError,
+  selectStructuredTodosApiKeyIsSet,
 } from './selectors'
 
 export const useStructuredTodos = () => {
   const dispatch = useAppDispatch()
 
   const enabled = useAppSelector(selectStructuredTodosEnabled)
-  const apiKey = useAppSelector(selectStructuredTodosApiKey)
+  const apiKeyIsSet = useAppSelector(selectStructuredTodosApiKeyIsSet)
   const todayTodos = useAppSelector(selectTodayTodos)
   const upcomingTodos = useAppSelector(selectUpcomingTodos)
   const futureTodos = useAppSelector(selectFutureTodos)
@@ -50,7 +50,7 @@ export const useStructuredTodos = () => {
 
   return {
     enabled,
-    apiKey,
+    apiKeyIsSet,
     todayTodos,
     upcomingTodos,
     futureTodos,

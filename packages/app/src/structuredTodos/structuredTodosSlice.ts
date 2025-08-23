@@ -6,6 +6,7 @@ const initialState: StructuredTodosState = {
   todos: [],
   enabled: false,
   apiKey: null, // Never loaded from storage (write-only)
+  apiKeyIsSet: false,
   isProcessing: false,
   error: undefined,
 }
@@ -25,6 +26,10 @@ const structuredTodosSlice = createSlice({
 
     clearApiKey(state) {
       state.apiKey = null
+    },
+
+    setApiKeyIsSet(state, action: PayloadAction<boolean>) {
+      state.apiKeyIsSet = action.payload
     },
 
     setStructuredTodos(state, action: PayloadAction<StructuredTodo[]>) {
@@ -52,6 +57,7 @@ export const {
   setStructuredTodosEnabled,
   setApiKey,
   clearApiKey,
+  setApiKeyIsSet,
   setStructuredTodos,
   setProcessing,
   setStructuredTodosError,
