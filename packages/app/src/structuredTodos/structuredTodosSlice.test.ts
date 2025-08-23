@@ -5,8 +5,6 @@ import {
   setApiKey,
   clearApiKey,
   setStructuredTodos,
-  updateStructuredTodo,
-  removeStructuredTodo,
   setProcessing,
   setStructuredTodosError,
   clearStructuredTodos,
@@ -118,53 +116,6 @@ describe('structuredTodosSlice', () => {
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'structuredTodos.items',
         JSON.stringify(mockTodos),
-      )
-    })
-
-    it('should update a structured todo', () => {
-      const stateWithTodos = { ...initialState, todos: mockTodos }
-      const updates = { completed: true, priority: 'low' as const }
-      const state = structuredTodosReducer(
-        stateWithTodos,
-        updateStructuredTodo({ id: '1', updates }),
-      )
-
-      expect(state.todos[0]).toEqual({
-        ...mockTodos[0],
-        ...updates,
-      })
-      expect(state.todos[1]).toEqual(mockTodos[1])
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'structuredTodos.items',
-        JSON.stringify(state.todos),
-      )
-    })
-
-    it('should not update non-existent todo', () => {
-      const stateWithTodos = { ...initialState, todos: mockTodos }
-      const state = structuredTodosReducer(
-        stateWithTodos,
-        updateStructuredTodo({
-          id: 'non-existent',
-          updates: { completed: true },
-        }),
-      )
-
-      expect(state.todos).toEqual(mockTodos)
-    })
-
-    it('should remove a structured todo', () => {
-      const stateWithTodos = { ...initialState, todos: mockTodos }
-      const state = structuredTodosReducer(
-        stateWithTodos,
-        removeStructuredTodo('1'),
-      )
-
-      expect(state.todos).toHaveLength(1)
-      expect(state.todos[0].id).toBe('2')
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'structuredTodos.items',
-        JSON.stringify(state.todos),
       )
     })
 

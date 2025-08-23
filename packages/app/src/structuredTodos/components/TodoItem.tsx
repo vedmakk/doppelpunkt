@@ -4,8 +4,6 @@ import { StructuredTodo } from '../types'
 
 interface Props {
   todo: StructuredTodo
-  onToggleComplete: (id: string, completed: boolean) => void
-  onDelete: (id: string) => void
 }
 
 const TodoItemContainer = styled.div(({ theme }) => ({
@@ -20,12 +18,6 @@ const TodoItemContainer = styled.div(({ theme }) => ({
   },
 }))
 
-const Checkbox = styled.input(({ theme }) => ({
-  marginTop: '2px',
-  cursor: 'pointer',
-  accentColor: theme.colors.primary,
-}))
-
 const TodoContent = styled.div(({ theme }) => ({
   flex: 1,
   display: 'flex',
@@ -33,12 +25,11 @@ const TodoContent = styled.div(({ theme }) => ({
   gap: theme.spacing(0.5),
 }))
 
-const TodoDescription = styled.label<{ completed: boolean }>(
+const TodoDescription = styled.div<{ completed: boolean }>(
   ({ theme, completed }) => ({
     fontSize: theme.fontSize.small,
     color: completed ? theme.colors.secondary : theme.colors.text,
     textDecoration: completed ? 'line-through' : 'none',
-    cursor: 'pointer',
     wordBreak: 'break-word',
   }),
 )
@@ -72,20 +63,6 @@ const PriorityBadge = styled.span<{ priority: string }>(
   }),
 )
 
-const DeleteButton = styled.button(({ theme }) => ({
-  background: 'none',
-  border: 'none',
-  color: theme.colors.secondary,
-  cursor: 'pointer',
-  padding: theme.spacing(0.5),
-  fontSize: theme.fontSize.small,
-  opacity: 0.6,
-  transition: 'opacity 0.2s',
-  '&:hover': {
-    opacity: 1,
-  },
-}))
-
 const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp)
   const today = new Date()
@@ -112,33 +89,11 @@ const formatDate = (timestamp: number): string => {
   return date.toLocaleDateString(undefined, options)
 }
 
-export const TodoItem: React.FC<Props> = ({
-  todo,
-  onToggleComplete,
-  onDelete,
-}) => {
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onToggleComplete(todo.id, e.target.checked)
-  }
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onDelete(todo.id)
-  }
-
+export const TodoItem: React.FC<Props> = ({ todo }) => {
   return (
     <TodoItemContainer>
-      <Checkbox
-        type="checkbox"
-        checked={todo.completed || false}
-        onChange={handleCheckboxChange}
-        id={`todo-${todo.id}`}
-      />
       <TodoContent>
-        <TodoDescription
-          htmlFor={`todo-${todo.id}`}
-          completed={todo.completed || false}
-        >
+        <TodoDescription completed={todo.completed || false}>
           {todo.description}
         </TodoDescription>
         <TodoMeta>
@@ -150,9 +105,6 @@ export const TodoItem: React.FC<Props> = ({
           )}
         </TodoMeta>
       </TodoContent>
-      <DeleteButton onClick={handleDelete} aria-label="Delete todo">
-        ×
-      </DeleteButton>
     </TodoItemContainer>
   )
 }

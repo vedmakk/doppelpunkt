@@ -73,38 +73,6 @@ const structuredTodosSlice = createSlice({
       }
     },
 
-    updateStructuredTodo(
-      state,
-      action: PayloadAction<{ id: string; updates: Partial<StructuredTodo> }>,
-    ) {
-      const { id, updates } = action.payload
-      const todoIndex = state.todos.findIndex((t) => t.id === id)
-      if (todoIndex !== -1) {
-        state.todos[todoIndex] = { ...state.todos[todoIndex], ...updates }
-
-        // Update cache
-        try {
-          localStorage.setItem(
-            STRUCTURED_TODOS_KEY,
-            JSON.stringify(state.todos),
-          )
-        } catch {
-          // Ignore storage errors
-        }
-      }
-    },
-
-    removeStructuredTodo(state, action: PayloadAction<string>) {
-      state.todos = state.todos.filter((t) => t.id !== action.payload)
-
-      // Update cache
-      try {
-        localStorage.setItem(STRUCTURED_TODOS_KEY, JSON.stringify(state.todos))
-      } catch {
-        // Ignore storage errors
-      }
-    },
-
     setProcessing(state, action: PayloadAction<boolean>) {
       state.isProcessing = action.payload
     },
@@ -132,8 +100,6 @@ export const {
   setApiKey,
   clearApiKey,
   setStructuredTodos,
-  updateStructuredTodo,
-  removeStructuredTodo,
   setProcessing,
   setStructuredTodosError,
   clearStructuredTodos,

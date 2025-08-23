@@ -10,8 +10,6 @@ export const StructuredTodosList: React.FC = () => {
     noDueDateTodos,
     isProcessing,
     error,
-    toggleTodoComplete,
-    deleteTodo,
   } = useStructuredTodos()
 
   return (
@@ -20,8 +18,6 @@ export const StructuredTodosList: React.FC = () => {
       upcomingTodos={upcomingTodos}
       futureTodos={futureTodos}
       noDueDateTodos={noDueDateTodos}
-      onToggleComplete={toggleTodoComplete}
-      onDelete={deleteTodo}
       isProcessing={isProcessing}
       error={error}
     />

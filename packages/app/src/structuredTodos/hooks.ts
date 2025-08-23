@@ -4,8 +4,6 @@ import {
   setStructuredTodosEnabled,
   setApiKey,
   clearApiKey,
-  updateStructuredTodo,
-  removeStructuredTodo,
 } from './structuredTodosSlice'
 import {
   selectStructuredTodosEnabled,
@@ -50,20 +48,6 @@ export const useStructuredTodos = () => {
     dispatch(clearApiKey())
   }, [dispatch])
 
-  const toggleTodoComplete = useCallback(
-    (id: string, completed: boolean) => {
-      dispatch(updateStructuredTodo({ id, updates: { completed } }))
-    },
-    [dispatch],
-  )
-
-  const deleteTodo = useCallback(
-    (id: string) => {
-      dispatch(removeStructuredTodo(id))
-    },
-    [dispatch],
-  )
-
   return {
     enabled,
     apiKey,
@@ -77,7 +61,5 @@ export const useStructuredTodos = () => {
     toggleEnabled,
     updateApiKey,
     clearKey,
-    toggleTodoComplete,
-    deleteTodo,
   }
 }

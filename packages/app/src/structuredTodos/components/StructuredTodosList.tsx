@@ -9,8 +9,6 @@ interface Props {
   upcomingTodos: StructuredTodo[]
   futureTodos: StructuredTodo[]
   noDueDateTodos: StructuredTodo[]
-  onToggleComplete: (id: string, completed: boolean) => void
-  onDelete: (id: string) => void
   isProcessing?: boolean
   error?: string
 }
@@ -95,8 +93,6 @@ export const StructuredTodosList: React.FC<Props> = ({
   upcomingTodos,
   futureTodos,
   noDueDateTodos,
-  onToggleComplete,
-  onDelete,
   isProcessing,
   error,
 }) => {
@@ -168,14 +164,7 @@ export const StructuredTodosList: React.FC<Props> = ({
           {expandedSections.has('today') && (
             <TodosList>
               {todayTodos.length > 0 ? (
-                todayTodos.map((todo) => (
-                  <TodoItem
-                    key={todo.id}
-                    todo={todo}
-                    onToggleComplete={onToggleComplete}
-                    onDelete={onDelete}
-                  />
-                ))
+                todayTodos.map((todo) => <TodoItem key={todo.id} todo={todo} />)
               ) : (
                 <EmptyMessage>No tasks for today</EmptyMessage>
               )}
@@ -202,12 +191,7 @@ export const StructuredTodosList: React.FC<Props> = ({
             <TodosList>
               {upcomingTodos.length > 0 ? (
                 upcomingTodos.map((todo) => (
-                  <TodoItem
-                    key={todo.id}
-                    todo={todo}
-                    onToggleComplete={onToggleComplete}
-                    onDelete={onDelete}
-                  />
+                  <TodoItem key={todo.id} todo={todo} />
                 ))
               ) : (
                 <EmptyMessage>No upcoming tasks</EmptyMessage>
@@ -236,20 +220,10 @@ export const StructuredTodosList: React.FC<Props> = ({
           {expandedSections.has('more') && (
             <TodosList>
               {futureTodos.map((todo) => (
-                <TodoItem
-                  key={todo.id}
-                  todo={todo}
-                  onToggleComplete={onToggleComplete}
-                  onDelete={onDelete}
-                />
+                <TodoItem key={todo.id} todo={todo} />
               ))}
               {noDueDateTodos.map((todo) => (
-                <TodoItem
-                  key={todo.id}
-                  todo={todo}
-                  onToggleComplete={onToggleComplete}
-                  onDelete={onDelete}
-                />
+                <TodoItem key={todo.id} todo={todo} />
               ))}
             </TodosList>
           )}
