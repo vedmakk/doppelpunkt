@@ -8,15 +8,21 @@ const TodoSchema = z.object({
   description: z.string().describe('A clear, concise description of the task'),
   due: z
     .string()
+    .nullable()
     .optional()
     .describe(
       'Date and maybe time for when the task is due in format "YYYY-MM-DD HH:MM" or "YYYY-MM-DD". Do not set this if the task has no due date.',
     ),
   priority: z
     .enum(['low', 'medium', 'high'])
+    .nullable()
     .optional()
     .describe('Priority level of the task'),
-  completed: z.boolean().optional().describe('Whether the task is completed'),
+  completed: z
+    .boolean()
+    .nullable()
+    .optional()
+    .describe('Whether the task is completed'),
 })
 
 const TodosResponseSchema = z.object({
