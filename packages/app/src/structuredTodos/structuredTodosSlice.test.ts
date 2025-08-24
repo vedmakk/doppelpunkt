@@ -9,6 +9,7 @@ import {
   setProcessing,
   setStructuredTodosError,
   clearStructuredTodos,
+  clearAllStructuredTodosData,
 } from './structuredTodosSlice'
 import { StructuredTodosState, StructuredTodo } from './types'
 
@@ -145,6 +146,43 @@ describe('structuredTodosSlice', () => {
       )
 
       expect(state.error).toBeUndefined()
+    })
+  })
+
+  describe('clearAllStructuredTodosData', () => {
+    it('should reset all structured todos state to initial values', () => {
+      // Create a state with all fields populated
+      const populatedState: StructuredTodosState = {
+        todos: [
+          {
+            id: '1',
+            description: 'Test todo',
+            due: Date.now(),
+            priority: 'high',
+            completed: true,
+          },
+        ],
+        enabled: true,
+        apiKey: 'test-api-key',
+        apiKeyIsSet: true,
+        isProcessing: true,
+        error: 'Some error',
+        lastProcessedAt: Date.now(),
+      }
+
+      const state = structuredTodosReducer(
+        populatedState,
+        clearAllStructuredTodosData(),
+      )
+
+      // Verify all fields are reset to initial state
+      expect(state.todos).toEqual([])
+      expect(state.enabled).toBe(false)
+      expect(state.apiKey).toBeNull()
+      expect(state.apiKeyIsSet).toBe(false)
+      expect(state.isProcessing).toBe(false)
+      expect(state.error).toBeUndefined()
+      expect(state.lastProcessedAt).toBeUndefined()
     })
   })
 })

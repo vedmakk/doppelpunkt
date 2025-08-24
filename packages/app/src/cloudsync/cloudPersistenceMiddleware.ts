@@ -18,6 +18,7 @@ import {
 import { AuthManager } from './AuthManager'
 import { DocumentSyncManager } from './DocumentSyncManager'
 import { structuredTodosManager } from '../structuredTodos/persistenceMiddleware'
+import { clearAllStructuredTodosData } from '../structuredTodos/structuredTodosSlice'
 import { setText } from '../editor/editorSlice'
 
 const CLOUD_ENABLED_KEY = 'cloud.enabled'
@@ -160,6 +161,7 @@ cloudListenerMiddleware.startListening({
       structuredTodosManager.stopListening()
       api.dispatch(setCloudUser(null))
       api.dispatch(setCloudStatus('idle'))
+      api.dispatch(clearAllStructuredTodosData())
     } catch (error: any) {
       const errorMessage = error.message.includes('sign in again')
         ? error.message
@@ -173,6 +175,7 @@ cloudListenerMiddleware.startListening({
         structuredTodosManager.stopListening()
         api.dispatch(setCloudUser(null))
         api.dispatch(setCloudStatus('idle'))
+        api.dispatch(clearAllStructuredTodosData())
       }
     }
   },

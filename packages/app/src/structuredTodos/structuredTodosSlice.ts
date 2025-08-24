@@ -49,6 +49,16 @@ const structuredTodosSlice = createSlice({
       state.todos = []
       state.lastProcessedAt = undefined
     },
+
+    clearAllStructuredTodosData(state) {
+      state.todos = []
+      state.enabled = false
+      state.apiKey = null
+      state.apiKeyIsSet = false
+      state.isProcessing = false
+      state.error = undefined
+      state.lastProcessedAt = undefined
+    },
   },
 })
 
@@ -62,4 +72,5 @@ export const {
   setProcessing,
   setStructuredTodosError,
   clearStructuredTodos,
+  clearAllStructuredTodosData,
 } = structuredTodosSlice.actions
