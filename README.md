@@ -92,6 +92,20 @@ VITE_FIREBASE_APP_ID=...
 VITE_USE_FIREBASE_EMULATOR=false
 ```
 
+### Firebase Setup
+
+Most firebase related setup is reflected in the code (`.env`, `firebase.json`, `firestore.rules`, etc.).
+
+Here are some additional steps that can't be done in the code:
+
+1. Setup Hosting and connect the domain
+1. Enable Cloud Functions for Firebase in the Firebase console.
+1. Enable Firestore in the Firebase console.
+1. Enable Authentication in the Firebase console and:
+   - Enable the Google Provider to the "Sign-in method" list
+   - Add production domain to the "Authorized Domains" list
+1. Select the "Blaze" plan in the Firebase console (this is required to make requests to third party services within Cloud Functions)
+
 ### Development with Emulators
 
 Start Firebase emulators (Hosting, Firestore, Auth):
@@ -123,7 +137,7 @@ service cloud.firestore {
 
 1. Open Settings → General.
 2. Toggle "Cloud sync" on.
-3. Sign in with Google or send yourself an email link.
+3. Sign in with Google.
 4. Edits are saved locally (LocalStorage) and synced to Firestore with a 1s debounce. Remote updates propagate live to the editor.
 
 ## 📜 License
