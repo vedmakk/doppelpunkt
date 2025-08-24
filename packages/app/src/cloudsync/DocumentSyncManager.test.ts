@@ -36,6 +36,8 @@ const mockSaveDocumentWithConflictResolution = mock(() =>
 
 const mockDeleteDocument = mock(() => Promise.resolve())
 
+const mockLoadDocument = mock() // Will be configured per test
+
 const mockListenToDocument = mock() // Returns unsubscribe function
 
 const mockGetDocumentPath = mock(
@@ -83,6 +85,7 @@ mock.module('./firestore', () => ({
 mock.module('./documentPersistence', () => ({
   saveDocumentWithConflictResolution: mockSaveDocumentWithConflictResolution,
   deleteDocument: mockDeleteDocument,
+  loadDocument: mockLoadDocument,
   listenToDocument: mockListenToDocument,
   getDocumentPath: mockGetDocumentPath,
 }))
@@ -136,6 +139,7 @@ describe('DocumentSyncManager', () => {
     mockOnSnapshot.mockClear()
     mockSaveDocumentWithConflictResolution.mockClear()
     mockDeleteDocument.mockClear()
+    mockLoadDocument.mockClear()
     mockListenToDocument.mockClear()
     mockGetDocumentPath.mockClear()
     mockSetText.mockClear()
@@ -796,6 +800,139 @@ describe('DocumentSyncManager', () => {
 
       // Should not throw even if deletion fails
       await expect(syncManager.deleteUserDocuments(userId)).rejects.toThrow()
+    })
+  })
+
+  describe('initialSync', () => {
+    it('should save local documents when they do not exist in cloud', async () => {
+      const userId = 'test-user'
+
+      // Mock loadDocument to return null (document doesn't exist)
+      mockLoadDocument.mockResolvedValue(null)
+
+      await syncManager.initialSync(userId, mockGetState, mockDispatch)
+
+      // Should check for both documents
+      expect(mockLoadDocument).toHaveBeenCalledTimes(2)
+      expect(mockLoadDocument).toHaveBeenCalledWith(userId, 'editor')
+      expect(mockLoadDocument).toHaveBeenCalledWith(userId, 'todo')
+
+      // Should save both documents since they don't exist
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(2)
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+        userId,
+        'editor',
+        'local editor text', // From mockState
+        0, // No existing revision
+        '', // No base text
+      )
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+        userId,
+        'todo',
+        'local todo text', // From mockState
+        0, // No existing revision
+        '', // No base text
+      )
+    })
+
+    it('should not save documents when they already exist in cloud', async () => {
+      const userId = 'test-user'
+
+      // Mock loadDocument to return existing documents
+      mockLoadDocument.mockResolvedValue({
+        text: 'existing cloud text',
+        rev: 5,
+        updatedAt: { seconds: 123456789 },
+      })
+
+      await syncManager.initialSync(userId, mockGetState, mockDispatch)
+
+      // Should check for both documents
+      expect(mockLoadDocument).toHaveBeenCalledTimes(2)
+
+      // Should NOT save documents since they already exist
+      expect(mockSaveDocumentWithConflictResolution).not.toHaveBeenCalled()
+    })
+
+    it('should handle mixed scenarios - one exists, one does not', async () => {
+      const userId = 'test-user'
+
+      // Mock editor document exists, todo document does not
+      mockLoadDocument
+        .mockResolvedValueOnce({
+          text: 'existing editor text',
+          rev: 3,
+          updatedAt: { seconds: 123456789 },
+        })
+        .mockResolvedValueOnce(null)
+
+      await syncManager.initialSync(userId, mockGetState, mockDispatch)
+
+      // Should check for both documents
+      expect(mockLoadDocument).toHaveBeenCalledTimes(2)
+      expect(mockLoadDocument).toHaveBeenNthCalledWith(1, userId, 'editor')
+      expect(mockLoadDocument).toHaveBeenNthCalledWith(2, userId, 'todo')
+
+      // Should only save the todo document
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(1)
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+        userId,
+        'todo',
+        'local todo text',
+        0,
+        '',
+      )
+    })
+
+    it('should handle errors gracefully and not break initial sync', async () => {
+      const userId = 'test-user'
+
+      // Mock loadDocument to throw error for editor, return null for todo
+      mockLoadDocument
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce(null)
+
+      // Should not throw error
+      await expect(
+        syncManager.initialSync(userId, mockGetState, mockDispatch),
+      ).resolves.toBeUndefined()
+
+      // Should have attempted to check both documents
+      expect(mockLoadDocument).toHaveBeenCalledTimes(2)
+
+      // Should still save the todo document despite editor error
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(1)
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+        userId,
+        'todo',
+        'local todo text',
+        0,
+        '',
+      )
+    })
+
+    it('should handle save errors gracefully', async () => {
+      const userId = 'test-user'
+
+      // Mock documents don't exist
+      mockLoadDocument.mockResolvedValue(null)
+
+      // Mock save to fail for editor but succeed for todo
+      mockSaveDocumentWithConflictResolution
+        .mockRejectedValueOnce(new Error('Save failed'))
+        .mockResolvedValueOnce({
+          newRevision: 1,
+          finalText: 'local todo text',
+          wasConflicted: false,
+        })
+
+      // Should not throw error
+      await expect(
+        syncManager.initialSync(userId, mockGetState, mockDispatch),
+      ).resolves.toBeUndefined()
+
+      // Should have attempted to save both documents
+      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(2)
     })
   })
 

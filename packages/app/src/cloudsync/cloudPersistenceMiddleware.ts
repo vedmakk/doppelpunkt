@@ -189,6 +189,13 @@ cloudListenerMiddleware.startListening({
     if (!userId) return
 
     documentSyncManager.startListening(userId, api.getState, api.dispatch)
+
+    // Perform initial sync to write local documents to cloud if they don't exist
+    try {
+      await documentSyncManager.initialSync(userId, api.getState, api.dispatch)
+    } catch {
+      api.dispatch(setCloudError('Failed to perform initial sync'))
+    }
   },
 })
 
@@ -307,40 +314,6 @@ cloudListenerMiddleware.startListening({
       api.getState,
       api.dispatch,
     )
-  },
-})
-
-// Handle initial sync when user connects (sync both documents)
-cloudListenerMiddleware.startListening({
-  predicate: (_action, currentState, previousState) => {
-    const current: any = currentState
-    const previous: any = previousState
-
-    return (
-      previous?.cloud?.status !== 'connected' &&
-      current.cloud.status === 'connected' &&
-      Boolean(current.cloud.user)
-    )
-  },
-  effect: async (_action, api) => {
-    const state: any = api.getState()
-
-    if (!isCloudSyncReady(state)) return
-
-    const userId = state.cloud.user.uid
-    const modes: WritingMode[] = ['editor', 'todo']
-
-    // On initial connection, sync both documents
-    modes.forEach((mode) => {
-      const text = state.editor.documents[mode].text
-      documentSyncManager.scheduleDocumentSave(
-        userId,
-        mode,
-        text,
-        api.getState,
-        api.dispatch,
-      )
-    })
   },
 })
 

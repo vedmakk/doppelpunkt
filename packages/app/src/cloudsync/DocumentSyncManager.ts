@@ -13,6 +13,7 @@ import {
   saveDocumentWithConflictResolution,
   deleteDocument,
   listenToDocument,
+  loadDocument,
 } from './documentPersistence'
 import { getFirebase } from './firebase'
 import { doc, deleteDoc } from './firestore'
@@ -178,6 +179,44 @@ export class DocumentSyncManager {
         dispatch(setCloudError('Failed to write to cloud'))
       }
     }, this.SAVE_DEBOUNCE_MS)
+  }
+
+  async initialSync(
+    userId: string,
+    getState: () => any,
+    dispatch: (action: any) => void,
+  ): Promise<void> {
+    const modes: WritingMode[] = ['editor', 'todo']
+
+    await Promise.all(
+      modes.map(async (mode) => {
+        try {
+          // Check if document exists in cloud
+          const existingDoc = await loadDocument(userId, mode)
+
+          // If document doesn't exist, save the local version
+          if (!existingDoc) {
+            const state = getState()
+            const localText = state.editor.documents[mode].text
+
+            await this.saveDocument(
+              userId,
+              mode,
+              localText,
+              0, // No existing revision
+              '', // No base text since document doesn't exist
+              dispatch,
+              getState,
+            )
+          }
+        } catch (error) {
+          // Log error but don't throw - we don't want initial sync to break connection
+          if (import.meta.env.DEV) {
+            console.error(`Failed to perform initial sync for ${mode}:`, error)
+          }
+        }
+      }),
+    )
   }
 
   async deleteUserDocuments(userId: string): Promise<void> {
