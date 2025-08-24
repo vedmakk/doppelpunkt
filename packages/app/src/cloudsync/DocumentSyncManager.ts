@@ -172,6 +172,7 @@ export class DocumentSyncManager {
           dispatch,
           getState,
         )
+        dispatch(setCloudError(undefined))
       } catch {
         dispatch(setCloudError('Failed to write to cloud'))
       }

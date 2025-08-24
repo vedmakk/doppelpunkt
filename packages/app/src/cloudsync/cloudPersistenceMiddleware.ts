@@ -349,7 +349,7 @@ cloudListenerMiddleware.startListening({
   matcher: isAnyOf(setCloudError),
   effect: async (action) => {
     const error = (action as any).payload
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && error) {
       console.error('Cloud sync error:', error)
     }
   },
