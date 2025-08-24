@@ -36,7 +36,10 @@ export class StructuredTodosProcessor {
     this.openai = new OpenAI({ apiKey })
   }
 
-  async extractTodos(todoText: string): Promise<StructuredTodo[]> {
+  async extractTodos(
+    todoText: string,
+    structuredTodos?: StructuredTodo[],
+  ): Promise<StructuredTodo[]> {
     try {
       // Skip processing if text is empty or too short
       if (!todoText || todoText.trim().length < 10) {
@@ -57,7 +60,18 @@ Guidelines:
 - Tasks without dates should not have a due date
 - Include all tasks (even completed ones). Mark tasks as completed when explicitly stated in the text.
 
-Current date for reference: ${new Date().toISOString()}`
+Current date for reference: ${new Date().toISOString()}
+
+${
+  structuredTodos
+    ? `
+To keep the extracted todo's consistent across multiple extractions,
+here are the last extracted todos (re-use them if they are still valid, or update/remove/add where necessary):
+${JSON.stringify(structuredTodos, null, 2)}
+`
+    : ''
+}
+`
 
       // Use standard completion API with structured JSON
       const response = await this.openai.responses.parse({
