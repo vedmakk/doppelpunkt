@@ -66,10 +66,7 @@ export const processTodoDocument = onDocumentWritten(
       // Process the todo text
       logger.info(`Processing todo document for user ${userId}`)
       const processor = new StructuredTodosProcessor(settings.apiKey)
-      const structuredTodos = await processor.extractTodos(
-        afterData.text,
-        afterData.structuredTodos,
-      )
+      const structuredTodos = await processor.extractTodos(afterData.text)
 
       // Update the document with structured todos
       const todoDocRef = db.doc(`users/${userId}/doc/todo`)
