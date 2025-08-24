@@ -1,70 +1,41 @@
 {
   "name": "doppelpunkt",
-  "version": "0.0.1",
   "private": true,
-  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "bunx --bun vite",
-    "build": "vite build",
-    "preview": "bunx --bun vite preview",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "typecheck": "tsc --noEmit",
-    "format": "prettier --write .",
-    "test": "bun test",
     "prepare": "husky",
-    "deploy": "firebase deploy --only hosting"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@floating-ui/react": "^0.27.12",
-    "@reduxjs/toolkit": "^2.8.2",
-    "prismjs": "^1.30.0",
-    "react": "^19.1.0",
-    "react-compiler-runtime": "^19.1.0-rc.2",
-    "react-dom": "^19.1.0",
-    "react-hotkeys-hook": "^5.1.0",
-    "react-redux": "^9.2.0",
-    "react-simple-code-editor": "^0.14.1",
-    "reading-time-estimator": "^1.14.0",
-    "vite-plugin-checker": "^0.9.3",
-    "word-wrap": "^1.2.5"
+    "lint": "eslint --max-warnings=0 .",
+    "prettier": "prettier --write .",
+    "build": "bun run --filter '*' build",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter '*' test:ci --passWithNoTests",
+    "preview": "bun run --filter 'app' preview",
+    "preserve": "bun run build",
+    "serve": "firebase emulators:start",
+    "deploy": "firebase deploy"
   },
   "devDependencies": {
-    "@emotion/eslint-plugin": "^11.12.0",
-    "@eslint/compat": "^1.2.9",
-    "@happy-dom/global-registrator": "^17.6.1",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/react-hooks": "^8.0.1",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/bun": "^1.2.15",
-    "@types/prismjs": "^1.26.5",
-    "@types/react-dom": "^19.1.5",
-    "@typescript-eslint/eslint-plugin": "^8.33.1",
-    "@typescript-eslint/parser": "^8.33.1",
-    "@vitejs/plugin-react": "^4.5.1",
-    "babel-plugin-react-compiler": "^19.1.0-rc.2",
-    "eslint": "^9.28.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-prettier": "^5.4.1",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^6.0.0-rc.1",
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.22.0",
+    "@types/bun": "^1.2.5",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "globals": "^16.0.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.0",
+    "lint-staged": "^15.5.0",
     "prettier": "^3.5.3",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "typescript": "^5.8.2"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
+    "packages/**/*.{js,jsx,ts,tsx,d.ts}": [
+      "eslint --max-warnings=0 --fix",
       "prettier --write"
     ],
-    "*.{css,md,json}": [
+    "packages/**/*.{json,css,md}": [
       "prettier --write"
     ]
   }
