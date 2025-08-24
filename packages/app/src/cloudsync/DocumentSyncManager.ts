@@ -64,6 +64,7 @@ export class DocumentSyncManager {
 
           // Check if we need conflict resolution
           const needsConflictResolution =
+            cloudDoc.baseRev !== 0 && // We have a base (synced before)
             localDocument.text !== cloudDoc.baseText && // Local has changes
             documentData.text !== cloudDoc.baseText && // Remote has changes
             localDocument.text !== documentData.text // And they're different from each other
