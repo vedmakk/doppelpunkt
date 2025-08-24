@@ -598,103 +598,6 @@ describe('DocumentSyncManager', () => {
     })
   })
 
-  describe('performInitialSync', () => {
-    beforeEach(() => {
-      mockGetDoc.mockClear()
-    })
-
-    it('should sync local content to cloud when remote is empty', async () => {
-      const userId = 'test-user'
-
-      // Mock empty remote document
-      mockGetDoc.mockResolvedValue({
-        exists: () => true,
-        data: () => ({ text: '', rev: 0 }),
-      })
-
-      await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
-
-      expect(mockGetDoc).toHaveBeenCalledTimes(2) // Called for both editor and todo
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(2)
-
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
-        userId,
-        'editor',
-        'local editor text',
-        1, // baseRev from mockState
-        'base editor text', // baseText from mockState
-      )
-    })
-
-    it('should use remote content when it exists and is non-empty', async () => {
-      const userId = 'test-user'
-
-      // Mock existing remote document
-      mockGetDoc.mockResolvedValue({
-        exists: () => true,
-        data: () => ({ text: 'existing remote text', rev: 5 }),
-      })
-
-      await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
-
-      expect(mockGetDoc).toHaveBeenCalledTimes(2)
-      expect(mockSaveDocumentWithConflictResolution).not.toHaveBeenCalled()
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetCloudDocBase({
-          mode: 'editor',
-          baseRev: 5,
-          baseText: 'existing remote text',
-        }),
-      )
-    })
-
-    it('should handle missing remote documents', async () => {
-      const userId = 'test-user'
-
-      // Mock non-existent document
-      mockGetDoc.mockResolvedValue({
-        exists: () => false,
-        data: () => undefined,
-      } as any)
-
-      await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
-
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(2)
-    })
-
-    it('should handle documents with invalid revision numbers', async () => {
-      const userId = 'test-user'
-
-      mockGetDoc.mockResolvedValue({
-        exists: () => true,
-        data: () => ({ text: 'remote text', rev: 'invalid' }),
-      } as any)
-
-      await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetCloudDocBase({
-          mode: 'editor',
-          baseRev: 0, // Should default to 0 for invalid revision
-          baseText: 'remote text',
-        }),
-      )
-    })
-
-    it('should dispatch error on sync failure', async () => {
-      const userId = 'test-user'
-
-      mockGetDoc.mockRejectedValue(new Error('Network error'))
-
-      await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetCloudError('Failed to perform initial sync'),
-      )
-    })
-  })
-
   describe('scheduleDocumentSave', () => {
     let originalSetTimeout: typeof globalThis.setTimeout
     let originalClearTimeout: typeof globalThis.clearTimeout
@@ -897,32 +800,6 @@ describe('DocumentSyncManager', () => {
   })
 
   describe('integration scenarios', () => {
-    it('should handle complete sync workflow', async () => {
-      const userId = 'test-user'
-
-      // Setup listeners
-      syncManager.startListening(userId, mockGetState, mockDispatch)
-
-      // Perform initial sync
-      mockGetDoc.mockResolvedValue({
-        exists: () => true,
-        data: () => ({ text: 'remote initial', rev: 1 }),
-      })
-
-      await syncManager.performInitialSync(userId, mockGetState, mockDispatch)
-
-      // Clear previous calls for better test isolation
-      mockSaveDocumentWithConflictResolution.mockClear()
-
-      // For integration test, just verify the components work together
-      // The detailed timer behavior is tested in the scheduleDocumentSave tests
-      expect(mockListenToDocument).toHaveBeenCalledTimes(2)
-      expect(mockSetCloudDocBase).toHaveBeenCalled()
-
-      // Stop listening
-      syncManager.stopListening()
-    })
-
     it('should handle rapid successive operations', () => {
       const userId = 'test-user'
 

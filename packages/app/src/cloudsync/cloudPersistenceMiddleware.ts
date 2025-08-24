@@ -189,16 +189,6 @@ cloudListenerMiddleware.startListening({
     if (!userId) return
 
     documentSyncManager.startListening(userId, api.getState, api.dispatch)
-
-    try {
-      await documentSyncManager.performInitialSync(
-        userId,
-        api.getState,
-        api.dispatch,
-      )
-    } catch {
-      api.dispatch(setCloudError('Failed to perform initial sync'))
-    }
   },
 })
 
@@ -246,10 +236,15 @@ cloudListenerMiddleware.startListening({
 
     if (!current.editor || !previous?.editor) return false
 
+    // Sync only if there are changes to the documents or if the user newly connected to the cloud
     return (
       current.editor.documents.editor.text !==
         previous.editor.documents.editor.text ||
-      current.editor.documents.todo.text !== previous.editor.documents.todo.text
+      current.editor.documents.todo.text !==
+        previous.editor.documents.todo.text ||
+      (previous?.cloud?.status !== 'connected' &&
+        current.cloud.status === 'connected' &&
+        Boolean(current.cloud.user))
     )
   },
   effect: async (_action, api) => {

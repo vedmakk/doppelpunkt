@@ -13,10 +13,9 @@ import {
   saveDocumentWithConflictResolution,
   deleteDocument,
   listenToDocument,
-  getDocumentPath,
 } from './documentPersistence'
 import { getFirebase } from './firebase'
-import { doc, getDoc, deleteDoc } from './firestore'
+import { doc, deleteDoc } from './firestore'
 import { resolveTextConflict } from './conflictResolution'
 
 export class DocumentSyncManager {
@@ -148,53 +147,6 @@ export class DocumentSyncManager {
     })
     this.documentListeners = {}
     this.clearAllSaveTimers()
-  }
-
-  async performInitialSync(
-    userId: string,
-    getState: () => any,
-    dispatch: (action: any) => void,
-  ): Promise<void> {
-    const { db } = await getFirebase()
-
-    const modes: WritingMode[] = ['editor', 'todo']
-
-    await Promise.all(
-      modes.map(async (mode) => {
-        try {
-          const ref = doc(db, getDocumentPath(userId, mode))
-          const snap = await getDoc(ref)
-          const remote = snap.data() as
-            | { text?: string; rev?: number }
-            | undefined
-          const localText = getState().editor.documents[mode].text
-
-          if (
-            !remote ||
-            typeof remote.text !== 'string' ||
-            remote.text === ''
-          ) {
-            const base = getState().cloud.docs[mode]
-            await this.saveDocument(
-              userId,
-              mode,
-              localText,
-              base.baseRev,
-              base.baseText,
-              dispatch,
-              getState,
-            )
-          } else {
-            const rev = typeof remote.rev === 'number' ? remote.rev : 0
-            dispatch(
-              setCloudDocBase({ mode, baseRev: rev, baseText: remote.text }),
-            )
-          }
-        } catch {
-          dispatch(setCloudError('Failed to perform initial sync'))
-        }
-      }),
-    )
   }
 
   scheduleDocumentSave(
