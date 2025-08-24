@@ -161,7 +161,7 @@ describe('DocumentSyncManager', () => {
         .mockReturnValueOnce(mockUnsubscribe1)
         .mockReturnValueOnce(mockUnsubscribe2)
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       expect(mockListenToDocument).toHaveBeenCalledTimes(2)
       expect(mockListenToDocument).toHaveBeenCalledWith(
@@ -190,10 +190,10 @@ describe('DocumentSyncManager', () => {
         .mockReturnValueOnce(mockUnsubscribe4)
 
       // Start first set of listeners
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Start second set of listeners
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Previous listeners should be unsubscribed
       expect(mockUnsubscribe1).toHaveBeenCalled()
@@ -225,7 +225,7 @@ describe('DocumentSyncManager', () => {
         },
       )
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Simulate document update
       const documentData = {
@@ -278,7 +278,7 @@ describe('DocumentSyncManager', () => {
         },
       )
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Simulate document update with same text as local
       const documentData = {
@@ -327,7 +327,7 @@ describe('DocumentSyncManager', () => {
         },
       )
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Simulate invalid document data
       onUpdateCallback(null, { hasPendingWrites: false, fromCache: false })
@@ -372,7 +372,7 @@ describe('DocumentSyncManager', () => {
         },
       )
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       const documentData = {
         text: 'short', // Much shorter than cursor position
@@ -425,7 +425,7 @@ describe('DocumentSyncManager', () => {
         },
       )
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Simulate remote document update that conflicts with local changes
       const documentData = {
@@ -501,7 +501,7 @@ describe('DocumentSyncManager', () => {
       const mockScheduleDocumentSave = mock(() => {})
       syncManager.scheduleDocumentSave = mockScheduleDocumentSave
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       const documentData = {
         text: 'base text with remote changes',
@@ -535,7 +535,7 @@ describe('DocumentSyncManager', () => {
         },
       )
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Simulate document update with same revision and text as current base
       const documentData = {
@@ -567,7 +567,7 @@ describe('DocumentSyncManager', () => {
         .mockReturnValueOnce(mockUnsubscribe1)
         .mockReturnValueOnce(mockUnsubscribe2)
 
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
       syncManager.stopListening()
 
       expect(mockUnsubscribe1).toHaveBeenCalled()
@@ -586,7 +586,7 @@ describe('DocumentSyncManager', () => {
         userId,
         'editor',
         'test text',
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
@@ -630,14 +630,14 @@ describe('DocumentSyncManager', () => {
         userId,
         'editor',
         text,
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
         text,
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
@@ -652,7 +652,7 @@ describe('DocumentSyncManager', () => {
         userId,
         'editor',
         text,
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
@@ -680,7 +680,7 @@ describe('DocumentSyncManager', () => {
         userId,
         'editor',
         text,
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
@@ -706,7 +706,7 @@ describe('DocumentSyncManager', () => {
         userId,
         'editor',
         text,
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
@@ -736,7 +736,7 @@ describe('DocumentSyncManager', () => {
         userId,
         'editor',
         text,
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
@@ -766,7 +766,7 @@ describe('DocumentSyncManager', () => {
         userId,
         'editor',
         text,
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
@@ -804,30 +804,30 @@ describe('DocumentSyncManager', () => {
       const userId = 'test-user'
 
       // Start and stop multiple times
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
       syncManager.stopListening()
-      syncManager.startListening(userId, mockGetState, mockDispatch)
+      syncManager.startListening(userId, mockGetState(), mockDispatch)
 
       // Schedule multiple saves rapidly
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
         'text1',
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
         'text2',
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
       syncManager.scheduleDocumentSave(
         userId,
         'todo',
         'todo1',
-        mockGetState,
+        mockGetState(),
         mockDispatch,
       )
 
