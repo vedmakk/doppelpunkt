@@ -20,7 +20,7 @@ const db = getFirestore()
 export const processTodoDocument = onDocumentWritten(
   {
     document: 'users/{userId}/doc/todo',
-    region: 'us-central1', // Adjust region as needed
+    region: 'europe-west1', // Adjust region as needed
     maxInstances: 10,
   },
   async (event) => {

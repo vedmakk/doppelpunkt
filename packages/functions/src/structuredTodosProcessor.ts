@@ -55,7 +55,7 @@ Guidelines:
 - If a task mentions a day of the week (e.g., "next Saturday"), calculate the appropriate date based on the current date
 - If a task mentions a specific date, use that date
 - Tasks without dates should not have a due date
-- Don't mark tasks as completed unless explicitly stated in the text
+- Include all tasks (even completed ones). Mark tasks as completed when explicitly stated in the text.
 
 Current date for reference: ${new Date().toISOString()}`
 

@@ -40,7 +40,7 @@ export const selectTodayTodos = createSelector(
   [selectStructuredTodos],
   (todos: StructuredTodo[]) =>
     todos
-      .filter((todo) => todo.due && isTodayOrPast(todo.due) && !todo.completed)
+      .filter((todo) => todo.due && isTodayOrPast(todo.due))
       .sort((a, b) => a.due! - b.due!),
 )
 
@@ -50,10 +50,7 @@ export const selectUpcomingTodos = createSelector(
     todos
       .filter(
         (todo) =>
-          todo.due &&
-          !isTodayOrPast(todo.due) &&
-          isWithinDays(todo.due, 7) &&
-          !todo.completed,
+          todo.due && !isTodayOrPast(todo.due) && isWithinDays(todo.due, 7),
       )
       .sort((a, b) => a.due! - b.due!),
 )
@@ -64,18 +61,14 @@ export const selectFutureTodos = createSelector(
     todos
       .filter(
         (todo) =>
-          todo.due &&
-          !isTodayOrPast(todo.due) &&
-          !isWithinDays(todo.due, 7) &&
-          !todo.completed,
+          todo.due && !isTodayOrPast(todo.due) && !isWithinDays(todo.due, 7),
       )
       .sort((a, b) => a.due! - b.due!),
 )
 
 export const selectNoDueDateTodos = createSelector(
   [selectStructuredTodos],
-  (todos: StructuredTodo[]) =>
-    todos.filter((todo) => !todo.due && !todo.completed),
+  (todos: StructuredTodo[]) => todos.filter((todo) => !todo.due),
 )
 
 export const selectCompletedTodos = createSelector(
