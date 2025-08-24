@@ -5,15 +5,9 @@ import {
   clearApiKey,
   setStructuredTodos,
   clearStructuredTodos,
-  setApiKeyIsSet,
 } from './structuredTodosSlice'
-import { getFirebase } from '../cloudsync/firebase'
-import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore'
-import {
-  StructuredTodo,
-  StructuredTodosSettings,
-  StructuredTodosState,
-} from './types'
+import { StructuredTodosSettings, StructuredTodosState } from './types'
+import { StructuredTodosManager } from './StructuredTodosManager'
 
 const STRUCTURED_TODOS_KEY = 'structuredTodos'
 const STRUCTURED_TODOS_ENABLED_KEY = `${STRUCTURED_TODOS_KEY}.enabled`
@@ -56,6 +50,9 @@ export function hydrateStructuredTodosStateFromStorage(): {
     return { structuredTodos }
   }
 }
+
+// Create singleton instance
+const structuredTodosManager = new StructuredTodosManager()
 
 export const structuredTodosListenerMiddleware = createListenerMiddleware()
 
@@ -103,12 +100,6 @@ structuredTodosListenerMiddleware.startListening({
     }
 
     try {
-      const { db } = await getFirebase()
-      const settingsRef = doc(
-        db,
-        `users/${cloudUser.uid}/settings/structuredTodos`,
-      )
-
       const settings: StructuredTodosSettings = {
         enabled: state.structuredTodos.enabled,
       }
@@ -119,7 +110,8 @@ structuredTodosListenerMiddleware.startListening({
       } else if (action.type === clearApiKey.type) {
         settings.apiKey = ''
       }
-      await setDoc(settingsRef, settings, { merge: true })
+
+      await structuredTodosManager.saveSettings(cloudUser.uid, settings)
     } catch (error) {
       console.error('Failed to sync structured todos settings:', error)
     }
@@ -127,9 +119,6 @@ structuredTodosListenerMiddleware.startListening({
 })
 
 // Listen for structured todos updates from Firestore
-let todosUnsubscribe: (() => void) | null = null
-let settingsUnsubscribe: (() => void) | null = null
-
 structuredTodosListenerMiddleware.startListening({
   predicate: (_action, currentState: any, previousState: any) => {
     const wasConnected = previousState?.cloud?.status === 'connected'
@@ -151,50 +140,10 @@ structuredTodosListenerMiddleware.startListening({
     }
 
     try {
-      const { db } = await getFirebase()
-
-      // Listen to settings changes (excluding API key which is write-only)
-      const settingsRef = doc(
-        db,
-        `users/${cloudUser.uid}/settings/structuredTodos`,
+      await structuredTodosManager.startListening(
+        cloudUser.uid,
+        listenerApi.dispatch,
       )
-
-      // First, get initial settings
-      const settingsSnap = await getDoc(settingsRef)
-      if (settingsSnap.exists()) {
-        const settings = settingsSnap.data() as StructuredTodosSettings
-        // Only sync enabled state, not API key
-        listenerApi.dispatch(setStructuredTodosEnabled(settings.enabled))
-      }
-
-      // Then set up listener for future changes
-      settingsUnsubscribe = onSnapshot(settingsRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const settings = snapshot.data() as StructuredTodosSettings
-          // Only sync enabled state, not API key
-          listenerApi.dispatch(setStructuredTodosEnabled(settings.enabled))
-          // Set a "dummy" API key to indicate that the API key is set!
-          if (settings.apiKey) {
-            listenerApi.dispatch(setApiKeyIsSet(true))
-          } else {
-            listenerApi.dispatch(setApiKeyIsSet(false))
-          }
-        }
-      })
-
-      // Listen to todo document for structured todos updates
-      const todoDocRef = doc(db, `users/${cloudUser.uid}/doc/todo`)
-
-      todosUnsubscribe = onSnapshot(todoDocRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data()
-          if (data?.structuredTodos && Array.isArray(data.structuredTodos)) {
-            listenerApi.dispatch(
-              setStructuredTodos(data.structuredTodos as StructuredTodo[]),
-            )
-          }
-        }
-      })
     } catch (error) {
       console.error('Failed to set up structured todos listeners:', error)
     }
@@ -210,13 +159,9 @@ structuredTodosListenerMiddleware.startListening({
     return wasConnected && isConnected
   },
   effect: async () => {
-    if (todosUnsubscribe) {
-      todosUnsubscribe()
-      todosUnsubscribe = null
-    }
-    if (settingsUnsubscribe) {
-      settingsUnsubscribe()
-      settingsUnsubscribe = null
-    }
+    structuredTodosManager.stopListening()
   },
 })
+
+// Export the manager for use in other modules
+export { structuredTodosManager }

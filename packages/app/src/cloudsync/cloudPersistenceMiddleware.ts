@@ -17,6 +17,7 @@ import {
 // Import our manager classes
 import { AuthManager } from './AuthManager'
 import { DocumentSyncManager } from './DocumentSyncManager'
+import { structuredTodosManager } from '../structuredTodos/persistenceMiddleware'
 import { setText } from '../editor/editorSlice'
 
 const CLOUD_ENABLED_KEY = 'cloud.enabled'
@@ -144,11 +145,19 @@ cloudListenerMiddleware.startListening({
     }
 
     try {
-      await documentSyncManager.deleteUserDocuments(userId)
+      // Delete all user data from Firestore
+      await Promise.all([
+        documentSyncManager.deleteUserDocuments(userId),
+        structuredTodosManager.deleteUserData(userId),
+      ])
+
+      // Delete the user account
       await authManager.deleteCurrentUser()
 
+      // Clean up listeners and state
       authManager.detachAuthListener()
       documentSyncManager.stopListening()
+      structuredTodosManager.stopListening()
       api.dispatch(setCloudUser(null))
       api.dispatch(setCloudStatus('idle'))
     } catch (error: any) {
@@ -161,6 +170,7 @@ cloudListenerMiddleware.startListening({
       if (error.message.includes('sign in again')) {
         authManager.detachAuthListener()
         documentSyncManager.stopListening()
+        structuredTodosManager.stopListening()
         api.dispatch(setCloudUser(null))
         api.dispatch(setCloudStatus('idle'))
       }
