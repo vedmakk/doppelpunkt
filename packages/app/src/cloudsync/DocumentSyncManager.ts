@@ -1,8 +1,6 @@
 // Document synchronization management for cloud sync
 // Handles real-time document sync, conflict resolution, and debounced saves
 
-import { RootState } from '../store'
-
 import { type WritingMode } from '../mode/modeSlice'
 import { setText } from '../editor/editorSlice'
 import {
@@ -29,7 +27,7 @@ export class DocumentSyncManager {
 
   startListening(
     userId: string,
-    state: RootState,
+    getState: () => any,
     dispatch: (action: any) => void,
   ): void {
     this.stopListening()
@@ -52,6 +50,7 @@ export class DocumentSyncManager {
             return
           }
 
+          const state = getState()
           const localDocument = state.editor.documents[mode]
           const cloudDoc = state.cloud.docs[mode]
 
@@ -110,7 +109,7 @@ export class DocumentSyncManager {
                 userId,
                 mode,
                 resolution.mergedText,
-                state,
+                getState,
                 dispatch,
               )
             }
@@ -154,7 +153,7 @@ export class DocumentSyncManager {
     userId: string,
     mode: WritingMode,
     text: string,
-    state: RootState,
+    getState: () => any,
     dispatch: (action: any) => void,
   ): void {
     if (this.saveTimers[mode]) {
@@ -163,7 +162,7 @@ export class DocumentSyncManager {
 
     this.saveTimers[mode] = globalThis.setTimeout(async () => {
       try {
-        const cloudDoc = state.cloud.docs[mode]
+        const cloudDoc = getState().cloud.docs[mode]
         await this.saveDocument(
           userId,
           mode,
@@ -171,7 +170,7 @@ export class DocumentSyncManager {
           cloudDoc.baseRev,
           cloudDoc.baseText,
           dispatch,
-          state,
+          getState,
         )
         dispatch(setCloudError(undefined))
       } catch {
@@ -196,7 +195,7 @@ export class DocumentSyncManager {
     baseRev: number,
     baseText: string,
     dispatch: (action: any) => void,
-    state: RootState,
+    getState: () => any,
   ): Promise<void> {
     const result = await saveDocumentWithConflictResolution(
       userId,
@@ -215,7 +214,7 @@ export class DocumentSyncManager {
     )
 
     if (result.wasConflicted && result.finalText !== localText) {
-      const localDoc = state.editor.documents[mode]
+      const localDoc = getState().editor.documents[mode]
       dispatch(
         setText({
           mode,

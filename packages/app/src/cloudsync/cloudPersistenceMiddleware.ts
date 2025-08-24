@@ -188,7 +188,7 @@ cloudListenerMiddleware.startListening({
 
     if (!userId) return
 
-    documentSyncManager.startListening(userId, state, api.dispatch)
+    documentSyncManager.startListening(userId, api.getState, api.dispatch)
   },
 })
 
@@ -265,7 +265,7 @@ cloudListenerMiddleware.startListening({
       userId,
       'editor',
       text,
-      state,
+      api.getState,
       api.dispatch,
     )
   },
@@ -304,7 +304,7 @@ cloudListenerMiddleware.startListening({
       userId,
       'todo',
       text,
-      state,
+      api.getState,
       api.dispatch,
     )
   },
@@ -337,7 +337,7 @@ cloudListenerMiddleware.startListening({
         userId,
         mode,
         text,
-        state,
+        api.getState,
         api.dispatch,
       )
     })
