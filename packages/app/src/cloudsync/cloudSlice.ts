@@ -95,6 +95,16 @@ const cloudSlice = createSlice({
     requestDeleteUser: (state) => state,
     // Trigger sync for a specific mode (used by middleware internally)
     requestSync: (state) => state,
+    // Internal action to update text from cloud without triggering saves
+    setTextFromCloud: (
+      state,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _action: PayloadAction<{
+        mode: WritingMode
+        text: string
+        cursorPos: number
+      }>,
+    ) => state,
   },
 })
 
@@ -110,4 +120,5 @@ export const {
   requestSignOut,
   requestDeleteUser,
   requestSync,
+  setTextFromCloud,
 } = cloudSlice.actions

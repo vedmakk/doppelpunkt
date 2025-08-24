@@ -7,6 +7,7 @@ import {
   setCloudError,
   setCloudDocBase,
   setCloudDocSnapshotMeta,
+  setTextFromCloud,
 } from './cloudSlice'
 import {
   saveDocumentWithConflictResolution,
@@ -16,6 +17,7 @@ import {
 } from './documentPersistence'
 import { getFirebase } from './firebase'
 import { doc, getDoc, deleteDoc } from './firestore'
+import { resolveTextConflict } from './conflictResolution'
 
 export class DocumentSyncManager {
   private documentListeners: Partial<Record<WritingMode, () => void>> = {}
@@ -49,26 +51,91 @@ export class DocumentSyncManager {
             return
           }
 
-          dispatch(
-            setCloudDocBase({
-              mode,
-              baseRev: documentData.rev,
-              baseText: documentData.text,
-            }),
-          )
+          const state = getState()
+          const localDocument = state.editor.documents[mode]
+          const cloudDoc = state.cloud.docs[mode]
 
-          const localDocument = getState().editor.documents[mode]
-          if (localDocument.text !== documentData.text) {
+          // Skip processing if this is the same revision we already have
+          if (
+            documentData.rev === cloudDoc.baseRev &&
+            documentData.text === cloudDoc.baseText
+          ) {
+            return
+          }
+
+          // Check if we need conflict resolution
+          const needsConflictResolution =
+            localDocument.text !== cloudDoc.baseText && // Local has changes
+            documentData.text !== cloudDoc.baseText && // Remote has changes
+            localDocument.text !== documentData.text // And they're different from each other
+
+          if (needsConflictResolution) {
+            // Perform bidirectional conflict resolution
+            const resolution = resolveTextConflict(
+              cloudDoc.baseText, // base (last known common version)
+              localDocument.text, // local changes
+              documentData.text, // remote changes
+            )
+
+            // Update cloud base to the new remote version
             dispatch(
-              setText({
+              setCloudDocBase({
                 mode,
-                text: documentData.text,
-                cursorPos: Math.min(
-                  localDocument.cursorPos,
-                  documentData.text.length,
-                ),
+                baseRev: documentData.rev,
+                baseText: documentData.text,
               }),
             )
+
+            // Apply resolved text if it differs from current local text
+            if (resolution.mergedText !== localDocument.text) {
+              dispatch(
+                setTextFromCloud({
+                  mode,
+                  text: resolution.mergedText,
+                  cursorPos: Math.min(
+                    localDocument.cursorPos,
+                    resolution.mergedText.length,
+                  ),
+                }),
+              )
+            }
+
+            // If there was a conflict and we changed the text, schedule a save
+            // to push the merged result back to the cloud
+            if (
+              resolution.wasConflicted &&
+              resolution.mergedText !== documentData.text
+            ) {
+              this.scheduleDocumentSave(
+                userId,
+                mode,
+                resolution.mergedText,
+                getState,
+                dispatch,
+              )
+            }
+          } else {
+            // No conflict - update base and apply remote changes if different
+            dispatch(
+              setCloudDocBase({
+                mode,
+                baseRev: documentData.rev,
+                baseText: documentData.text,
+              }),
+            )
+
+            if (localDocument.text !== documentData.text) {
+              dispatch(
+                setTextFromCloud({
+                  mode,
+                  text: documentData.text,
+                  cursorPos: Math.min(
+                    localDocument.cursorPos,
+                    documentData.text.length,
+                  ),
+                }),
+              )
+            }
           }
         },
       )

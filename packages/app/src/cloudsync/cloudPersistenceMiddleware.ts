@@ -11,11 +11,13 @@ import {
   setCloudError,
   setCloudStatus,
   setCloudUser,
+  setTextFromCloud,
 } from './cloudSlice'
 
 // Import our manager classes
 import { AuthManager } from './AuthManager'
 import { DocumentSyncManager } from './DocumentSyncManager'
+import { setText } from '../editor/editorSlice'
 
 const CLOUD_ENABLED_KEY = 'cloud.enabled'
 
@@ -216,9 +218,29 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-// Handle document changes with debounced saves
+// Handle setTextFromCloud actions by updating the editor
 cloudListenerMiddleware.startListening({
-  predicate: (_action, currentState, previousState) => {
+  matcher: isAnyOf(setTextFromCloud),
+  effect: async (action, api) => {
+    const { mode, text, cursorPos } = (action as any).payload
+    // Add metadata to indicate this setText came from cloud
+    const setTextAction = setText({ mode, text, cursorPos })
+    ;(setTextAction as any).meta = { fromCloud: true }
+    api.dispatch(setTextAction)
+  },
+})
+
+// Handle document changes with debounced saves (but ignore cloud-originated changes)
+cloudListenerMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    // Ignore setText actions that came from cloud
+    if (
+      (action as any)?.type === 'editor/setText' &&
+      (action as any)?.meta?.fromCloud
+    ) {
+      return false
+    }
+
     const current: any = currentState
     const previous: any = previousState
 

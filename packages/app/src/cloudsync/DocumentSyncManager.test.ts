@@ -42,6 +42,8 @@ const mockGetDocumentPath = mock(
   (userId: string, mode: WritingMode) => `users/${userId}/doc/${mode}`,
 )
 
+// We don't mock conflict resolution for DocumentSyncManager tests - we want to test the integration
+
 // Mock Redux actions
 const mockSetText = mock((payload: any) => ({
   type: 'editor/setText',
@@ -57,6 +59,10 @@ const mockSetCloudDocBase = mock((payload: any) => ({
 }))
 const mockSetCloudDocSnapshotMeta = mock((payload: any) => ({
   type: 'cloud/setCloudDocSnapshotMeta',
+  payload,
+}))
+const mockSetTextFromCloud = mock((payload: any) => ({
+  type: 'cloud/setTextFromCloud',
   payload,
 }))
 
@@ -81,6 +87,9 @@ mock.module('./documentPersistence', () => ({
   getDocumentPath: mockGetDocumentPath,
 }))
 
+// Don't mock conflict resolution for DocumentSyncManager tests - we want to test the integration
+// The conflict resolution itself is tested separately in conflictResolution.test.ts
+
 mock.module('../editor/editorSlice', () => ({
   setText: mockSetText,
 }))
@@ -89,6 +98,7 @@ mock.module('./cloudSlice', () => ({
   setCloudError: mockSetCloudError,
   setCloudDocBase: mockSetCloudDocBase,
   setCloudDocSnapshotMeta: mockSetCloudDocSnapshotMeta,
+  setTextFromCloud: mockSetTextFromCloud,
 }))
 
 describe('DocumentSyncManager', () => {
@@ -132,6 +142,7 @@ describe('DocumentSyncManager', () => {
     mockSetCloudError.mockClear()
     mockSetCloudDocBase.mockClear()
     mockSetCloudDocSnapshotMeta.mockClear()
+    mockSetTextFromCloud.mockClear()
     mockDispatch.mockClear()
     mockGetState.mockClear()
   })
@@ -189,9 +200,21 @@ describe('DocumentSyncManager', () => {
       expect(mockUnsubscribe2).toHaveBeenCalled()
     })
 
-    it('should handle document updates correctly', () => {
+    it('should handle document updates without conflicts', () => {
       const userId = 'test-user'
       let onUpdateCallback: any
+
+      // Set up state where local text matches base (no local changes)
+      const stateWithoutLocalChanges = {
+        ...mockState,
+        editor: {
+          documents: {
+            editor: { text: 'base editor text', cursorPos: 10 },
+            todo: { text: 'base todo text', cursorPos: 5 },
+          },
+        },
+      }
+      mockGetState.mockReturnValue(stateWithoutLocalChanges)
 
       mockListenToDocument.mockImplementation(
         (userId: any, mode: any, callback: any) => {
@@ -234,7 +257,7 @@ describe('DocumentSyncManager', () => {
       )
 
       expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetText({
+        mockSetTextFromCloud({
           mode: 'editor',
           text: 'updated remote text',
           cursorPos: 10, // Should preserve cursor position (min of current and new text length)
@@ -287,8 +310,8 @@ describe('DocumentSyncManager', () => {
         }),
       )
 
-      // Should NOT call setText since text is the same
-      expect(mockSetText).not.toHaveBeenCalled()
+      // Should NOT call setTextFromCloud since text is the same
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
     })
 
     it('should handle invalid document data gracefully', () => {
@@ -321,7 +344,7 @@ describe('DocumentSyncManager', () => {
       expect(mockDispatch).toHaveBeenCalledTimes(3)
       expect(mockSetCloudDocSnapshotMeta).toHaveBeenCalledTimes(3)
       expect(mockSetCloudDocBase).not.toHaveBeenCalled()
-      expect(mockSetText).not.toHaveBeenCalled()
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
     })
 
     it('should adjust cursor position when new text is shorter', () => {
@@ -332,7 +355,7 @@ describe('DocumentSyncManager', () => {
         ...mockState,
         editor: {
           documents: {
-            editor: { text: 'local editor text', cursorPos: 100 }, // Cursor beyond new text length
+            editor: { text: 'base editor text', cursorPos: 100 }, // Same as base, so no local changes
             todo: { text: 'local todo text', cursorPos: 5 },
           },
         },
@@ -363,12 +386,174 @@ describe('DocumentSyncManager', () => {
       })
 
       expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetText({
+        mockSetTextFromCloud({
           mode: 'editor',
           text: 'short',
           cursorPos: 5, // Should be adjusted to text length
         }),
       )
+    })
+
+    it('should handle conflicts with bidirectional resolution', () => {
+      const userId = 'test-user'
+      let onUpdateCallback: any
+
+      // Set up state where both local and remote have changes from base
+      const stateWithConflict = {
+        ...mockState,
+        editor: {
+          documents: {
+            editor: { text: 'Line 1\nLine 2 LOCAL\nLine 3', cursorPos: 10 },
+            todo: { text: 'base todo text', cursorPos: 5 },
+          },
+        },
+        cloud: {
+          docs: {
+            editor: { baseRev: 1, baseText: 'Line 1\nLine 2\nLine 3' },
+            todo: { baseRev: 1, baseText: 'base todo text' },
+          },
+        },
+      }
+      mockGetState.mockReturnValue(stateWithConflict)
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      // Simulate remote document update that conflicts with local changes
+      const documentData = {
+        text: 'Line 1\nLine 2 REMOTE\nLine 3',
+        rev: 2,
+        updatedAt: { seconds: 123456789 },
+      }
+      const metadata = {
+        hasPendingWrites: false,
+        fromCache: false,
+      }
+
+      onUpdateCallback(documentData, metadata)
+
+      // Conflict resolution should have been performed (we can't easily test the exact call since we're not mocking it)
+
+      // Should update base to remote version
+      expect(mockDispatch).toHaveBeenCalledWith(
+        mockSetCloudDocBase({
+          mode: 'editor',
+          baseRev: 2,
+          baseText: 'Line 1\nLine 2 REMOTE\nLine 3',
+        }),
+      )
+
+      // Should apply resolved text (actual result will depend on diff-match-patch algorithm)
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'cloud/setTextFromCloud',
+          payload: expect.objectContaining({
+            mode: 'editor',
+            cursorPos: 10,
+            // text will be the result of conflict resolution
+          }),
+        }),
+      )
+    })
+
+    it('should schedule save when conflict resolution produces different text than remote', () => {
+      const userId = 'test-user'
+      let onUpdateCallback: any
+
+      // Set up a scenario where local and remote have different changes from base
+      // This should trigger conflict resolution and potentially schedule a save
+      const stateWithConflict = {
+        ...mockState,
+        editor: {
+          documents: {
+            editor: { text: 'base text with local changes', cursorPos: 10 },
+            todo: { text: 'base todo text', cursorPos: 5 },
+          },
+        },
+        cloud: {
+          docs: {
+            editor: { baseRev: 1, baseText: 'base text' },
+            todo: { baseRev: 1, baseText: 'base todo text' },
+          },
+        },
+      }
+      mockGetState.mockReturnValue(stateWithConflict)
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      // Mock the scheduleDocumentSave method
+      const originalScheduleDocumentSave = syncManager.scheduleDocumentSave
+      const mockScheduleDocumentSave = mock(() => {})
+      syncManager.scheduleDocumentSave = mockScheduleDocumentSave
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      const documentData = {
+        text: 'base text with remote changes',
+        rev: 2,
+        updatedAt: { seconds: 123456789 },
+      }
+
+      onUpdateCallback(documentData, {
+        hasPendingWrites: false,
+        fromCache: false,
+      })
+
+      // Should schedule a save if the merged result is different from remote
+      // (We can't predict the exact merged text, but we can check if save was scheduled)
+      expect(mockScheduleDocumentSave).toHaveBeenCalled()
+
+      // Restore original method
+      syncManager.scheduleDocumentSave = originalScheduleDocumentSave
+    })
+
+    it('should skip processing when revision and text match current base', () => {
+      const userId = 'test-user'
+      let onUpdateCallback: any
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      // Simulate document update with same revision and text as current base
+      const documentData = {
+        text: 'base editor text', // Same as mockState.cloud.docs.editor.baseText
+        rev: 1, // Same as mockState.cloud.docs.editor.baseRev
+        updatedAt: { seconds: 123456789 },
+      }
+
+      onUpdateCallback(documentData, {
+        hasPendingWrites: false,
+        fromCache: false,
+      })
+
+      // Should only update snapshot metadata, skip everything else
+      expect(mockDispatch).toHaveBeenCalledTimes(1)
+      expect(mockSetCloudDocSnapshotMeta).toHaveBeenCalledTimes(1)
+      expect(mockSetCloudDocBase).not.toHaveBeenCalled()
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
     })
   })
 
