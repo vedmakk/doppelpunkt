@@ -220,7 +220,18 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-// Handle document changes with debounced saves (but ignore cloud-originated changes)
+// === Document Change Listeners ===
+
+// Utility function to check if cloud sync is ready
+const isCloudSyncReady = (state: any): boolean => {
+  return (
+    state.cloud.enabled &&
+    state.cloud.status === 'connected' &&
+    state.cloud.user?.uid
+  )
+}
+
+// Handle editor document changes
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
@@ -236,27 +247,90 @@ cloudListenerMiddleware.startListening({
 
     if (!current.editor || !previous?.editor) return false
 
-    // Sync only if there are changes to the documents or if the user newly connected to the cloud
+    // Only trigger when editor document text changes
     return (
       current.editor.documents.editor.text !==
-        previous.editor.documents.editor.text ||
-      current.editor.documents.todo.text !==
-        previous.editor.documents.todo.text ||
-      (previous?.cloud?.status !== 'connected' &&
-        current.cloud.status === 'connected' &&
-        Boolean(current.cloud.user))
+      previous.editor.documents.editor.text
     )
   },
   effect: async (_action, api) => {
     const state: any = api.getState()
 
-    if (!state.cloud.enabled || state.cloud.status !== 'connected') return
+    if (!isCloudSyncReady(state)) return
 
-    const userId = state.cloud.user?.uid
-    if (!userId) return
+    const userId = state.cloud.user.uid
+    const text = state.editor.documents.editor.text
 
+    documentSyncManager.scheduleDocumentSave(
+      userId,
+      'editor',
+      text,
+      api.getState,
+      api.dispatch,
+    )
+  },
+})
+
+// Handle todo document changes
+cloudListenerMiddleware.startListening({
+  predicate: (action, currentState, previousState) => {
+    // Ignore setText actions that came from cloud
+    if (
+      (action as any)?.type === 'editor/setText' &&
+      (action as any)?.meta?.fromCloud
+    ) {
+      return false
+    }
+
+    const current: any = currentState
+    const previous: any = previousState
+
+    if (!current.editor || !previous?.editor) return false
+
+    // Only trigger when todo document text changes
+    return (
+      current.editor.documents.todo.text !== previous.editor.documents.todo.text
+    )
+  },
+  effect: async (_action, api) => {
+    const state: any = api.getState()
+
+    if (!isCloudSyncReady(state)) return
+
+    const userId = state.cloud.user.uid
+    const text = state.editor.documents.todo.text
+
+    documentSyncManager.scheduleDocumentSave(
+      userId,
+      'todo',
+      text,
+      api.getState,
+      api.dispatch,
+    )
+  },
+})
+
+// Handle initial sync when user connects (sync both documents)
+cloudListenerMiddleware.startListening({
+  predicate: (_action, currentState, previousState) => {
+    const current: any = currentState
+    const previous: any = previousState
+
+    return (
+      previous?.cloud?.status !== 'connected' &&
+      current.cloud.status === 'connected' &&
+      Boolean(current.cloud.user)
+    )
+  },
+  effect: async (_action, api) => {
+    const state: any = api.getState()
+
+    if (!isCloudSyncReady(state)) return
+
+    const userId = state.cloud.user.uid
     const modes: WritingMode[] = ['editor', 'todo']
 
+    // On initial connection, sync both documents
     modes.forEach((mode) => {
       const text = state.editor.documents[mode].text
       documentSyncManager.scheduleDocumentSave(
