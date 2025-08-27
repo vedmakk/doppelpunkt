@@ -122,7 +122,7 @@ describe('editorSlice', () => {
 
       const doc = getEditorState().documents.editor
       expect(doc.text).toBe('Short')
-      expect(doc.cursorPos).toBe(1000) // Should accept any cursor position
+      expect(doc.cursorPos).toBe(5) // Sanitization middleware clamps to text length
     })
   })
 

@@ -29,6 +29,19 @@ const editorSlice = createSlice({
   initialState,
   reducers: {
     setText(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _state,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _action: PayloadAction<{
+        mode: WritingMode
+        text: string
+        cursorPos: number
+      }>,
+    ) {
+      // This action is intercepted by sanitization middleware
+      // The actual state update happens in setTextInternal
+    },
+    setTextInternal(
       state,
       action: PayloadAction<{
         mode: WritingMode
@@ -62,5 +75,11 @@ const editorSlice = createSlice({
 })
 
 export const editorReducer = editorSlice.reducer
-export const { setText, clear, load, toggleAutoSave, setCaptureTab } =
-  editorSlice.actions
+export const {
+  setText,
+  setTextInternal,
+  clear,
+  load,
+  toggleAutoSave,
+  setCaptureTab,
+} = editorSlice.actions

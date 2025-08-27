@@ -6,6 +6,7 @@ import {
   editorListenerMiddleware,
   hydrateAppStateFromStorage,
 } from './editor/persistenceMiddleware'
+import { storageSanitizationMiddleware } from './editor/sanitization'
 import { cloudReducer } from './cloudsync/cloudSlice'
 import {
   cloudListenerMiddleware,
@@ -45,6 +46,7 @@ export const createStore = () =>
         .prepend(cloudListenerMiddleware.middleware)
         .prepend(editorListenerMiddleware.middleware)
         .prepend(structuredTodosListenerMiddleware.middleware)
+        .prepend(storageSanitizationMiddleware.middleware)
     },
   })
 

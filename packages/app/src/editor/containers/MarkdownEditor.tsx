@@ -1,19 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  injectVisualIndents,
-  stripString,
-  stripVisualIndents,
-} from '../utils/visualIndent'
+import { stripString } from '../utils/visualIndent'
 import { computeListEnter } from '../utils/computeListEnter'
+import { selectDisplayText } from '../sanitization/presentation/selectors'
+import { visualIndentStripper } from '../sanitization/presentation/transformers'
 
 import { useDispatch } from 'react-redux'
 
-import {
-  useEditorText,
-  useCaptureTabEnabled,
-  useEditorCursorPos,
-} from '../hooks'
+import { useCaptureTabEnabled, useEditorText } from '../hooks'
+import { useAppSelector } from '../../store'
 import { setText, setCaptureTab } from '../editorSlice'
 import { useWritingMode } from '../../mode/hooks'
 import { useCustomHotkey } from '../../hotkeys/hooks'
@@ -26,16 +21,14 @@ const MarkdownEditor: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const content = useEditorText()
-  const cursorPos = useEditorCursorPos()
   const captureTab = useCaptureTabEnabled()
   const mode = useWritingMode()
+  const content = useEditorText() // For checking if content is empty
 
   const dispatch = useDispatch()
 
-  const { injectedValue, injectedCursorPos } = useMemo(
-    () => injectVisualIndents(content, cursorPos, charsPerLine),
-    [content, charsPerLine, cursorPos],
+  const { text: injectedValue, cursorPos: injectedCursorPos } = useAppSelector(
+    (state) => selectDisplayText(state, charsPerLine),
   )
 
   const getTextarea = () =>
@@ -49,10 +42,13 @@ const MarkdownEditor: React.FC = () => {
       if (textarea) {
         const cursorPos = nextCursorPos ?? textarea.selectionStart
 
-        const { sanitizedValue, sanitizedCursorPos } = stripVisualIndents(
-          content,
-          cursorPos,
-        )
+        // Strip visual indents before sending to store
+        const { text: sanitizedValue, cursorPos: sanitizedCursorPos } =
+          visualIndentStripper.transform(content, {
+            text: content,
+            cursorPos,
+            mode,
+          })
 
         dispatch(
           setText({
@@ -85,8 +81,19 @@ const MarkdownEditor: React.FC = () => {
 
       const textarea = e.currentTarget as HTMLTextAreaElement
 
+      // Strip visual indents first to get logical content
+      const { text: logicalContent } = visualIndentStripper.transform(
+        textarea.value,
+        {
+          text: textarea.value,
+          cursorPos: textarea.selectionStart,
+          mode,
+        },
+      )
+
+      // Apply list enter logic to the logical content
       const result = computeListEnter({
-        value: textarea.value,
+        value: logicalContent,
         selectionStart: textarea.selectionStart,
         selectionEnd: textarea.selectionEnd,
         shiftKey: e.shiftKey,
@@ -103,7 +110,7 @@ const MarkdownEditor: React.FC = () => {
 
       handleContentChange(newValue, newCursor)
     },
-    [handleContentChange],
+    [handleContentChange, mode],
   )
 
   const focusEditor = useCallback(() => {
