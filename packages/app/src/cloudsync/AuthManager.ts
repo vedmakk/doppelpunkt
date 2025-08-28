@@ -1,6 +1,13 @@
 // Authentication state management for cloud sync
 // Handles Firebase Auth operations and user state management
 
+import {
+  onAuthStateChanged,
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
+  deleteUser,
+} from 'firebase/auth'
 import { getFirebase, type FirebaseUser } from './firebase'
 import { setCloudUser, setCloudStatus } from './cloudSlice'
 
@@ -9,7 +16,6 @@ export class AuthManager {
 
   async attachAuthListener(dispatch: (action: any) => void): Promise<void> {
     const { auth } = await getFirebase()
-    const { onAuthStateChanged } = await import('firebase/auth')
 
     this.detachAuthListener()
 
@@ -33,15 +39,11 @@ export class AuthManager {
 
   async signOut(): Promise<void> {
     const { auth } = await getFirebase()
-    const { signOut } = await import('firebase/auth')
     await signOut(auth)
   }
 
   async signInWithGoogle(): Promise<void> {
     const { auth } = await getFirebase()
-    const { GoogleAuthProvider, signInWithPopup } = await import(
-      'firebase/auth'
-    )
 
     const provider = new GoogleAuthProvider()
     await signInWithPopup(auth, provider)
@@ -49,7 +51,6 @@ export class AuthManager {
 
   async deleteCurrentUser(): Promise<void> {
     const { auth } = await getFirebase()
-    const { deleteUser, signOut } = await import('firebase/auth')
 
     if (!auth.currentUser) {
       throw new Error('No signed-in user to delete')

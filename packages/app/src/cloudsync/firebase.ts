@@ -1,7 +1,17 @@
-// Lazy Firebase initialization helpers. Importing this module does not load Firebase
-// until one of the functions is called, keeping auth cookies out until cloud is enabled.
+// Lazy Firebase initialization helpers. While Firebase modules are imported statically,
+// Firebase services are only initialized when getFirebase() is called, keeping auth cookies out until cloud is enabled.
 
+import { getApps, getApp, initializeApp } from 'firebase/app'
 import type { User } from 'firebase/auth'
+import { getAuth } from 'firebase/auth'
+import {
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  connectFirestoreEmulator,
+} from 'firebase/firestore'
+import { connectAuthEmulator } from 'firebase/auth'
 
 export type FirebaseServices = {
   app: import('firebase/app').FirebaseApp
@@ -31,16 +41,10 @@ class FirebaseManager {
   }
 
   private async initializeServices(): Promise<FirebaseServices> {
-    // Dynamically import Firebase modules to avoid loading them until needed
-    const [firebaseApp, firebaseAuth, firebaseFirestore] = await Promise.all([
-      import('firebase/app'),
-      import('firebase/auth'),
-      import('firebase/firestore'),
-    ])
-
-    const app = this.initializeApp(firebaseApp)
-    const auth = firebaseAuth.getAuth(app)
-    const db = this.initializeFirestore(app, firebaseFirestore)
+    // Use static imports for Firebase modules
+    const app = this.initializeApp()
+    const auth = getAuth(app)
+    const db = this.initializeFirestore(app)
 
     await this.connectEmulatorsIfNeeded(auth, db)
 
@@ -49,9 +53,7 @@ class FirebaseManager {
     return services
   }
 
-  private initializeApp(firebaseApp: typeof import('firebase/app')) {
-    const { getApps, getApp, initializeApp } = firebaseApp
-
+  private initializeApp() {
     if (getApps().length > 0) {
       return getApp()
     }
@@ -68,17 +70,7 @@ class FirebaseManager {
     return initializeApp(config)
   }
 
-  private initializeFirestore(
-    app: import('firebase/app').FirebaseApp,
-    firebaseFirestore: typeof import('firebase/firestore'),
-  ) {
-    const {
-      initializeFirestore,
-      getFirestore,
-      persistentLocalCache,
-      persistentMultipleTabManager,
-    } = firebaseFirestore
-
+  private initializeFirestore(app: import('firebase/app').FirebaseApp) {
     try {
       return initializeFirestore(app, {
         localCache: persistentLocalCache({
@@ -105,12 +97,6 @@ class FirebaseManager {
     }
 
     try {
-      const [{ connectAuthEmulator }, { connectFirestoreEmulator }] =
-        await Promise.all([
-          import('firebase/auth'),
-          import('firebase/firestore'),
-        ])
-
       connectAuthEmulator(auth, 'http://localhost:9099', {
         disableWarnings: true,
       })

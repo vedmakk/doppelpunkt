@@ -1,7 +1,15 @@
 // Document persistence layer for Firestore operations
 // Handles saving, loading, and syncing documents with conflict resolution
 
-import { type Timestamp } from 'firebase/firestore'
+import {
+  type Timestamp,
+  doc,
+  serverTimestamp,
+  runTransaction,
+  getDoc,
+  deleteDoc,
+  onSnapshot,
+} from 'firebase/firestore'
 import { getFirebase } from './firebase'
 import { resolveTextConflict } from './conflictResolution'
 import { type WritingMode } from '../mode/modeSlice'
@@ -37,9 +45,6 @@ export async function saveDocumentWithConflictResolution(
   baseText: string,
 ): Promise<SaveResult> {
   const { db } = await getFirebase()
-  const { doc, serverTimestamp, runTransaction, getDoc } = await import(
-    'firebase/firestore'
-  )
 
   const docRef = doc(db, getDocumentPath(userId, mode))
 
@@ -99,7 +104,6 @@ export async function loadDocument(
   mode: WritingMode,
 ): Promise<DocumentData | null> {
   const { db } = await getFirebase()
-  const { doc, getDoc } = await import('firebase/firestore')
 
   const docRef = doc(db, getDocumentPath(userId, mode))
   const snapshot = await getDoc(docRef)
@@ -125,7 +129,6 @@ export async function deleteDocument(
   mode: WritingMode,
 ): Promise<void> {
   const { db } = await getFirebase()
-  const { doc, deleteDoc } = await import('firebase/firestore')
 
   const docRef = doc(db, getDocumentPath(userId, mode))
   await deleteDoc(docRef)
@@ -147,7 +150,6 @@ export function listenToDocument(
   // Async setup to handle Firebase imports
   const setupListener = async () => {
     const { db } = await getFirebase()
-    const { doc, onSnapshot } = await import('firebase/firestore')
 
     const docRef = doc(db, getDocumentPath(userId, mode))
 
