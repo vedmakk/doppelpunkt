@@ -1,8 +1,8 @@
 // Lazy Firebase initialization helpers. While Firebase modules are imported statically,
 // Firebase services are only initialized when getFirebase() is called, keeping auth cookies out until cloud is enabled.
 
-import { getApps, getApp, initializeApp } from 'firebase/app'
-import type { User } from 'firebase/auth'
+import { getApps, getApp, initializeApp, type FirebaseApp } from 'firebase/app'
+import type { User, Auth } from 'firebase/auth'
 import { getAuth } from 'firebase/auth'
 import {
   initializeFirestore,
@@ -10,13 +10,14 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
   connectFirestoreEmulator,
+  type Firestore,
 } from 'firebase/firestore'
 import { connectAuthEmulator } from 'firebase/auth'
 
 export type FirebaseServices = {
-  app: import('firebase/app').FirebaseApp
-  auth: import('firebase/auth').Auth
-  db: import('firebase/firestore').Firestore
+  app: FirebaseApp
+  auth: Auth
+  db: Firestore
 }
 
 export type FirebaseUser = User
@@ -70,7 +71,7 @@ class FirebaseManager {
     return initializeApp(config)
   }
 
-  private initializeFirestore(app: import('firebase/app').FirebaseApp) {
+  private initializeFirestore(app: FirebaseApp) {
     try {
       return initializeFirestore(app, {
         localCache: persistentLocalCache({
@@ -83,10 +84,7 @@ class FirebaseManager {
     }
   }
 
-  private async connectEmulatorsIfNeeded(
-    auth: import('firebase/auth').Auth,
-    db: import('firebase/firestore').Firestore,
-  ) {
+  private async connectEmulatorsIfNeeded(auth: Auth, db: Firestore) {
     const shouldConnectEmulators =
       !this.emulatorsConnected &&
       import.meta.env.DEV &&
