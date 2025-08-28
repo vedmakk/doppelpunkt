@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { StructuredTodo } from './types'
+import { selectCloudEnabled, selectCloudStatus } from '../cloudsync/selectors'
 
 // Basic selectors
 export const selectStructuredTodosState = (state: RootState) =>
@@ -81,3 +82,23 @@ export const selectCompletedTodos = createSelector(
 
 export const selectStructuredTodosApiKeyIsSet = (state: RootState) =>
   state.structuredTodos.apiKeyIsSet
+
+// Dependency enforcement selector
+export const selectStructuredTodosDependencyStatus = createSelector(
+  [selectCloudEnabled, selectCloudStatus],
+  (cloudEnabled, cloudStatus) => {
+    if (!cloudEnabled) {
+      return {
+        canEnable: false,
+        disabledReason: 'Cloud sync must be enabled first',
+      }
+    }
+    if (cloudStatus !== 'connected') {
+      return {
+        canEnable: false,
+        disabledReason: 'Waiting for cloud sync connection',
+      }
+    }
+    return { canEnable: true, disabledReason: undefined }
+  },
+)

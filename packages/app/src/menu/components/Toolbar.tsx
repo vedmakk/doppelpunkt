@@ -9,6 +9,7 @@ import { WritingMode } from '../../mode/modeSlice'
 import ToolbarTodoSection from './ToolbarTodoSection'
 import ToolbarEditorSection from '../containers/ToolbarEditorSection'
 import { SectionContainer } from './SectionContainer'
+import { SyncStatusIndicator } from '../../shared/components/SyncStatusIndicator'
 
 interface Props {
   onOpenSettings: () => void
@@ -16,7 +17,6 @@ interface Props {
   onOpenCloudSyncSettings: () => void
   onOpenHotkeysSettings: () => void
   mode: WritingMode
-  cloudSyncStatusText: string
 }
 
 const ToolbarContainer = styled.div(({ theme }) => ({
@@ -32,7 +32,6 @@ const Toolbar: React.FC<Props> = ({
   onOpenCloudSyncSettings,
   onOpenHotkeysSettings,
   mode,
-  cloudSyncStatusText,
 }) => {
   return (
     <ToolbarContainer id="toolbar">
@@ -45,10 +44,8 @@ const Toolbar: React.FC<Props> = ({
         <SectionTitle>Settings</SectionTitle>
         <Button label="General" onClick={onOpenSettings} />
         <Button label="Auto-save" onClick={onOpenAutoSaveSettings} />
-        <Button
-          label={`Cloud sync (${cloudSyncStatusText})`}
-          onClick={onOpenCloudSyncSettings}
-        />
+        <Button label="Cloud sync" onClick={onOpenCloudSyncSettings} />
+        <SyncStatusIndicator featureName="cloudSync" size="small" />
         <Button label="Shortcuts" onClick={onOpenHotkeysSettings} />
       </SectionContainer>
       <SectionContainer as="section" aria-label="Project info">

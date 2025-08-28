@@ -8,6 +8,7 @@ import {
   toggleAutoSave,
 } from './editorSlice'
 import { TUTORIAL_PLACEHOLDER } from './tutorial'
+import { safeLocalStorage } from '../shared/storage'
 
 const EDITOR_KEY = 'editor'
 const MARKDOWN_KEY_EDITOR = `${EDITOR_KEY}.markdown.editor`
@@ -22,9 +23,9 @@ export const editorStorageKeys = {
 
 export function hydrateAppStateFromStorage(): { editor: EditorState } {
   try {
-    const storedTextEditor = localStorage.getItem(MARKDOWN_KEY_EDITOR)
-    const storedTextTodo = localStorage.getItem(MARKDOWN_KEY_TODO)
-    const storedAutoSave = localStorage.getItem(AUTO_SAVE_KEY)
+    const storedTextEditor = safeLocalStorage.getItem(MARKDOWN_KEY_EDITOR)
+    const storedTextTodo = safeLocalStorage.getItem(MARKDOWN_KEY_TODO)
+    const storedAutoSave = safeLocalStorage.getItem(AUTO_SAVE_KEY)
 
     const textEditor = storedTextEditor || TUTORIAL_PLACEHOLDER
     const textTodo = storedTextTodo || TUTORIAL_PLACEHOLDER
@@ -69,19 +70,19 @@ editorListenerMiddleware.startListening({
     const state = listenerApi.getState() as { editor: EditorState }
     try {
       if (state.editor.autoSave) {
-        localStorage.setItem(AUTO_SAVE_KEY, 'true')
-        localStorage.setItem(
+        safeLocalStorage.setItem(AUTO_SAVE_KEY, 'true')
+        safeLocalStorage.setItem(
           MARKDOWN_KEY_EDITOR,
           state.editor.documents.editor.text,
         )
-        localStorage.setItem(
+        safeLocalStorage.setItem(
           MARKDOWN_KEY_TODO,
           state.editor.documents.todo.text,
         )
       } else {
-        localStorage.removeItem(AUTO_SAVE_KEY)
-        localStorage.removeItem(MARKDOWN_KEY_EDITOR)
-        localStorage.removeItem(MARKDOWN_KEY_TODO)
+        safeLocalStorage.removeItem(AUTO_SAVE_KEY)
+        safeLocalStorage.removeItem(MARKDOWN_KEY_EDITOR)
+        safeLocalStorage.removeItem(MARKDOWN_KEY_TODO)
       }
     } catch {
       // Ignore storage failures

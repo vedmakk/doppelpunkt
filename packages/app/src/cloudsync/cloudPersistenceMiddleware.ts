@@ -20,6 +20,7 @@ import { DocumentSyncManager } from './DocumentSyncManager'
 import { structuredTodosManager } from '../structuredTodos/persistenceMiddleware'
 import { clearAllStructuredTodosData } from '../structuredTodos/structuredTodosSlice'
 import { setText } from '../editor/editorSlice'
+import { safeLocalStorage } from '../shared/storage'
 
 const CLOUD_ENABLED_KEY = 'cloud.enabled'
 
@@ -72,11 +73,7 @@ cloudListenerMiddleware.startListening({
     if (enabled) {
       api.dispatch(setCloudStatus('initializing'))
 
-      try {
-        localStorage.setItem(CLOUD_ENABLED_KEY, 'true')
-      } catch {
-        // Ignore localStorage errors
-      }
+      safeLocalStorage.setItem(CLOUD_ENABLED_KEY, 'true')
 
       try {
         await authManager.attachAuthListener(api.dispatch)
@@ -85,11 +82,7 @@ cloudListenerMiddleware.startListening({
         api.dispatch(setCloudStatus('error'))
       }
     } else {
-      try {
-        localStorage.removeItem(CLOUD_ENABLED_KEY)
-      } catch {
-        // Ignore localStorage errors
-      }
+      safeLocalStorage.removeItem(CLOUD_ENABLED_KEY)
 
       try {
         await authManager.signOut()
@@ -382,9 +375,5 @@ export function hydrateCloudStateFromStorage() {
 }
 
 function getCloudEnabledFromStorage(): boolean {
-  try {
-    return localStorage.getItem(CLOUD_ENABLED_KEY) === 'true'
-  } catch {
-    return false
-  }
+  return safeLocalStorage.getItem(CLOUD_ENABLED_KEY) === 'true'
 }

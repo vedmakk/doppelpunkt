@@ -4,13 +4,11 @@ import { useDispatch } from 'react-redux'
 import { openSettings } from '../../settings/settingsSlice'
 
 import { useWritingMode } from '../../mode/hooks'
-import { useCloudSyncStatusText } from '../../cloudsync/hooks'
 
 import ToolbarComponent from '../components/Toolbar'
 
 const Toolbar: React.FC = () => {
   const mode = useWritingMode()
-  const cloudSyncStatusText = useCloudSyncStatusText()
 
   const dispatch = useDispatch()
 
@@ -38,7 +36,6 @@ const Toolbar: React.FC = () => {
       onOpenAutoSaveSettings={handleOpenAutoSaveSettings}
       onOpenCloudSyncSettings={handleOpenCloudSyncSettings}
       onOpenHotkeysSettings={handleOpenHotkeysSettings}
-      cloudSyncStatusText={cloudSyncStatusText}
     />
   )
 }

@@ -23,27 +23,66 @@ export const selectCloudDocMetas = createSelector(
   (s) => s.docs,
 )
 
-export const selectCloudSyncStatusText = createSelector(
+// Cloud sync UI status enum for consistent status representation
+export type CloudSyncUiStatus =
+  | 'disabled'
+  | 'initializing'
+  | 'error'
+  | 'disconnected'
+  | 'syncing'
+  | 'offline'
+  | 'synced'
+
+// Derived selectors for sync status indicators
+export const selectCloudHasPendingWrites = createSelector(
+  selectCloudDocMetas,
+  (docs) => docs.editor.hasPendingWrites || docs.todo.hasPendingWrites,
+)
+
+export const selectCloudIsFromCache = createSelector(
+  selectCloudDocMetas,
+  (docs) => docs.editor.fromCache || docs.todo.fromCache,
+)
+
+export const selectCloudSyncStatus = createSelector(
   [
     selectCloudEnabled,
     selectCloudStatus,
-    selectCloudDocMetas,
     selectCloudError,
+    selectCloudHasPendingWrites,
+    selectCloudIsFromCache,
   ],
-  (enabled, status, docs, error): string => {
-    if (!enabled) return 'Disabled'
-    if (status === 'initializing') return 'Connecting…'
-    if (status === 'error') return 'Error'
-    if (status !== 'connected') return 'Disconnected'
+  (enabled, status, error, hasPending, fromCache): CloudSyncUiStatus => {
+    if (!enabled) return 'disabled'
+    if (status === 'initializing') return 'initializing'
+    if (error) return 'error'
+    if (status !== 'connected') return 'disconnected'
+    if (hasPending) return 'syncing'
+    if (fromCache) return 'offline'
+    return 'synced'
+  },
+)
 
-    const anyPending =
-      docs.editor.hasPendingWrites || docs.todo.hasPendingWrites
-    if (anyPending) return 'Syncing…'
-    const anyFromCache = docs.editor.fromCache || docs.todo.fromCache
-    if (anyFromCache) return 'Offline'
-
-    if (error) return 'Error'
-
-    return 'Synced'
+export const selectCloudSyncStatusText = createSelector(
+  selectCloudSyncStatus,
+  (status): string => {
+    switch (status) {
+      case 'disabled':
+        return 'Disabled'
+      case 'initializing':
+        return 'Connecting…'
+      case 'error':
+        return 'Error'
+      case 'disconnected':
+        return 'Disconnected'
+      case 'syncing':
+        return 'Syncing…'
+      case 'offline':
+        return 'Offline'
+      case 'synced':
+        return 'Synced'
+      default:
+        return 'Unknown'
+    }
   },
 )

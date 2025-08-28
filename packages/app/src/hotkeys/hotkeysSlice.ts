@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { HotkeyId } from './registry'
+import { safeLocalStorage } from '../shared/storage'
 
 export interface HotkeysState {
   mappings: Record<string, string>
@@ -11,7 +12,7 @@ const HOTKEYS_KEY = 'hotkeys.mappings'
 
 const loadMappings = (): Record<string, string> => {
   try {
-    return JSON.parse(localStorage.getItem(HOTKEYS_KEY) || '{}')
+    return JSON.parse(safeLocalStorage.getItem(HOTKEYS_KEY) || '{}')
   } catch {
     return {}
   }
@@ -31,16 +32,9 @@ const hotkeysSlice = createSlice({
     },
     setHotkey(state, action: PayloadAction<{ id: string; keys: string }>) {
       state.mappings[action.payload.id] = action.payload.keys
-      localStorage.setItem(HOTKEYS_KEY, JSON.stringify(state.mappings))
     },
     setDefaultHotkey(state, action: PayloadAction<{ id: string }>) {
       delete state.mappings[action.payload.id]
-
-      if (Object.keys(state.mappings).length === 0) {
-        localStorage.removeItem(HOTKEYS_KEY)
-      } else {
-        localStorage.setItem(HOTKEYS_KEY, JSON.stringify(state.mappings))
-      }
     },
   },
 })

@@ -6,12 +6,12 @@ import Switch from '../../app/components/Switch'
 import { ThemeSwitch } from '../../theme/containers/ThemeSwitch'
 
 import { SettingsPage } from '../settingsSlice'
-import { CloudStatus } from '../../cloudsync/cloudSlice'
 
 import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 import { MutedLabel } from '../../menu/components/MutedLabel'
 import { Button } from '../../app/components/Button'
 import { Label } from '../../app/components/Label'
+import { SyncStatusIndicator } from '../../shared/components/SyncStatusIndicator'
 
 interface Props {
   readonly isOpen: boolean
@@ -33,13 +33,16 @@ interface Props {
   readonly onSignInWithGoogle: () => void
   readonly onSignOut: () => void
   readonly onDeleteUser: () => void
-  readonly cloudStatus: CloudStatus
-  readonly cloudSyncStatusText?: string
+
   readonly structuredTodosEnabled: boolean
   readonly onToggleStructuredTodos: (enabled: boolean) => void
   readonly structuredTodosApiKeyIsSet: boolean
   readonly onUpdateApiKey: (key: string) => void
   readonly onClearApiKey: () => void
+  readonly structuredTodosDependencyStatus: {
+    canEnable: boolean
+    disabledReason?: string
+  }
 }
 
 const Container = styled.div(({ theme }) => ({
@@ -123,6 +126,13 @@ const Input = styled.input(({ theme }) => ({
   },
 }))
 
+const DisabledReasonText = styled.div(({ theme }) => ({
+  fontSize: theme.fontSize.tiny,
+  color: theme.colors.todoPriorityHigh,
+  marginTop: theme.spacing(0.5),
+  fontFamily: 'Fira Code, monospace',
+}))
+
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
   shouldRender,
@@ -138,13 +148,12 @@ export const SettingsModal: React.FC<Props> = ({
   onSignInWithGoogle,
   onSignOut,
   onDeleteUser,
-  cloudStatus,
-  cloudSyncStatusText,
   structuredTodosEnabled,
   onToggleStructuredTodos,
   structuredTodosApiKeyIsSet,
   onUpdateApiKey,
   onClearApiKey,
+  structuredTodosDependencyStatus,
 }) => {
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
@@ -227,13 +236,19 @@ export const SettingsModal: React.FC<Props> = ({
                 {cloudEnabled && (
                   <>
                     <CloudStatusContainer>
-                      <MutedLabel size="tiny">
-                        Status:{' '}
-                        {cloudSyncStatusText ||
-                          (cloudStatus === 'connected'
-                            ? 'Connected to cloud'
-                            : 'Not connected')}
-                      </MutedLabel>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        <MutedLabel size="tiny">Status:</MutedLabel>
+                        <SyncStatusIndicator
+                          featureName="cloudSync"
+                          size="small"
+                        />
+                      </div>
                       {cloudUser ? (
                         <UserInfoContainer>
                           <Label size="small">
@@ -276,12 +291,26 @@ export const SettingsModal: React.FC<Props> = ({
           <Page aria-label="Structured todos settings">
             <Row>
               <Col>
-                <Switch
-                  label="Enable Structured Todos"
-                  checked={structuredTodosEnabled}
-                  onChange={onToggleStructuredTodos}
-                  size={24}
-                />
+                <div>
+                  <Switch
+                    label="Enable Structured Todos"
+                    checked={
+                      structuredTodosEnabled &&
+                      structuredTodosDependencyStatus.canEnable
+                    }
+                    onChange={(checked) => {
+                      if (structuredTodosDependencyStatus.canEnable) {
+                        onToggleStructuredTodos(checked)
+                      }
+                    }}
+                    size={24}
+                  />
+                  {!structuredTodosDependencyStatus.canEnable && (
+                    <DisabledReasonText>
+                      {structuredTodosDependencyStatus.disabledReason}
+                    </DisabledReasonText>
+                  )}
+                </div>
                 <MutedLabel size="tiny">
                   Uses AI to automatically extract and organize todos from your
                   todo document. Requires an OpenAI API key and cloud sync to be

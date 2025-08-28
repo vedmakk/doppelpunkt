@@ -16,12 +16,7 @@ import {
 
 import { useAutoSaveEnabled } from '../../editor/hooks'
 import { toggleAutoSave } from '../../editor/editorSlice'
-import {
-  useCloudEnabled,
-  useCloudStatus,
-  useCloudUser,
-  useCloudSyncStatusText,
-} from '../../cloudsync/hooks'
+import { useCloudEnabled, useCloudUser } from '../../cloudsync/hooks'
 import {
   requestGoogleSignIn,
   requestSignOut,
@@ -29,6 +24,8 @@ import {
 } from '../../cloudsync/cloudSlice'
 import { requestDeleteUser } from '../../cloudsync/cloudSlice'
 import { useStructuredTodos } from '../../structuredTodos/hooks'
+import { useAppSelector } from '../../store'
+import { selectStructuredTodosDependencyStatus } from '../../structuredTodos/selectors'
 
 const SettingsModal: React.FC = () => {
   const isOpen = useIsSettingsOpen()
@@ -37,8 +34,6 @@ const SettingsModal: React.FC = () => {
   const autoSaveEnabled = useAutoSaveEnabled()
   const cloudEnabled = useCloudEnabled()
   const cloudUser = useCloudUser()
-  const cloudStatus = useCloudStatus()
-  const cloudSyncStatusText = useCloudSyncStatusText()
 
   const {
     enabled: structuredTodosEnabled,
@@ -47,6 +42,10 @@ const SettingsModal: React.FC = () => {
     updateApiKey,
     clearKey: clearApiKey,
   } = useStructuredTodos()
+
+  const structuredTodosDependencyStatus = useAppSelector(
+    selectStructuredTodosDependencyStatus,
+  )
 
   const dispatch = useDispatch()
 
@@ -102,13 +101,12 @@ const SettingsModal: React.FC = () => {
       onSignInWithGoogle={onSignInWithGoogle}
       onSignOut={onSignOut}
       onDeleteUser={onDeleteUser}
-      cloudStatus={cloudStatus}
-      cloudSyncStatusText={cloudSyncStatusText}
       structuredTodosEnabled={structuredTodosEnabled}
       onToggleStructuredTodos={toggleStructuredTodos}
       structuredTodosApiKeyIsSet={structuredTodosApiKeyIsSet}
       onUpdateApiKey={updateApiKey}
       onClearApiKey={clearApiKey}
+      structuredTodosDependencyStatus={structuredTodosDependencyStatus}
     />
   )
 }

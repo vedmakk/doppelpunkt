@@ -8,6 +8,8 @@ import {
 } from './structuredTodosSlice'
 import { StructuredTodosSettings, StructuredTodosState } from './types'
 import { StructuredTodosManager } from './StructuredTodosManager'
+import { safeLocalStorage } from '../shared/storage'
+import { setCloudEnabled } from '../cloudsync/cloudSlice'
 
 const STRUCTURED_TODOS_KEY = 'structuredTodos'
 const STRUCTURED_TODOS_ENABLED_KEY = `${STRUCTURED_TODOS_KEY}.enabled`
@@ -23,8 +25,8 @@ export function hydrateStructuredTodosStateFromStorage(): {
 } {
   try {
     const enabled =
-      localStorage.getItem(STRUCTURED_TODOS_ENABLED_KEY) === 'true'
-    const storedTodos = localStorage.getItem(STRUCTURED_TODOS_ITEMS_KEY)
+      safeLocalStorage.getItem(STRUCTURED_TODOS_ENABLED_KEY) === 'true'
+    const storedTodos = safeLocalStorage.getItem(STRUCTURED_TODOS_ITEMS_KEY)
     const todos = storedTodos ? JSON.parse(storedTodos) : []
 
     const structuredTodos: StructuredTodosState = {
@@ -68,19 +70,19 @@ structuredTodosListenerMiddleware.startListening({
     try {
       // Persist enabled state
       if (state.structuredTodos.enabled) {
-        localStorage.setItem(STRUCTURED_TODOS_ENABLED_KEY, 'true')
+        safeLocalStorage.setItem(STRUCTURED_TODOS_ENABLED_KEY, 'true')
       } else {
-        localStorage.removeItem(STRUCTURED_TODOS_ENABLED_KEY)
+        safeLocalStorage.removeItem(STRUCTURED_TODOS_ENABLED_KEY)
       }
 
       // Persist todos
       if (state.structuredTodos.todos.length > 0) {
-        localStorage.setItem(
+        safeLocalStorage.setItem(
           STRUCTURED_TODOS_ITEMS_KEY,
           JSON.stringify(state.structuredTodos.todos),
         )
       } else {
-        localStorage.removeItem(STRUCTURED_TODOS_ITEMS_KEY)
+        safeLocalStorage.removeItem(STRUCTURED_TODOS_ITEMS_KEY)
       }
     } catch {
       // Ignore storage failures
@@ -160,6 +162,19 @@ structuredTodosListenerMiddleware.startListening({
   },
   effect: async () => {
     structuredTodosManager.stopListening()
+  },
+})
+
+// Cascade disable: when cloud is disabled, disable structured todos
+structuredTodosListenerMiddleware.startListening({
+  matcher: isAnyOf(setCloudEnabled),
+  effect: async (action, api) => {
+    const enabled = (action as unknown as { payload: boolean }).payload
+    if (!enabled) {
+      // Disable structured todos and clear cached data when cloud is disabled
+      api.dispatch(setStructuredTodosEnabled(false))
+      api.dispatch(clearStructuredTodos())
+    }
   },
 })
 
