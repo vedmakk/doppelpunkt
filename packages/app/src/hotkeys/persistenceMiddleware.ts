@@ -1,8 +1,28 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { setHotkey, setDefaultHotkey } from './hotkeysSlice'
+import { setHotkey, setDefaultHotkey, HotkeysState } from './hotkeysSlice'
 import { safeLocalStorage } from '../shared/storage'
 
 const HOTKEYS_KEY = 'hotkeys.mappings'
+
+export function hydrateHotkeysStateFromStorage(): {
+  hotkeys: HotkeysState
+} {
+  try {
+    const mappings = JSON.parse(safeLocalStorage.getItem(HOTKEYS_KEY) || '{}')
+    const hotkeys: HotkeysState = {
+      mappings,
+      editingHotkeyId: undefined,
+    }
+    return { hotkeys }
+  } catch {
+    // In non-browser or restricted environments, fall back to defaults
+    const hotkeys: HotkeysState = {
+      mappings: {},
+      editingHotkeyId: undefined,
+    }
+    return { hotkeys }
+  }
+}
 
 export const hotkeysListenerMiddleware = createListenerMiddleware()
 

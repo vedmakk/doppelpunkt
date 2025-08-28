@@ -15,7 +15,10 @@ import {
 import { themeReducer } from './theme/themeSlice'
 import { menuReducer } from './menu/menuSlice'
 import { hotkeysReducer } from './hotkeys/hotkeysSlice'
-import { hotkeysListenerMiddleware } from './hotkeys/persistenceMiddleware'
+import {
+  hotkeysListenerMiddleware,
+  hydrateHotkeysStateFromStorage,
+} from './hotkeys/persistenceMiddleware'
 import { settingsReducer } from './settings/settingsSlice'
 import { modeReducer } from './mode/modeSlice'
 import { structuredTodosReducer } from './structuredTodos/structuredTodosSlice'
@@ -40,6 +43,7 @@ export const createStore = () =>
       ...hydrateAppStateFromStorage(),
       ...hydrateCloudStateFromStorage(),
       ...hydrateStructuredTodosStateFromStorage(),
+      ...hydrateHotkeysStateFromStorage(),
     },
     middleware: (getDefaultMiddleware) => {
       const defaults = getDefaultMiddleware()

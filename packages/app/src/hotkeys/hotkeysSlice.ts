@@ -1,25 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { HotkeyId } from './registry'
-import { safeLocalStorage } from '../shared/storage'
 
 export interface HotkeysState {
   mappings: Record<string, string>
   editingHotkeyId?: HotkeyId
 }
 
-const HOTKEYS_KEY = 'hotkeys.mappings'
-
-const loadMappings = (): Record<string, string> => {
-  try {
-    return JSON.parse(safeLocalStorage.getItem(HOTKEYS_KEY) || '{}')
-  } catch {
-    return {}
-  }
-}
-
 const initialState: HotkeysState = {
-  mappings: loadMappings(),
+  mappings: {},
   editingHotkeyId: undefined,
 }
 
