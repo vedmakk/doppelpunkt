@@ -1,6 +1,6 @@
 I would like to <task in one sentence>.
 
-Please implement it according to the design plan in @<plan-file>.md
+Please implement it according to the design plan in <plan-file.md>
 
 Make sure the plan is up to date if new insights arrise during the implementation, and commit changes.
 
