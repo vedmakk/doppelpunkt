@@ -1,7 +1,11 @@
 // Cloud persistence middleware - RTK listener middleware configuration
 // Orchestrates authentication and document synchronization
 
-import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
+import {
+  createListenerMiddleware,
+  isAnyOf,
+  ListenerEffectAPI,
+} from '@reduxjs/toolkit'
 import { type WritingMode } from '../mode/modeSlice'
 import {
   requestGoogleSignIn,
@@ -37,8 +41,12 @@ export const cloudListenerMiddleware = createListenerMiddleware()
 /**
  * Helper function to ensure auth listener is attached when cloud is enabled
  */
-const ensureAuthListener = async (api: any) => {
-  const state = api.getState() as any
+const ensureAuthListener = async (
+  _action: any,
+  api: ListenerEffectAPI<any, any, any>,
+) => {
+  const state = api.getState()
+
   if (!state?.cloud?.enabled) return
   if (authManager.isListenerAttached()) return
 
@@ -68,7 +76,7 @@ cloudListenerMiddleware.startListening({
 
     if (enabled) {
       safeLocalStorage.setItem(CLOUD_ENABLED_KEY, 'true')
-      await ensureAuthListener(api)
+      await ensureAuthListener(action, api)
     } else {
       safeLocalStorage.removeItem(CLOUD_ENABLED_KEY)
 
