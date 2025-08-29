@@ -1,6 +1,12 @@
-import { createListenerMiddleware } from '@reduxjs/toolkit'
+import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 
-import { type EditorState } from './editorSlice'
+import {
+  type EditorState,
+  clear,
+  load,
+  setTextInternal,
+  toggleAutoSave,
+} from './editorSlice'
 import { TUTORIAL_PLACEHOLDER } from './tutorial'
 import { safeLocalStorage } from '../shared/storage'
 
@@ -59,20 +65,7 @@ export function hydrateAppStateFromStorage(): { editor: EditorState } {
 export const editorListenerMiddleware = createListenerMiddleware()
 
 editorListenerMiddleware.startListening({
-  predicate: (_action, currentState, previousState) => {
-    // Only trigger when the relevant editor state actually changes
-    const current = currentState as { editor: EditorState }
-    const previous = previousState as { editor: EditorState } | undefined
-
-    if (!previous) return true // Initial state
-
-    return (
-      current.editor.autoSave !== previous.editor.autoSave ||
-      current.editor.documents.editor.text !==
-        previous.editor.documents.editor.text ||
-      current.editor.documents.todo.text !== previous.editor.documents.todo.text
-    )
-  },
+  matcher: isAnyOf(setTextInternal, clear, load, toggleAutoSave),
   effect: async (_action, listenerApi) => {
     const state = listenerApi.getState() as { editor: EditorState }
     try {

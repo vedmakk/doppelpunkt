@@ -1,5 +1,5 @@
-import { createListenerMiddleware } from '@reduxjs/toolkit'
-import { HotkeysState } from './hotkeysSlice'
+import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
+import { setHotkey, setDefaultHotkey, HotkeysState } from './hotkeysSlice'
 import { safeLocalStorage } from '../shared/storage'
 
 const HOTKEYS_KEY = 'hotkeys.mappings'
@@ -27,13 +27,7 @@ export function hydrateHotkeysStateFromStorage(): {
 export const hotkeysListenerMiddleware = createListenerMiddleware()
 
 hotkeysListenerMiddleware.startListening({
-  predicate: (_action, currentState, previousState) => {
-    // Only trigger when hotkey mappings actually change
-    const current = (currentState as any).hotkeys?.mappings
-    const previous = (previousState as any)?.hotkeys?.mappings
-
-    return JSON.stringify(current) !== JSON.stringify(previous)
-  },
+  matcher: isAnyOf(setHotkey, setDefaultHotkey),
   effect: async (_action, api) => {
     const mappings = (api.getState() as any).hotkeys.mappings
     if (!mappings || Object.keys(mappings).length === 0) {
