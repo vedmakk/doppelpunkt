@@ -303,6 +303,7 @@ export const SettingsModal: React.FC<Props> = ({
                         onToggleStructuredTodos(checked)
                       }
                     }}
+                    disabled={!structuredTodosDependencyStatus.canEnable}
                     size={24}
                   />
                   {!structuredTodosDependencyStatus.canEnable && (

@@ -89,3 +89,29 @@ export const Interactive = () => {
     </div>
   )
 }
+
+export const Disabled = () => {
+  const [checked, setChecked] = useState(false)
+  return (
+    <Switch
+      label="Disabled Switch"
+      checked={checked}
+      onChange={setChecked}
+      size={32}
+      disabled={true}
+    />
+  )
+}
+
+export const DisabledChecked = () => {
+  const [checked, setChecked] = useState(true)
+  return (
+    <Switch
+      label="Disabled Checked Switch"
+      checked={checked}
+      onChange={setChecked}
+      size={32}
+      disabled={true}
+    />
+  )
+}

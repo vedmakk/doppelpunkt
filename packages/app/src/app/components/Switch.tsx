@@ -5,21 +5,26 @@ import { outlineStyles } from '../../shared/styles'
 
 import { Appear } from './Appear'
 import { InteractiveLabel } from './InteractiveLabel'
+import { MutedLabel } from '../../menu/components/MutedLabel'
 
 interface Props {
   label: string
   checked: boolean
   onChange: (checked: boolean) => void
   size: number
+  disabled?: boolean
 }
 
-const SwitchContainer = styled.label(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  cursor: 'pointer',
-  gap: theme.spacing(1),
-  userSelect: 'none',
-}))
+const SwitchContainer = styled.label<{ disabled?: boolean }>(
+  ({ theme, disabled }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    gap: theme.spacing(1),
+    userSelect: 'none',
+    opacity: disabled ? 0.6 : 1,
+  }),
+)
 
 const SwitchWrapper = styled.div({
   position: 'relative',
@@ -65,7 +70,13 @@ const Thumb = styled.div<{ checked: boolean; size: number }>(
   }),
 )
 
-const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
+const Switch: React.FC<Props> = ({
+  label,
+  checked,
+  onChange,
+  size,
+  disabled,
+}) => {
   const [isFocusVisible, setIsFocusVisible] = useState(false)
   const checkboxId = useId()
 
@@ -84,6 +95,7 @@ const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
   return (
     <Appear>
       <SwitchContainer
+        disabled={disabled}
         css={(theme) => (isFocusVisible ? outlineStyles({ theme }) : undefined)}
       >
         <SwitchWrapper>
@@ -95,11 +107,17 @@ const Switch: React.FC<Props> = ({ label, checked, onChange, size }) => {
             onChange={(e) => onChange(e.target.checked)}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            disabled={disabled}
           />
           <Track checked={checked} size={size} />
           <Thumb checked={checked} size={size} />
         </SwitchWrapper>
-        {label && <InteractiveLabel label={label} htmlFor={checkboxId} />}
+        {label &&
+          (disabled ? (
+            <MutedLabel size="small">{label}</MutedLabel>
+          ) : (
+            <InteractiveLabel label={label} htmlFor={checkboxId} />
+          ))}
       </SwitchContainer>
     </Appear>
   )
