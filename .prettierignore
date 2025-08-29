@@ -1,4 +1,7 @@
+**/dist/**
+**/build/**
+**/lib/**
+.husky/*
+.github/*
+.vscode/*
 node_modules/
-dist/
-build/
-public/

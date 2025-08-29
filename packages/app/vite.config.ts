@@ -1,0 +1,40 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import checker from 'vite-plugin-checker'
+
+export default defineConfig({
+  plugins: [
+    react({
+      jsxImportSource: '@emotion/react',
+      babel: {
+        plugins: [
+          [
+            'babel-plugin-react-compiler',
+            {
+              target: '19',
+            },
+          ],
+        ],
+      },
+    }),
+    checker({
+      overlay: false,
+      typescript: process.env.VITE_PUBLIC_LADLE_THEME
+        ? {
+            // Need to define this, since it caused an issue
+            // when running ladle with workspaces
+            tsconfigPath: './packages/app/tsconfig.json',
+          }
+        : true,
+    }),
+  ],
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(
+      process.env.npm_package_version,
+    ),
+  },
+  server: {
+    port: 3000,
+    open: true,
+  },
+})

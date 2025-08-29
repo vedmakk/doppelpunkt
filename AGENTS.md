@@ -1,15 +1,34 @@
-When creating components that require styling, use styled components with object styles.
+The project is a monorepo containing the following packages:
 
-```tsx
-const StyledComponent = styled.div(({ theme }) => ({
-  background: theme.colors.background,
-}))
+- [app](./packages/app): The main web app (react, typescript, vite.js)
+- [functions](./packages/functions): A collection of firebase functions used in the app (typescript)
+
+The project uses `bun` as the package manager.
+
+From the project root, you can run the following commands:
+
+Lint:
+
+```bash
+bun run lint
 ```
 
-Also before creating new components, check if a suitable component already exists (e.g. `Button` or `Label`). If you need it slightly different, but still similar, update the existing component with additional props/styles/adjustments.
+Prettier:
 
-Use the container / component pattern. E.g. access the store in the container and pass the data to the component as props.
+```bash
+bun run prettier
+```
 
-When selecting data from the redux store, create selectors in a selectors.ts file and consume them in hooks. See `src/theme` for examples.
+Test:
 
-Create state slices in the `src/<feature>/featureSlice.ts` file (as seen in `src/theme/themeSlice.ts`).
+```bash
+bun run test
+```
+
+Build:
+
+```bash
+bun run build
+```
+
+You can find more commands in the `package.json` file in the root of the project, as well as in the `package.json` files in the individual `packages` folders.

@@ -11,6 +11,7 @@ import react from 'eslint-plugin-react'
 import * as reactHooks from 'eslint-plugin-react-hooks'
 import * as emotion from '@emotion/eslint-plugin'
 import { fixupPluginRules } from '@eslint/compat'
+import * as importPlugin from 'eslint-plugin-import'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -28,6 +29,7 @@ export default defineConfig([
     '**/node_modules/**/*',
   ]),
   {
+    files: ['packages/app/**/*.{js,jsx,ts,tsx}'],
     extends: [
       ...compat.extends(
         'eslint:recommended',
@@ -38,34 +40,54 @@ export default defineConfig([
       ),
       reactHooks.configs.recommended,
     ],
-
     plugins: {
       '@typescript-eslint': typescriptEslint,
       prettier: prettier,
       react: react,
       '@emotion': fixupPluginRules(emotion),
     },
-
     settings: {
       react: {
         version: 'detect',
       },
     },
-
     languageOptions: {
       globals: {
         ...globals.browser,
       },
-
       parser: tsParser,
       ecmaVersion: 'latest',
       sourceType: 'module',
     },
-
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       'react/no-unknown-property': ['error', { ignore: ['css'] }],
+    },
+  },
+  {
+    files: ['packages/functions/**/*.{ts,js}'],
+    extends: compat.extends(
+      'eslint:recommended',
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ),
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      prettier: prettier,
+      import: importPlugin,
+    },
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      parser: tsParser,
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
     },
   },
 ])

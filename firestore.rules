@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/doc/{docId} {
+      // Allow reads to only the two known docs for the authenticated user
+      allow read: if request.auth != null
+                  && request.auth.uid == userId
+                  && (docId == 'editor' || docId == 'todo');
+
+      // Allow writes only to the known docs and validate the schema
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && (docId == 'editor' || docId == 'todo')
+                   // Validate required fields
+                   && request.resource.data.text is string
+                   && request.resource.data.rev is int
+                   // Validate optional fields if present
+                   && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp)
+                   && (!('structuredTodos' in request.resource.data) || request.resource.data.structuredTodos is list)
+                   && (!('structuredTodosProcessedAt' in request.resource.data) || request.resource.data.structuredTodosProcessedAt is timestamp)
+                   && (!('structuredTodosError' in request.resource.data) || request.resource.data.structuredTodosError is string)
+                   // Ensure no unexpected fields (allow only known fields)
+                   && request.resource.data.keys().hasAll(['text', 'rev'])
+                   && request.resource.data.keys().hasOnly(['text', 'rev', 'updatedAt', 'structuredTodos', 'structuredTodosProcessedAt', 'structuredTodosError'])
+                   // Enforce optimistic locking: rev must increment by exactly 1
+                   && (
+                     // If creating a new document, require rev == 1
+                     (!exists(/databases/$(database)/documents/users/$(userId)/doc/$(docId))
+                       && request.resource.data.rev == 1)
+                     ||
+                     // If document exists, require rev to increment by 1
+                     (exists(/databases/$(database)/documents/users/$(userId)/doc/$(docId))
+                       && resource.data.rev is int
+                       && request.resource.data.rev == resource.data.rev + 1)
+                   );
+
+      // Allow deletes only to the known docs and authenticated user
+      allow delete: if request.auth != null
+                   && request.auth.uid == userId
+                   && (docId == 'editor' || docId == 'todo');
+    }
+
+    // Rules for structured todos settings
+    match /users/{userId}/settings/structuredTodos {
+      // Allow reads for the authenticated user
+      allow read: if request.auth != null
+                  && request.auth.uid == userId;
+
+      // Allow writes for the authenticated user with proper schema validation
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   // Validate that only expected fields are present
+                   && request.resource.data.keys().hasOnly(['enabled', 'apiKey'])
+                   // enabled must be a boolean
+                   && request.resource.data.enabled is bool
+                   // apiKey is optional but must be a string if present
+                   && (!('apiKey' in request.resource.data) || request.resource.data.apiKey is string);
+
+      // Allow deletes for the authenticated user
+      allow delete: if request.auth != null
+                   && request.auth.uid == userId;
+    }
+    match /users/{userId} {
+      // Allow deletes only for the authenticated user
+      allow delete: if request.auth != null
+                   && request.auth.uid == userId;
+    }
+  }
+}
+
+
