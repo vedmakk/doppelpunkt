@@ -26,11 +26,14 @@ Includes `print.css` for consistent printed output (or **PDF export** via Print)
 💡 **Auto-Save**  
 Text is auto-saved in **LocalStorage** between sessions. Auto-save is disabled by default.
 
+☑️ **Todos**  
+Features a `todo.txt`-like document to keep track of your todos in natural language using markdown.
+
 ☁️ **Cloud Sync (opt‑in)**  
-Sync your `editor` and `todo` documents across devices using Firebase Auth + Firestore. Disabled by default and only loads Auth/Firestore when enabled.
+Sync your `editor` and `todo` documents across devices using Firebase Auth + Firestore.
 
 🤖 **Structured Todos (opt‑in)**  
-Automatically extract and organize todos from your todo document using AI. When enabled with your OpenAI API key, the app intelligently parses your natural language tasks, assigns due dates, priorities, and displays them in an organized list. Tasks are grouped by "Today", "Upcoming" (next 7 days), and "More" for better task management.
+Automatically extract and organize todos from your todo document using AI. When enabled with your OpenAI API key, the app intelligently parses your natural language tasks, assigns due dates, and displays them in an organized list. Tasks are grouped by "Today", "Upcoming" (next 7 days), and "More" for better task management.
 
 ↩️↪️ **Undo/Redo**  
 Supports full undo/redo history for text changes.
@@ -42,6 +45,8 @@ Supports full undo/redo history for text changes.
 - [Vite.js](https://vitejs.dev/)
 - [Redux Toolkit](https://redux-toolkit.js.org/)
 - [@emotion/react](https://emotion.sh/docs/introduction)
+- [Firebase](https://firebase.google.com/)
+- [OpenAI API](https://openai.com/)
 
 ### Libraries Used
 
@@ -106,6 +111,16 @@ Here are some additional steps that can't be done in the code:
    - Add production domain to the "Authorized Domains" list
 1. Select the "Blaze" plan in the Firebase console (this is required to make requests to third party services within Cloud Functions)
 
+Also, you need to create your `.firebaserc` file in the root of the project and add your project id:
+
+```json
+{
+  "projects": {
+    "default": "your-project-id"
+  }
+}
+```
+
 ### Development with Emulators
 
 Start Firebase emulators (Hosting, Firestore, Auth):
@@ -120,18 +135,7 @@ Then, in another terminal, run the app:
 VITE_USE_FIREBASE_EMULATOR=true bun run dev
 ```
 
-Security rules (`firestore.rules`) restrict access to a user's own docs:
-
-```text
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId}/doc/{docId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
+Security rules (`firestore.rules`) restrict access to a user's own docs.
 
 ### Using Cloud Sync
 
