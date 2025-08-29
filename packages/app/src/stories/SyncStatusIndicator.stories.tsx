@@ -108,3 +108,28 @@ export const AllStatesLarge = () => {
     </div>
   )
 }
+
+export const AllStatesOnlyIcon = () => {
+  const statuses: CloudSyncUiStatus[] = [
+    'disabled',
+    'initializing',
+    'error',
+    'disconnected',
+    'syncing',
+    'offline',
+    'synced',
+  ]
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {statuses.map((status) => (
+        <SyncStatusIndicator
+          key={status}
+          status={status}
+          size="small"
+          onlyIcon
+        />
+      ))}
+    </div>
+  )
+}

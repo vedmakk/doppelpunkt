@@ -8,7 +8,12 @@ export interface CloudUserInfo {
   photoURL?: string | null
 }
 
-export type CloudStatus = 'idle' | 'initializing' | 'connected' | 'error'
+export type CloudStatus =
+  | 'idle'
+  | 'initializing'
+  | 'connected'
+  | 'uploading'
+  | 'error'
 
 export interface CloudState {
   enabled: boolean

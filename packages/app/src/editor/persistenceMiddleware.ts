@@ -21,8 +21,8 @@ export function hydrateAppStateFromStorage(): { editor: EditorState } {
     const storedTextTodo = safeLocalStorage.getItem(MARKDOWN_KEY_TODO)
     const storedAutoSave = safeLocalStorage.getItem(AUTO_SAVE_KEY)
 
-    const textEditor = storedTextEditor || TUTORIAL_PLACEHOLDER
-    const textTodo = storedTextTodo || TUTORIAL_PLACEHOLDER
+    const textEditor = storedTextEditor ?? TUTORIAL_PLACEHOLDER
+    const textTodo = storedTextTodo ?? TUTORIAL_PLACEHOLDER
     const autoSave = storedAutoSave === 'true'
 
     const editor: EditorState = {

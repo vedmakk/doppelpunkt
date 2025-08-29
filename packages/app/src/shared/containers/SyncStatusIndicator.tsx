@@ -6,11 +6,13 @@ import { SyncStatusIndicator as SyncStatusIndicatorComponent } from '../componen
 interface Props {
   featureName: 'cloudSync'
   size?: 'small' | 'medium' | 'large'
+  onlyIcon?: boolean
 }
 
 export const SyncStatusIndicator: React.FC<Props> = ({
   featureName,
   size = 'medium',
+  onlyIcon = false,
 }) => {
   const status = useAppSelector(selectCloudSyncStatus)
 
@@ -19,5 +21,11 @@ export const SyncStatusIndicator: React.FC<Props> = ({
     return null
   }
 
-  return <SyncStatusIndicatorComponent status={status} size={size} />
+  return (
+    <SyncStatusIndicatorComponent
+      status={status}
+      size={size}
+      onlyIcon={onlyIcon}
+    />
+  )
 }

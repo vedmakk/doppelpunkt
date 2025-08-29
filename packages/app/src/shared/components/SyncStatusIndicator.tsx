@@ -1,10 +1,13 @@
 import React from 'react'
 import styled from '@emotion/styled'
+import { keyframes, css } from '@emotion/react'
+
 import { CloudSyncUiStatus } from '../../cloudsync/selectors'
 
 interface Props {
   status: CloudSyncUiStatus
   size?: 'small' | 'medium' | 'large'
+  onlyIcon?: boolean
 }
 
 interface IndicatorStyleProps {
@@ -12,8 +15,17 @@ interface IndicatorStyleProps {
   size: NonNullable<Props['size']>
 }
 
-const StatusIndicator = styled.span<IndicatorStyleProps>(
-  ({ theme, status, size }) => {
+const pulseAnimation = keyframes`
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.2; }
+`
+
+const pulseAnimationCss = css`
+  animation: ${pulseAnimation} 1s infinite;
+`
+
+const StatusIndicator = styled.span<IndicatorStyleProps>`
+  ${({ theme, status, size }) => {
     const sizeMap = {
       small: theme.spacing(1),
       medium: theme.spacing(1.5),
@@ -30,17 +42,20 @@ const StatusIndicator = styled.span<IndicatorStyleProps>(
       synced: theme.colors.primary,
     }
 
-    return {
-      display: 'inline-block',
-      width: sizeMap[size],
-      height: sizeMap[size],
-      borderRadius: '50%',
-      backgroundColor: colorMap[status],
-      transition: `background-color ${theme.animations.transition}`,
-      flexShrink: 0,
-    }
-  },
-)
+    return css`
+      display: inline-block;
+      width: ${sizeMap[size]};
+      height: ${sizeMap[size]};
+      border-radius: 50%;
+      background-color: ${colorMap[status]};
+      transition: background-color ${theme.animations.transition};
+      flex-shrink: 0;
+      ${status === 'syncing' || status === 'initializing'
+        ? pulseAnimationCss
+        : ''}
+    `
+  }}
+`
 
 const Container = styled.span(({ theme }) => ({
   display: 'inline-flex',
@@ -109,6 +124,7 @@ const getStatusText = (status: CloudSyncUiStatus): string => {
 export const SyncStatusIndicator: React.FC<Props> = ({
   status,
   size = 'medium',
+  onlyIcon = false,
 }) => {
   const tooltip = getStatusTooltip(status)
   const statusText = getStatusText(status)
@@ -116,7 +132,7 @@ export const SyncStatusIndicator: React.FC<Props> = ({
   return (
     <Container title={tooltip}>
       <StatusIndicator status={status} size={size} />
-      <StatusText size={size}>{statusText}</StatusText>
+      {!onlyIcon && <StatusText size={size}>{statusText}</StatusText>}
     </Container>
   )
 }

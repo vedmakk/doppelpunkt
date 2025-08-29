@@ -5,10 +5,10 @@ import {
   type Timestamp,
   doc,
   serverTimestamp,
-  runTransaction,
   getDoc,
   deleteDoc,
   onSnapshot,
+  setDoc,
 } from 'firebase/firestore'
 import { getFirebase } from './firebase'
 import { resolveTextConflict } from './conflictResolution'
@@ -50,20 +50,7 @@ export async function saveDocumentWithConflictResolution(
 
   // First attempt: try to save with expected revision
   try {
-    const newRevision = await saveWithTransaction(
-      docRef,
-      localText,
-      expectedRevision,
-      serverTimestamp,
-      runTransaction,
-      db,
-    )
-
-    return {
-      newRevision,
-      finalText: localText,
-      wasConflicted: false,
-    }
+    return await saveDocument(userId, mode, localText, expectedRevision)
   } catch (error: any) {
     if (error?.message !== 'revision-conflict') {
       throw error
@@ -80,18 +67,16 @@ export async function saveDocumentWithConflictResolution(
   const resolution = resolveTextConflict(baseText, localText, remoteText)
 
   // Save the resolved text with the current remote revision
-  const newRevision = await saveWithTransaction(
-    docRef,
+  const { newRevision, finalText } = await saveDocument(
+    userId,
+    mode,
     resolution.mergedText,
     remoteRevision,
-    serverTimestamp,
-    runTransaction,
-    db,
   )
 
   return {
     newRevision,
-    finalText: resolution.mergedText,
+    finalText,
     wasConflicted: true,
   }
 }
@@ -188,36 +173,33 @@ export function listenToDocument(
   }
 }
 
-// Helper function for transactional saves
-async function saveWithTransaction(
-  docRef: any,
+async function saveDocument(
+  userId: string,
+  mode: WritingMode,
   text: string,
   expectedRevision: number,
-  serverTimestamp: any,
-  runTransaction: any,
-  db: any,
-): Promise<number> {
-  return runTransaction(db, async (transaction: any) => {
-    const snapshot = await transaction.get(docRef)
-    const currentData = snapshot.data() as Partial<DocumentData> | undefined
-    const currentRevision = currentData?.rev ?? 0
+): Promise<SaveResult> {
+  const currentDoc = await loadDocument(userId, mode)
 
-    if (currentRevision !== expectedRevision) {
-      throw new Error('revision-conflict')
-    }
+  if (currentDoc && currentDoc.rev !== expectedRevision) {
+    throw new Error('revision-conflict')
+  }
 
-    const newRevision = currentRevision + 1
+  const newRevision = (currentDoc?.rev ?? 0) + 1
 
-    transaction.set(
-      docRef,
-      {
-        text,
-        updatedAt: serverTimestamp(),
-        rev: newRevision,
-      },
-      { merge: true },
-    )
+  const { db } = await getFirebase()
 
-    return newRevision
+  const docRef = doc(db, getDocumentPath(userId, mode))
+
+  await setDoc(docRef, {
+    text,
+    updatedAt: serverTimestamp(),
+    rev: newRevision,
   })
+
+  return {
+    newRevision,
+    finalText: text,
+    wasConflicted: false,
+  }
 }

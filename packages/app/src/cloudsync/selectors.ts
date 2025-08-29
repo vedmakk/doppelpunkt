@@ -56,9 +56,10 @@ export const selectCloudSyncStatus = createSelector(
     if (!enabled) return 'disabled'
     if (status === 'initializing') return 'initializing'
     if (error) return 'error'
+    if (status === 'uploading') return 'syncing'
     if (status !== 'connected') return 'disconnected'
     if (hasPending) return 'syncing'
-    if (fromCache) return 'offline'
+    if (fromCache && hasPending) return 'offline'
     return 'synced'
   },
 )

@@ -44,8 +44,16 @@ const Toolbar: React.FC<Props> = ({
         <SectionTitle>Settings</SectionTitle>
         <Button label="General" onClick={onOpenSettings} />
         <Button label="Auto-save" onClick={onOpenAutoSaveSettings} />
-        <Button label="Cloud sync" onClick={onOpenCloudSyncSettings} />
-        <SyncStatusIndicator featureName="cloudSync" size="small" />
+        <div
+          css={(theme) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+          })}
+        >
+          <Button label="Cloud sync" onClick={onOpenCloudSyncSettings} />
+          <SyncStatusIndicator featureName="cloudSync" size="small" onlyIcon />
+        </div>
         <Button label="Shortcuts" onClick={onOpenHotkeysSettings} />
       </SectionContainer>
       <SectionContainer as="section" aria-label="Project info">
