@@ -9,7 +9,7 @@ import { WritingMode } from '../../mode/modeSlice'
 import ToolbarTodoSection from './ToolbarTodoSection'
 import ToolbarEditorSection from '../containers/ToolbarEditorSection'
 import { SectionContainer } from './SectionContainer'
-import { SyncStatusIndicator } from '../../shared/components/SyncStatusIndicator'
+import { SyncStatusIndicator } from '../../shared/containers/SyncStatusIndicator'
 
 interface Props {
   onOpenSettings: () => void

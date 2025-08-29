@@ -18,7 +18,14 @@ export default defineConfig({
       },
     }),
     checker({
-      typescript: true,
+      overlay: false,
+      typescript: process.env.VITE_PUBLIC_LADLE_THEME
+        ? {
+            // Need to define this, since it caused an issue
+            // when running ladle with workspaces
+            tsconfigPath: './packages/app/tsconfig.json',
+          }
+        : true,
     }),
   ],
   define: {

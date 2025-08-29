@@ -1,13 +1,9 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import { useAppSelector } from '../../store'
-import {
-  selectCloudSyncStatus,
-  CloudSyncUiStatus,
-} from '../../cloudsync/selectors'
+import { CloudSyncUiStatus } from '../../cloudsync/selectors'
 
 interface Props {
-  featureName: 'cloudSync'
+  status: CloudSyncUiStatus
   size?: 'small' | 'medium' | 'large'
 }
 
@@ -111,16 +107,9 @@ const getStatusText = (status: CloudSyncUiStatus): string => {
 }
 
 export const SyncStatusIndicator: React.FC<Props> = ({
-  featureName,
+  status,
   size = 'medium',
 }) => {
-  const status = useAppSelector(selectCloudSyncStatus)
-
-  if (featureName !== 'cloudSync') {
-    // Currently only supports cloudSync, but designed for future extensibility
-    return null
-  }
-
   const tooltip = getStatusTooltip(status)
   const statusText = getStatusText(status)
 

@@ -11,7 +11,7 @@ import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 import { MutedLabel } from '../../menu/components/MutedLabel'
 import { Button } from '../../app/components/Button'
 import { Label } from '../../app/components/Label'
-import { SyncStatusIndicator } from '../../shared/components/SyncStatusIndicator'
+import { SyncStatusIndicator } from '../../shared/containers/SyncStatusIndicator'
 
 interface Props {
   readonly isOpen: boolean
