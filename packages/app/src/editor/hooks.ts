@@ -13,17 +13,12 @@ import {
 
 import { tutorialEditor, tutorialTodo, TUTORIAL_PLACEHOLDER } from './tutorial'
 import { useWritingMode } from '../mode/hooks'
+import { selectDisplayText } from './sanitization'
 
-export const useEditorText = () => {
-  const mode = useWritingMode()
-  const text = useAppSelector(selectEditorText)
+export const useEditorText = () => useAppSelector(selectEditorText)
 
-  if (text === TUTORIAL_PLACEHOLDER) {
-    return mode === 'editor' ? tutorialEditor : tutorialTodo
-  }
-
-  return text
-}
+export const useInjectedEditorText = (maxCharsPerLine?: number) =>
+  useAppSelector((state) => selectDisplayText(state, maxCharsPerLine))
 
 export const useEditorCursorPos = () => {
   const mode = useWritingMode()

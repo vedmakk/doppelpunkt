@@ -2,6 +2,7 @@ import { createSelector } from '@reduxjs/toolkit'
 
 import { RootState } from '../store'
 import { selectWritingMode } from '../mode/selectors'
+import { TUTORIAL_PLACEHOLDER, tutorialEditor, tutorialTodo } from './tutorial'
 
 export const selectEditor = (s: RootState) => s.editor
 
@@ -13,7 +14,14 @@ export const selectCurrentDocument = createSelector(
 
 export const selectEditorText = createSelector(
   selectCurrentDocument,
-  (doc) => doc.text,
+  selectWritingMode,
+  (doc, mode) => {
+    if (doc.text === TUTORIAL_PLACEHOLDER) {
+      return mode === 'editor' ? tutorialEditor : tutorialTodo
+    }
+
+    return doc.text
+  },
 )
 
 export const selectEditorCursorPos = createSelector(

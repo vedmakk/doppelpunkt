@@ -2,13 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { stripString } from '../utils/visualIndent'
 import { computeListEnter } from '../utils/computeListEnter'
-import { selectDisplayText } from '../sanitization/presentation/selectors'
 import { visualIndentStripper } from '../sanitization/presentation/transformers'
 
 import { useDispatch } from 'react-redux'
 
-import { useCaptureTabEnabled, useEditorText } from '../hooks'
-import { useAppSelector } from '../../store'
+import { useCaptureTabEnabled, useInjectedEditorText } from '../hooks'
 import { setText, setCaptureTab } from '../editorSlice'
 import { useWritingMode } from '../../mode/hooks'
 import { useCustomHotkey } from '../../hotkeys/hooks'
@@ -23,13 +21,11 @@ const MarkdownEditor: React.FC = () => {
 
   const captureTab = useCaptureTabEnabled()
   const mode = useWritingMode()
-  const content = useEditorText() // For checking if content is empty
 
   const dispatch = useDispatch()
 
-  const { text: injectedValue, cursorPos: injectedCursorPos } = useAppSelector(
-    (state) => selectDisplayText(state, charsPerLine),
-  )
+  const { text: injectedValue, cursorPos: injectedCursorPos } =
+    useInjectedEditorText(charsPerLine)
 
   const getTextarea = () =>
     containerRef.current?.querySelector(
@@ -224,10 +220,10 @@ const MarkdownEditor: React.FC = () => {
 
   // Focus the editor when a new file is created
   useEffect(() => {
-    if (content === '') {
+    if (injectedValue === '') {
       focusEditor()
     }
-  }, [content, focusEditor])
+  }, [injectedValue, focusEditor])
 
   return (
     <MarkdownEditorComponent
