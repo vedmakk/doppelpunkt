@@ -98,8 +98,6 @@ const cloudSlice = createSlice({
     requestSignOut: (state) => state,
     // Delete user account and associated data
     requestDeleteUser: (state) => state,
-    // Trigger sync for a specific mode (used by middleware internally)
-    requestSync: (state) => state,
     // Internal action to update text from cloud without triggering saves
     setTextFromCloud: (
       state,
@@ -124,6 +122,5 @@ export const {
   requestGoogleSignIn,
   requestSignOut,
   requestDeleteUser,
-  requestSync,
   setTextFromCloud,
 } = cloudSlice.actions

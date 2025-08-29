@@ -9,7 +9,6 @@ import {
   requestGoogleSignIn,
   requestSignOut,
   requestDeleteUser,
-  requestSync,
 } from './cloudSlice'
 import { createStore } from '../store'
 
@@ -258,16 +257,6 @@ describe('cloudSlice', () => {
       expect(finalState.enabled).toBe(initialState.enabled)
       expect(finalState.status).toBe(initialState.status)
       expect(finalState.user).toBe(initialState.user)
-    })
-
-    it.skip(`should handle ${requestSync.type} action`, () => {
-      const store = createStore()
-      const initialState = store.getState().cloud
-
-      store.dispatch(requestSync())
-
-      // UI intent actions should not change state
-      expect(store.getState().cloud).toEqual(initialState)
     })
   })
 
