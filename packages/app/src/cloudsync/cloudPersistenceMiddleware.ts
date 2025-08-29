@@ -12,6 +12,7 @@ import {
   setCloudStatus,
   setCloudUser,
   setTextFromCloud,
+  appInitialized,
 } from './cloudSlice'
 
 // Import our manager classes
@@ -33,35 +34,30 @@ export const cloudListenerMiddleware = createListenerMiddleware()
 
 // === Authentication Listeners ===
 
-// Initialize auth when cloud is enabled
+/**
+ * Helper function to ensure auth listener is attached when cloud is enabled
+ */
+const ensureAuthListener = async (api: any) => {
+  const state = api.getState() as any
+  if (!state?.cloud?.enabled) return
+  if (authManager.isListenerAttached()) return
+
+  if (state.cloud.status !== 'initializing') {
+    api.dispatch(setCloudStatus('initializing'))
+  }
+
+  try {
+    await authManager.attachAuthListener(api.dispatch)
+  } catch {
+    api.dispatch(setCloudError('Failed to initialize auth'))
+    api.dispatch(setCloudStatus('error'))
+  }
+}
+
+// Initialize auth when app starts
 cloudListenerMiddleware.startListening({
-  predicate: (action, currentState, previousState) => {
-    const actionType = (action as any)?.type
-    if (typeof actionType === 'string' && actionType.startsWith('cloud/')) {
-      return false
-    }
-
-    const wasEnabled = (previousState as any)?.cloud?.enabled
-    const isEnabled = (currentState as any).cloud?.enabled
-    return Boolean(isEnabled || wasEnabled)
-  },
-  effect: async (_action, api) => {
-    const state: any = api.getState()
-    if (!state?.cloud?.enabled) return
-
-    if (authManager.isListenerAttached()) return
-
-    if (state.cloud.status !== 'initializing') {
-      api.dispatch(setCloudStatus('initializing'))
-    }
-
-    try {
-      await authManager.attachAuthListener(api.dispatch)
-    } catch {
-      api.dispatch(setCloudError('Failed to initialize auth'))
-      api.dispatch(setCloudStatus('error'))
-    }
-  },
+  matcher: isAnyOf(appInitialized),
+  effect: ensureAuthListener,
 })
 
 // Handle cloud sync enable/disable
@@ -71,16 +67,8 @@ cloudListenerMiddleware.startListening({
     const enabled = (action as unknown as { payload: boolean }).payload
 
     if (enabled) {
-      api.dispatch(setCloudStatus('initializing'))
-
       safeLocalStorage.setItem(CLOUD_ENABLED_KEY, 'true')
-
-      try {
-        await authManager.attachAuthListener(api.dispatch)
-      } catch {
-        api.dispatch(setCloudError('Failed to initialize auth'))
-        api.dispatch(setCloudStatus('error'))
-      }
+      await ensureAuthListener(api)
     } else {
       safeLocalStorage.removeItem(CLOUD_ENABLED_KEY)
 

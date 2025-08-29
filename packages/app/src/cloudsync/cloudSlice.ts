@@ -98,6 +98,8 @@ const cloudSlice = createSlice({
     requestSignOut: (state) => state,
     // Delete user account and associated data
     requestDeleteUser: (state) => state,
+    // App initialization intent
+    appInitialized: (state) => state,
     // Internal action to update text from cloud without triggering saves
     setTextFromCloud: (
       state,
@@ -122,5 +124,6 @@ export const {
   requestGoogleSignIn,
   requestSignOut,
   requestDeleteUser,
+  appInitialized,
   setTextFromCloud,
 } = cloudSlice.actions
