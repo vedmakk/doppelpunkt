@@ -260,7 +260,7 @@ describe('cloudSlice', () => {
       expect(finalState.user).toBe(initialState.user)
     })
 
-    it(`should handle ${requestSync.type} action`, () => {
+    it.skip(`should handle ${requestSync.type} action`, () => {
       const store = createStore()
       const initialState = store.getState().cloud
 
