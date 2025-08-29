@@ -170,20 +170,21 @@ cloudListenerMiddleware.startListening({
   },
 })
 
+// Utility function to check if cloud sync is ready
+const isCloudSyncReady = (state: any): boolean => {
+  return (
+    state.cloud.enabled &&
+    state.cloud.status === 'connected' &&
+    state.cloud.user?.uid
+  )
+}
+
 // === Document Persistence Listeners ===
 
 // Start document listeners when user connects
 cloudListenerMiddleware.startListening({
-  predicate: (_action, currentState, previousState) => {
-    const current: any = currentState
-    const previous: any = previousState
-
-    return (
-      previous?.cloud?.status !== 'connected' &&
-      current.cloud.status === 'connected' &&
-      Boolean(current.cloud.user)
-    )
-  },
+  predicate: (_action, currentState, previousState) =>
+    !isCloudSyncReady(previousState) && isCloudSyncReady(currentState),
   effect: async (_action, api) => {
     const state: any = api.getState()
     const userId = state.cloud.user?.uid
@@ -203,15 +204,8 @@ cloudListenerMiddleware.startListening({
 
 // Stop document listeners when user disconnects
 cloudListenerMiddleware.startListening({
-  predicate: (_action, currentState, previousState) => {
-    const current: any = currentState
-    const previous: any = previousState
-
-    return (
-      previous?.cloud?.status === 'connected' &&
-      current.cloud.status !== 'connected'
-    )
-  },
+  predicate: (_action, currentState, previousState) =>
+    isCloudSyncReady(previousState) && !isCloudSyncReady(currentState),
   effect: async () => {
     documentSyncManager.stopListening()
   },
@@ -230,15 +224,6 @@ cloudListenerMiddleware.startListening({
 })
 
 // === Document Change Listeners ===
-
-// Utility function to check if cloud sync is ready
-const isCloudSyncReady = (state: any): boolean => {
-  return (
-    state.cloud.enabled &&
-    state.cloud.status === 'connected' &&
-    state.cloud.user?.uid
-  )
-}
 
 // Handle editor document changes
 cloudListenerMiddleware.startListening({
