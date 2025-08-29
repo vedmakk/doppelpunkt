@@ -3,7 +3,6 @@ import {
   setStructuredTodosEnabled,
   setApiKey,
   clearApiKey,
-  setStructuredTodos,
   clearStructuredTodos,
 } from './structuredTodosSlice'
 import { StructuredTodosSettings, StructuredTodosState } from './types'
@@ -60,11 +59,18 @@ export const structuredTodosListenerMiddleware = createListenerMiddleware()
 
 // Listen for local state changes and persist to localStorage
 structuredTodosListenerMiddleware.startListening({
-  matcher: isAnyOf(
-    setStructuredTodosEnabled,
-    setStructuredTodos,
-    clearStructuredTodos,
-  ),
+  predicate: (_action, currentState, previousState) => {
+    // Only trigger when relevant structured todos state actually changes
+    const current = (currentState as any).structuredTodos
+    const previous = (previousState as any)?.structuredTodos
+
+    if (!previous) return true // Initial state
+
+    return (
+      current.enabled !== previous.enabled ||
+      JSON.stringify(current.todos) !== JSON.stringify(previous.todos)
+    )
+  },
   effect: async (_action, listenerApi) => {
     const state: any = listenerApi.getState()
     try {
@@ -92,7 +98,29 @@ structuredTodosListenerMiddleware.startListening({
 
 // Listen for settings changes and sync to Firestore
 structuredTodosListenerMiddleware.startListening({
-  matcher: isAnyOf(setStructuredTodosEnabled, setApiKey, clearApiKey),
+  predicate: (action, currentState, previousState) => {
+    // Only trigger for specific action types that affect settings
+    const actionType = action.type as string
+    const allowedTypes = [
+      setStructuredTodosEnabled.type,
+      setApiKey.type,
+      clearApiKey.type,
+    ] as string[]
+
+    if (!allowedTypes.includes(actionType)) {
+      return false
+    }
+
+    // Ensure we have the updated state by checking if relevant values changed
+    const current = (currentState as any).structuredTodos
+    const previous = (previousState as any)?.structuredTodos
+
+    if (!previous) return true // Initial state
+
+    return (
+      current.enabled !== previous.enabled || current.apiKey !== previous.apiKey
+    )
+  },
   effect: async (action, listenerApi) => {
     const state: any = listenerApi.getState()
     const cloudUser = state.cloud?.user
