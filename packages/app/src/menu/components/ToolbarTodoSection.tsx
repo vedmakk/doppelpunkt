@@ -3,13 +3,13 @@ import React from 'react'
 import { SectionTitle } from './SectionTitle'
 import { SectionContainer } from './SectionContainer'
 import { StructuredTodosList } from '../../structuredTodos/containers/StructuredTodosList'
-import { useAppSelector } from '../../store'
-import { selectStructuredTodosEnabled } from '../../structuredTodos/selectors'
 import { MutedLabel } from './MutedLabel'
 
-const ToolbarTodoSection: React.FC = () => {
-  const structuredTodosEnabled = useAppSelector(selectStructuredTodosEnabled)
+interface Props {
+  structuredTodosEnabled: boolean
+}
 
+const ToolbarTodoSection: React.FC<Props> = ({ structuredTodosEnabled }) => {
   return (
     <SectionContainer as="section" aria-label="Todo tools">
       <SectionTitle>Todo</SectionTitle>
