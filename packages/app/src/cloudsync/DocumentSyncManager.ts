@@ -8,7 +8,7 @@ import {
   setCloudDocBase,
   setCloudDocSnapshotMeta,
   setTextFromCloud,
-  setCloudStatus,
+  setCloudIsUploading,
 } from './cloudSlice'
 import {
   saveDocumentWithConflictResolution,
@@ -238,7 +238,7 @@ export class DocumentSyncManager {
     dispatch: (action: any) => void,
     getState: () => any,
   ): Promise<void> {
-    dispatch(setCloudStatus('uploading'))
+    dispatch(setCloudIsUploading(true))
     const result = await saveDocumentWithConflictResolution(
       userId,
       mode,
@@ -246,7 +246,7 @@ export class DocumentSyncManager {
       baseRev,
       baseText,
     )
-    dispatch(setCloudStatus('connected'))
+    dispatch(setCloudIsUploading(false))
 
     dispatch(
       setCloudDocBase({

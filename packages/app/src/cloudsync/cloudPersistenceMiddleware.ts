@@ -334,6 +334,7 @@ export function hydrateCloudStateFromStorage() {
     cloud: {
       enabled,
       status: 'idle' as const,
+      isUploading: false,
       user: null,
       error: undefined,
       docs: {

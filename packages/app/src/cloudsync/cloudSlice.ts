@@ -8,16 +8,12 @@ export interface CloudUserInfo {
   photoURL?: string | null
 }
 
-export type CloudStatus =
-  | 'idle'
-  | 'initializing'
-  | 'connected'
-  | 'uploading'
-  | 'error'
+export type CloudStatus = 'idle' | 'initializing' | 'connected' | 'error'
 
 export interface CloudState {
   enabled: boolean
   status: CloudStatus
+  isUploading: boolean
   user: CloudUserInfo | null
   error?: string
   // Per-document sync metadata and optimistic concurrency base
@@ -35,6 +31,7 @@ export interface CloudState {
 const initialState: CloudState = {
   enabled: false,
   status: 'idle',
+  isUploading: false,
   user: null,
   error: undefined,
   docs: {
@@ -62,6 +59,9 @@ const cloudSlice = createSlice({
     },
     setCloudStatus(state, action: PayloadAction<CloudState['status']>) {
       state.status = action.payload
+    },
+    setCloudIsUploading(state, action: PayloadAction<boolean>) {
+      state.isUploading = action.payload
     },
     setCloudUser(state, action: PayloadAction<CloudUserInfo | null>) {
       state.user = action.payload
@@ -117,6 +117,7 @@ export const cloudReducer = cloudSlice.reducer
 export const {
   setCloudEnabled,
   setCloudStatus,
+  setCloudIsUploading,
   setCloudUser,
   setCloudError,
   setCloudDocBase,

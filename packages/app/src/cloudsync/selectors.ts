@@ -14,6 +14,11 @@ export const selectCloudStatus = createSelector(
   (s) => s.status,
 )
 
+export const selectCloudIsUploading = createSelector(
+  selectCloudState,
+  (s) => s.isUploading,
+)
+
 export const selectCloudUser = createSelector(selectCloudState, (s) => s.user)
 
 export const selectCloudError = createSelector(selectCloudState, (s) => s.error)
@@ -48,15 +53,23 @@ export const selectCloudSyncStatus = createSelector(
   [
     selectCloudEnabled,
     selectCloudStatus,
+    selectCloudIsUploading,
     selectCloudError,
     selectCloudHasPendingWrites,
     selectCloudIsFromCache,
   ],
-  (enabled, status, error, hasPending, fromCache): CloudSyncUiStatus => {
+  (
+    enabled,
+    status,
+    isUploading,
+    error,
+    hasPending,
+    fromCache,
+  ): CloudSyncUiStatus => {
     if (!enabled) return 'disabled'
     if (status === 'initializing') return 'initializing'
     if (error) return 'error'
-    if (status === 'uploading') return 'syncing'
+    if (isUploading) return 'syncing'
     if (status !== 'connected') return 'disconnected'
     if (hasPending) return 'syncing'
     if (fromCache && hasPending) return 'offline'
