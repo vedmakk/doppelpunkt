@@ -2,36 +2,15 @@ import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test'
 import { StructuredTodosManager } from './StructuredTodosManager'
 import { setStructuredTodosEnabled } from './structuredTodosSlice'
 import { StructuredTodosSettings } from './types'
-
-// Mock Firestore functions
-const mockDoc = mock(() => ({ id: 'mock-doc-ref' }))
-const mockSetDoc = mock(() => Promise.resolve())
-const mockGetDoc = mock()
-const mockDeleteDoc = mock(() => Promise.resolve())
-const mockOnSnapshot = mock(() => mock(() => {})) // Returns unsubscribe function
-
-const mockDb = {
-  id: 'mock-firestore',
-}
-
-const mockGetFirebase = mock(() =>
-  Promise.resolve({
-    db: mockDb,
-  }),
-)
-
-// Mock modules
-mock.module('../cloudsync/firebase', () => ({
-  getFirebase: mockGetFirebase,
-}))
-
-mock.module('firebase/firestore', () => ({
-  doc: mockDoc,
-  setDoc: mockSetDoc,
-  getDoc: mockGetDoc,
-  deleteDoc: mockDeleteDoc,
-  onSnapshot: mockOnSnapshot,
-}))
+import {
+  mockDb,
+  mockDoc,
+  mockSetDoc,
+  mockGetDoc,
+  mockDeleteDoc,
+  mockOnSnapshot,
+  clearAllFirebaseMocks,
+} from '../test/firebase-mocks'
 
 describe('StructuredTodosManager', () => {
   let manager: StructuredTodosManager
@@ -40,16 +19,14 @@ describe('StructuredTodosManager', () => {
 
   beforeEach(() => {
     manager = new StructuredTodosManager()
-    mockDoc.mockClear()
-    mockSetDoc.mockClear()
-    mockGetDoc.mockClear()
-    mockDeleteDoc.mockClear()
-    mockOnSnapshot.mockClear()
+    clearAllFirebaseMocks()
     mockDispatch.mockClear()
-    mockGetFirebase.mockClear()
 
     // Default mockGetDoc behavior
-    mockGetDoc.mockResolvedValue({ exists: () => false })
+    mockGetDoc.mockResolvedValue({
+      exists: () => false,
+      data: () => undefined,
+    } as any)
   })
 
   afterEach(() => {
@@ -103,7 +80,7 @@ describe('StructuredTodosManager', () => {
       mockDoc
         .mockReturnValueOnce(mockSettingsRef)
         .mockReturnValueOnce(mockTodoDocRef)
-      mockGetDoc.mockResolvedValue(mockSettingsSnapshot)
+      mockGetDoc.mockResolvedValue(mockSettingsSnapshot as any)
 
       const mockSettingsUnsubscribe = mock(() => {})
       const mockTodosUnsubscribe = mock(() => {})
@@ -122,7 +99,10 @@ describe('StructuredTodosManager', () => {
     })
 
     it('should handle settings without initial data', async () => {
-      mockGetDoc.mockResolvedValue({ exists: () => false })
+      mockGetDoc.mockResolvedValue({
+        exists: () => false,
+        data: () => undefined,
+      } as any)
 
       await manager.startListening(userId, mockDispatch)
 
@@ -139,7 +119,10 @@ describe('StructuredTodosManager', () => {
         .mockReturnValueOnce(mockUnsubscribe1)
         .mockReturnValueOnce(mockUnsubscribe2)
 
-      mockGetDoc.mockResolvedValue({ exists: () => false })
+      mockGetDoc.mockResolvedValue({
+        exists: () => false,
+        data: () => undefined,
+      } as any)
 
       await manager.startListening(userId, mockDispatch)
       manager.stopListening()

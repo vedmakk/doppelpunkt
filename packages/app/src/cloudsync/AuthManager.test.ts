@@ -1,36 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { AuthManager } from './AuthManager'
-import type { User } from 'firebase/auth'
-
-// Mock Firebase modules
-const mockAuth = {
-  currentUser: null as User | null,
-} as any
-
-const mockOnAuthStateChanged = mock()
-const mockSignOut = mock(() => Promise.resolve())
-const mockSignInWithPopup = mock(() => Promise.resolve())
-const mockDeleteUser = mock(() => Promise.resolve())
-const mockGoogleAuthProvider = mock(() => ({}))
-
-const mockGetFirebase = mock(() =>
-  Promise.resolve({
-    auth: mockAuth,
-  }),
-)
-
-// Mock the Firebase imports
-mock.module('./firebase', () => ({
-  getFirebase: mockGetFirebase,
-}))
-
-mock.module('firebase/auth', () => ({
-  onAuthStateChanged: mockOnAuthStateChanged,
-  signOut: mockSignOut,
-  signInWithPopup: mockSignInWithPopup,
-  deleteUser: mockDeleteUser,
-  GoogleAuthProvider: mockGoogleAuthProvider,
-}))
+import {
+  mockGetFirebase,
+  mockAuth,
+  mockOnAuthStateChanged,
+  mockSignOut,
+  mockSignInWithPopup,
+  mockDeleteUser,
+  mockGoogleAuthProvider,
+  clearAllFirebaseMocks,
+} from '../test/firebase-mocks'
 
 describe('AuthManager', () => {
   let authManager: AuthManager
@@ -41,12 +20,7 @@ describe('AuthManager', () => {
     mockDispatch = mock(() => {})
 
     // Reset all mocks
-    mockGetFirebase.mockClear()
-    mockOnAuthStateChanged.mockClear()
-    mockSignOut.mockClear()
-    mockSignInWithPopup.mockClear()
-    mockDeleteUser.mockClear()
-    mockGoogleAuthProvider.mockClear()
+    clearAllFirebaseMocks()
     mockDispatch.mockClear()
   })
 

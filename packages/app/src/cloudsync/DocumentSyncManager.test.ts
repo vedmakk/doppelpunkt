@@ -1,29 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { DocumentSyncManager } from './DocumentSyncManager'
 import type { WritingMode } from '../mode/modeSlice'
-
-// Mock Firebase Firestore
-const mockDoc = mock(() => ({ id: 'mock-doc-ref' }))
-const mockGetDoc = mock(() =>
-  Promise.resolve({
-    exists: () => true,
-    data: () => ({ text: 'remote text', rev: 1 }),
-  }),
-)
-const mockServerTimestamp = mock(() => ({ __timestamp: true }))
-const mockRunTransaction = mock(() => Promise.resolve(2))
-const mockDeleteDoc = mock(() => Promise.resolve())
-const mockOnSnapshot = mock(() => () => {}) // Returns unsubscribe function
-
-const mockDb = {
-  id: 'mock-firestore',
-}
-
-const mockGetFirebase = mock(() =>
-  Promise.resolve({
-    db: mockDb,
-  }),
-)
+import { mockDeleteDoc, clearAllFirebaseMocks } from '../test/firebase-mocks'
 
 // Mock document persistence functions
 const mockSaveDocumentWithConflictResolution = mock(() =>
@@ -68,19 +46,7 @@ const mockSetTextFromCloud = mock((payload: any) => ({
   payload,
 }))
 
-// Mock modules
-mock.module('./firebase', () => ({
-  getFirebase: mockGetFirebase,
-}))
-
-mock.module('./firestore', () => ({
-  doc: mockDoc,
-  getDoc: mockGetDoc,
-  serverTimestamp: mockServerTimestamp,
-  runTransaction: mockRunTransaction,
-  deleteDoc: mockDeleteDoc,
-  onSnapshot: mockOnSnapshot,
-}))
+// Mock modules (Firebase mocks are already set up globally)
 
 mock.module('./documentPersistence', () => ({
   saveDocumentWithConflictResolution: mockSaveDocumentWithConflictResolution,
@@ -130,13 +96,7 @@ describe('DocumentSyncManager', () => {
     mockGetState = mock(() => mockState)
 
     // Clear all mocks
-    mockGetFirebase.mockClear()
-    mockDoc.mockClear()
-    mockGetDoc.mockClear()
-    mockServerTimestamp.mockClear()
-    mockRunTransaction.mockClear()
-    mockDeleteDoc.mockClear()
-    mockOnSnapshot.mockClear()
+    clearAllFirebaseMocks()
     mockSaveDocumentWithConflictResolution.mockClear()
     mockDeleteDocument.mockClear()
     mockLoadDocument.mockClear()

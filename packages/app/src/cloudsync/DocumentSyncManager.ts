@@ -17,7 +17,7 @@ import {
   loadDocument,
 } from './documentPersistence'
 import { getFirebase } from './firebase'
-import { doc, deleteDoc } from './firestore'
+import { doc, deleteDoc } from 'firebase/firestore'
 import { resolveTextConflict } from './conflictResolution'
 
 export class DocumentSyncManager {
