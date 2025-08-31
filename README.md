@@ -110,6 +110,7 @@ Here are some additional steps that can't be done in the code:
    - Enable the Google Provider to the "Sign-in method" list
    - Add production domain to the "Authorized Domains" list
 1. Select the "Blaze" plan in the Firebase console (this is required to make requests to third party services within Cloud Functions)
+1. Make sure to set Budgets & Alerts in the Firebase console for your billing account.
 
 Also, you need to create your `.firebaserc` file in the root of the project and add your project id:
 
