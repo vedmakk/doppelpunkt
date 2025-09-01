@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test'
-import { characterSanitizer } from '../characterSanitizer'
-import { StorageContext } from '../../../types'
+import { characterSanitizer } from './characterSanitizer'
+import { StorageContext } from '../../types'
 
 describe('characterSanitizer', () => {
   const createContext = (originalCursorPos = 0): StorageContext => ({
