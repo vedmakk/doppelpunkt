@@ -87,7 +87,7 @@ export const injectString = (raw: string, maxCharsPerLine: number): string => {
     const wrappedContent = wrap(content, {
       width: spaceForFirstLine, // identical for first and subsequent lines
       trim: false,
-      cut: true, // do not split a word unless it exceeds the width itself
+      cut: false, // do not split a word unless it exceeds the width itself
       indent: '', // override word-wrap's default two-space indent
       newline: '\n',
     })
