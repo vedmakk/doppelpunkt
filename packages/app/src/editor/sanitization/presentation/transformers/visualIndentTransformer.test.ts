@@ -116,5 +116,24 @@ describe('visualIndentTransformer utilities', () => {
       expect(text).toBe(`- lorem \n${VISUAL_INDENT_CHAR.repeat(2)}ipsum`)
       expect(cursorPos).toBe(caret)
     })
+
+    it('handles edge cases correctly', () => {
+      const raw = '- lorem ipsum'
+      const maxChars = 9
+      const caret = 9
+
+      const context: PresentationContext = {
+        text: raw,
+        cursorPos: caret,
+        maxCharsPerLine: maxChars,
+      }
+
+      const { text, cursorPos } = visualIndentTransformer.transform(
+        raw,
+        context,
+      )
+      expect(text).toBe(`- lorem \n${VISUAL_INDENT_CHAR.repeat(2)}ipsum`)
+      expect(cursorPos).toBe(caret + 3)
+    })
   })
 })
