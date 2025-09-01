@@ -1,4 +1,5 @@
-import { stripVisualIndents } from './visualIndent'
+import { PresentationContext } from '../sanitization'
+import { visualIndentStripper } from '../sanitization/presentation/transformers/visualIndentTransformer'
 
 export interface ComputeListEnterOptions {
   /** Current textarea value */
@@ -34,10 +35,15 @@ export function computeListEnter(
 ): ComputeListEnterResult | undefined {
   const { value, selectionStart, selectionEnd, shiftKey } = opts
 
+  const context: PresentationContext = {
+    text: value,
+    cursorPos: selectionStart,
+  }
+
   // Strip visual indents and obtain the caret position in the sanitized
   // string so that we can correctly analyse the logical Markdown content.
-  const { sanitizedValue, sanitizedCursorPos: sanitizedSelectionStart } =
-    stripVisualIndents(value, selectionStart)
+  const { text: sanitizedValue, cursorPos: sanitizedSelectionStart } =
+    visualIndentStripper.transform(value, context)
 
   // Determine the boundaries of the current logical line.
   const lineStart =

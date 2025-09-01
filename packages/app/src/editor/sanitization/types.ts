@@ -16,7 +16,6 @@ export type StorageContext = SanitizationContext
 export interface PresentationContext {
   text: string
   cursorPos: number
-  mode: WritingMode
   // Additional context specific to presentation
   maxCharsPerLine?: number
 }

@@ -43,7 +43,6 @@ const MarkdownEditor: React.FC = () => {
           visualIndentStripper.transform(content, {
             text: content,
             cursorPos,
-            mode,
           })
 
         dispatch(
@@ -77,19 +76,9 @@ const MarkdownEditor: React.FC = () => {
 
       const textarea = e.currentTarget as HTMLTextAreaElement
 
-      // Strip visual indents first to get logical content
-      const { text: logicalContent } = visualIndentStripper.transform(
-        textarea.value,
-        {
-          text: textarea.value,
-          cursorPos: textarea.selectionStart,
-          mode,
-        },
-      )
-
       // Apply list enter logic to the logical content
       const result = computeListEnter({
-        value: logicalContent,
+        value: textarea.value,
         selectionStart: textarea.selectionStart,
         selectionEnd: textarea.selectionEnd,
         shiftKey: e.shiftKey,
@@ -106,7 +95,7 @@ const MarkdownEditor: React.FC = () => {
 
       handleContentChange(newValue, newCursor)
     },
-    [handleContentChange, mode],
+    [handleContentChange],
   )
 
   const focusEditor = useCallback(() => {
