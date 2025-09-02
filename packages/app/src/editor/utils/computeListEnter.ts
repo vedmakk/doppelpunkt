@@ -65,6 +65,20 @@ export function computeListEnter(
 
   const prefix = listPrefixMatch[0] // includes trailing spaces
 
+  // Check if cursor is within or at the end of the list marker prefix
+  const cursorPositionInLine = sanitizedSelectionStart - lineStart
+  const isCursorWithinListMarker = cursorPositionInLine < prefix.length
+
+  if (isCursorWithinListMarker) {
+    // Cursor is before or within the list marker - insert plain newline (regardless of Shift key)
+    const insertion = '\n'
+    const newValue =
+      value.slice(0, selectionStart) + insertion + value.slice(selectionEnd)
+    const newCursor = selectionStart + insertion.length
+
+    return { newValue, newCursor }
+  }
+
   // Shift+Enter => soft line-break (stays inside current list item)
   if (shiftKey) {
     const insertion = '\n' + ' '.repeat(prefix.length)
