@@ -77,6 +77,14 @@ const Row = styled.div(({ theme }) => ({
   gap: theme.spacing(2),
 }))
 
+const SpaceBetweenRow = styled.div(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  width: '100%',
+}))
+
 const Col = styled.div(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -96,6 +104,7 @@ const UserInfoContainer = styled.div(({ theme }) => ({
   flexDirection: 'column',
   gap: theme.spacing(1),
   alignItems: 'flex-start',
+  width: '100%',
 }))
 
 const SignInContainer = styled.div(({ theme }) => ({
@@ -258,7 +267,7 @@ export const SettingsModal: React.FC<Props> = ({
                               cloudUser.email ||
                               cloudUser.uid}
                           </Label>
-                          <Row>
+                          <SpaceBetweenRow>
                             <Button label="Sign out" onClick={onSignOut} />
                             <DestructiveButton
                               label="Delete account"
@@ -268,7 +277,7 @@ export const SettingsModal: React.FC<Props> = ({
                               confirmButtonLabel="Delete Account"
                               cancelButtonLabel="Cancel"
                             />
-                          </Row>
+                          </SpaceBetweenRow>
                         </UserInfoContainer>
                       ) : (
                         <SignInContainer>
@@ -381,17 +390,19 @@ export const SettingsModal: React.FC<Props> = ({
                         placeholder="sk-..."
                         aria-label="OpenAI API Key"
                       />
-                      <Row>
-                        <Button
-                          label={showApiKey ? 'Hide' : 'Show'}
-                          onClick={() => setShowApiKey(!showApiKey)}
-                          disabled={!apiKeyInput.trim()}
-                        />
-                        <Button
-                          label="Save Key"
-                          onClick={handleApiKeySubmit}
-                          disabled={!apiKeyInput.trim()}
-                        />
+                      <SpaceBetweenRow>
+                        <Row>
+                          <Button
+                            label={showApiKey ? 'Hide' : 'Show'}
+                            onClick={() => setShowApiKey(!showApiKey)}
+                            disabled={!apiKeyInput.trim()}
+                          />
+                          <Button
+                            label="Save Key"
+                            onClick={handleApiKeySubmit}
+                            disabled={!apiKeyInput.trim()}
+                          />
+                        </Row>
                         {structuredTodosApiKeyIsSet && (
                           <DestructiveButton
                             label="Clear Key"
@@ -402,7 +413,7 @@ export const SettingsModal: React.FC<Props> = ({
                             cancelButtonLabel="Keep Key"
                           />
                         )}
-                      </Row>
+                      </SpaceBetweenRow>
                     </InputContainer>
                     {structuredTodosApiKeyIsSet && (
                       <MutedLabel
