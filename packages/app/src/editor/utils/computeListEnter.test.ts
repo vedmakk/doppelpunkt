@@ -133,4 +133,196 @@ describe('computeListEnter', () => {
 
     expect(newValue).toBe('- item\n\n')
   })
+
+  describe('cursor before list marker', () => {
+    it('inserts plain newline when cursor is at the very beginning of list item', () => {
+      const value = '- item'
+      const caret = 0 // cursor at the very beginning
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('\n- item')
+      expect(newCursor).toBe(1) // position after inserted newline
+    })
+
+    it('inserts plain newline when cursor is before the dash', () => {
+      const value = '- item'
+      const caret = 0 // cursor before the dash
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('\n- item')
+      expect(newCursor).toBe(1)
+    })
+
+    it('inserts plain newline when cursor is on the dash', () => {
+      const value = '- item'
+      const caret = 1 // cursor on the dash
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('-\n item')
+      expect(newCursor).toBe(2)
+    })
+
+    it('continues list when cursor is at the beginning of content', () => {
+      const value = '- item'
+      const caret = 2 // cursor after the prefix, at the beginning of "item"
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('- \n- item')
+      expect(newCursor).toBe(5) // position after "- \n- "
+    })
+
+    it('continues list when cursor is within content (splits at cursor)', () => {
+      const value = '- item'
+      const caret = 3 // cursor within the content "item"
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('- i\n- tem')
+      expect(newCursor).toBe(6) // position after "- i\n- "
+    })
+
+    it('handles ordered lists with cursor before number', () => {
+      const value = '1. item'
+      const caret = 0 // cursor before the number
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('\n1. item')
+      expect(newCursor).toBe(1)
+    })
+
+    it('handles ordered lists with cursor on the number', () => {
+      const value = '1. item'
+      const caret = 1 // cursor on the number
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('1\n. item')
+      expect(newCursor).toBe(2)
+    })
+
+    it('handles indented lists with cursor before indent', () => {
+      const value = '  - item'
+      const caret = 0 // cursor before the indent
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('\n  - item')
+      expect(newCursor).toBe(1)
+    })
+
+    it('handles indented lists with cursor within indent', () => {
+      const value = '  - item'
+      const caret = 1 // cursor within the indent
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: false,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe(' \n - item')
+      expect(newCursor).toBe(2)
+    })
+
+    it('works with Shift+Enter when cursor is before list marker', () => {
+      const value = '- item'
+      const caret = 0 // cursor before the dash
+
+      const result = computeListEnter({
+        value,
+        selectionStart: caret,
+        selectionEnd: caret,
+        shiftKey: true,
+      })
+
+      expect(result).not.toBeUndefined()
+
+      const { newValue, newCursor } = result!
+
+      expect(newValue).toBe('\n- item')
+      expect(newCursor).toBe(1)
+    })
+  })
 })
