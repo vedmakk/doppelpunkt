@@ -44,17 +44,9 @@ const ToolbarEditorSection: React.FC<Props> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleNew = useCallback(() => {
-    onNew()
-  }, [onNew])
-
-  const handleOpenFile = useCallback(() => {
+  const handleOpen = useCallback(() => {
     fileInputRef.current?.click()
   }, [])
-
-  const handleOpen = useCallback(() => {
-    handleOpenFile()
-  }, [handleOpenFile])
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> =
     useCallback(
@@ -90,7 +82,7 @@ const ToolbarEditorSection: React.FC<Props> = ({
   }, [])
 
   // Hotkeys
-  useCustomHotkey(HotkeyId.NewDocument, handleNew)
+  useCustomHotkey(HotkeyId.NewDocument, onNew)
   useCustomHotkey(HotkeyId.OpenDocument, handleOpen)
 
   return (
@@ -99,7 +91,7 @@ const ToolbarEditorSection: React.FC<Props> = ({
         <SectionTitle>Actions</SectionTitle>
         <DestructiveButton
           label="New"
-          onClick={handleNew}
+          onClick={onNew}
           confirmationTitle="Create New Document"
           confirmationMessage="Discard current content and create a new document? Any unsaved changes will be lost."
           confirmButtonLabel="Create New"

@@ -575,14 +575,17 @@ cd packages/app && bun run test
 ### What Was Implemented
 
 1. **Core Components Created**
+
    - ✅ `ConfirmationModal` component with proper styling and accessibility
    - ✅ `DestructiveButton` component that wraps Button with confirmation logic
 
 2. **Stories and Tests**
+
    - ✅ Comprehensive Ladle stories for both components
    - ✅ Complete test suites with 100% functionality coverage
 
 3. **Refactored Existing Usage**
+
    - ✅ Updated `ToolbarEditorSection` to use DestructiveButton for "New" and "Open" actions
    - ✅ Updated `SettingsModal` to use DestructiveButton for "Delete account" and "Clear Key" actions
 
