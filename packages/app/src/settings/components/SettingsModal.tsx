@@ -10,6 +10,7 @@ import { SettingsPage } from '../settingsSlice'
 import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 import { MutedLabel } from '../../menu/components/MutedLabel'
 import { Button } from '../../app/components/Button'
+import { DestructiveButton } from '../../app/components/DestructiveButton'
 import { Label } from '../../app/components/Label'
 import { SyncStatusIndicator } from '../../shared/containers/SyncStatusIndicator'
 
@@ -259,9 +260,13 @@ export const SettingsModal: React.FC<Props> = ({
                           </Label>
                           <Row>
                             <Button label="Sign out" onClick={onSignOut} />
-                            <Button
+                            <DestructiveButton
                               label="Delete account"
                               onClick={onDeleteUser}
+                              confirmationTitle="Delete Account"
+                              confirmationMessage="Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data from our servers, including all your documents and settings."
+                              confirmButtonLabel="Delete Account"
+                              cancelButtonLabel="Cancel"
                             />
                           </Row>
                         </UserInfoContainer>
@@ -388,9 +393,13 @@ export const SettingsModal: React.FC<Props> = ({
                           disabled={!apiKeyInput.trim()}
                         />
                         {structuredTodosApiKeyIsSet && (
-                          <Button
+                          <DestructiveButton
                             label="Clear Key"
                             onClick={handleApiKeyClear}
+                            confirmationTitle="Clear API Key"
+                            confirmationMessage="Are you sure you want to clear your OpenAI API key? You will need to enter it again to use structured todos."
+                            confirmButtonLabel="Clear Key"
+                            cancelButtonLabel="Keep Key"
                           />
                         )}
                       </Row>

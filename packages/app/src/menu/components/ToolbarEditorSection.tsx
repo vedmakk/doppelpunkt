@@ -7,6 +7,7 @@ import { HotkeyId } from '../../hotkeys/registry'
 import { useCustomHotkey } from '../../hotkeys/hooks'
 
 import { Button } from '../../app/components/Button'
+import { DestructiveButton } from '../../app/components/DestructiveButton'
 import { Label } from '../../app/components/Label'
 import { SectionTitle } from './SectionTitle'
 import { SectionContainer } from './SectionContainer'
@@ -44,24 +45,16 @@ const ToolbarEditorSection: React.FC<Props> = ({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleNew = useCallback(() => {
-    if (
-      content &&
-      !window.confirm('Discard current content and create a new document?')
-    ) {
-      return
-    }
     onNew()
-  }, [content, onNew])
+  }, [onNew])
+
+  const handleOpenFile = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
 
   const handleOpen = useCallback(() => {
-    if (
-      content &&
-      !window.confirm('Discard current content and open a new file?')
-    ) {
-      return
-    }
-    fileInputRef.current?.click()
-  }, [content])
+    handleOpenFile()
+  }, [handleOpenFile])
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> =
     useCallback(
@@ -104,8 +97,24 @@ const ToolbarEditorSection: React.FC<Props> = ({
     <>
       <SectionContainer as="nav" aria-label="Editor actions">
         <SectionTitle>Actions</SectionTitle>
-        <Button label="New" onClick={handleNew} />
-        <Button label="Open" onClick={handleOpen} />
+        <DestructiveButton
+          label="New"
+          onClick={handleNew}
+          confirmationTitle="Create New Document"
+          confirmationMessage="Discard current content and create a new document? Any unsaved changes will be lost."
+          confirmButtonLabel="Create New"
+          cancelButtonLabel="Keep Current"
+          requiresCondition={() => Boolean(content)}
+        />
+        <DestructiveButton
+          label="Open"
+          onClick={handleOpen}
+          confirmationTitle="Open Document"
+          confirmationMessage="Discard current content and open a new file? Any unsaved changes will be lost."
+          confirmButtonLabel="Open File"
+          cancelButtonLabel="Keep Current"
+          requiresCondition={() => Boolean(content)}
+        />
         <HiddenInput
           type="file"
           accept=".md"
