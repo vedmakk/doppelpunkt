@@ -191,11 +191,15 @@ async function saveDocument(
 
   const docRef = doc(db, getDocumentPath(userId, mode))
 
-  await setDoc(docRef, {
-    text,
-    updatedAt: serverTimestamp(),
-    rev: newRevision,
-  })
+  await setDoc(
+    docRef,
+    {
+      text,
+      updatedAt: serverTimestamp(),
+      rev: newRevision,
+    },
+    { merge: true },
+  )
 
   return {
     newRevision,
