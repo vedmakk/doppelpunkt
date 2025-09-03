@@ -1,6 +1,8 @@
 // StructuredTodos management for cloud sync
 // Handles settings persistence and cleanup for structured todos
 
+import debug from 'debug'
+
 import { doc, setDoc, onSnapshot, getDoc, deleteDoc } from 'firebase/firestore'
 import { getFirebase } from '../cloudsync/firebase'
 import { StructuredTodo, StructuredTodosSettings } from './types'
@@ -9,6 +11,8 @@ import {
   setStructuredTodos,
   setApiKeyIsSet,
 } from './structuredTodosSlice'
+
+const log = debug('StructuredTodosManager')
 
 export class StructuredTodosManager {
   private todosUnsubscribe: (() => void) | null = null
@@ -52,6 +56,9 @@ export class StructuredTodosManager {
     this.settingsUnsubscribe = onSnapshot(settingsRef, (snapshot) => {
       if (snapshot.exists()) {
         const settings = snapshot.data() as StructuredTodosSettings
+
+        log('Received structured todos settings update', settings)
+
         // Only sync enabled state, not API key
         dispatch(setStructuredTodosEnabled(settings.enabled))
         // Set a "dummy" API key to indicate that the API key is set!
@@ -69,6 +76,9 @@ export class StructuredTodosManager {
     this.todosUnsubscribe = onSnapshot(todoDocRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data()
+
+        log('Received structured todos update', data)
+
         if (data?.structuredTodos && Array.isArray(data.structuredTodos)) {
           dispatch(setStructuredTodos(data.structuredTodos as StructuredTodo[]))
         }
