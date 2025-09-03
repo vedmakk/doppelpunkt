@@ -1,6 +1,5 @@
 import React from 'react'
 import { test, expect, mock } from 'bun:test'
-import { act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from '@emotion/react'
 
@@ -39,9 +38,7 @@ test('shows confirmation modal on click', async () => {
 
   const button = screen.getByText('Delete Item')
 
-  await act(async () => {
-    await userEvent.click(button)
-  })
+  await userEvent.click(button)
 
   await waitFor(() => {
     expect(screen.getByText('Confirm Action')).toBeInTheDocument()
@@ -65,16 +62,12 @@ test('calls onClick when confirmed', async () => {
   const button = screen.getByText('Delete Item')
 
   // Click the button to open modal
-  await act(async () => {
-    await userEvent.click(button)
-  })
+  await userEvent.click(button)
 
   // Wait for modal to appear and click confirm
   await waitFor(async () => {
     const confirmButton = screen.getByText('Confirm')
-    await act(async () => {
-      await userEvent.click(confirmButton)
-    })
+    await userEvent.click(confirmButton)
   })
 
   expect(onClickMock).toHaveBeenCalledTimes(1)
@@ -94,16 +87,12 @@ test('does not call onClick when cancelled', async () => {
   const button = screen.getByText('Delete Item')
 
   // Click the button to open modal
-  await act(async () => {
-    await userEvent.click(button)
-  })
+  await userEvent.click(button)
 
   // Wait for modal to appear and click cancel
   await waitFor(async () => {
     const cancelButton = screen.getByText('Cancel')
-    await act(async () => {
-      await userEvent.click(cancelButton)
-    })
+    await userEvent.click(cancelButton)
   })
 
   expect(onClickMock).not.toHaveBeenCalled()
@@ -124,9 +113,7 @@ test('skips confirmation when requiresCondition returns false', async () => {
 
   const button = screen.getByText('Delete Item')
 
-  await act(async () => {
-    await userEvent.click(button)
-  })
+  await userEvent.click(button)
 
   expect(requiresConditionMock).toHaveBeenCalledTimes(1)
   expect(onClickMock).toHaveBeenCalledTimes(1)
@@ -148,9 +135,7 @@ test('shows confirmation when requiresCondition returns true', async () => {
 
   const button = screen.getByText('Delete Item')
 
-  await act(async () => {
-    await userEvent.click(button)
-  })
+  await userEvent.click(button)
 
   expect(requiresConditionMock).toHaveBeenCalledTimes(1)
   expect(onClickMock).not.toHaveBeenCalled()
@@ -214,9 +199,7 @@ test('uses custom confirmation labels', async () => {
 
   const button = screen.getByText('Clear Data')
 
-  await act(async () => {
-    await userEvent.click(button)
-  })
+  await userEvent.click(button)
 
   await waitFor(() => {
     expect(screen.getByText('Clear All Data')).toBeInTheDocument()
