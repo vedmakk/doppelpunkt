@@ -134,6 +134,7 @@ const MarkdownEditor: React.FC = () => {
 
     // Remove visual indents from the copied content
     // as we only need them for displaying the content in the editor
+    // TODO: Add stripper to storage pipeline and use storagePipeline.sanitize
     const sanitizedCopiedValue = stripString(copiedContent)
 
     e.clipboardData.setData('text/markdown', sanitizedCopiedValue) // For Markdown-aware apps
