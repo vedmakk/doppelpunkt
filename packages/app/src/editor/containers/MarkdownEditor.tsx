@@ -11,6 +11,8 @@ import { setText, setCaptureTab } from '../editorSlice'
 import { useWritingMode } from '../../mode/hooks'
 import { useCustomHotkey } from '../../hotkeys/hooks'
 import { HotkeyId } from '../../hotkeys/registry'
+import { flushDocumentSave } from '../../cloudsync/cloudSlice'
+import { usePageHideFlush } from '../../cloudsync/hooks'
 
 import MarkdownEditorComponent from '../components/MarkdownEditor'
 
@@ -23,6 +25,9 @@ const MarkdownEditor: React.FC = () => {
   const mode = useWritingMode()
 
   const dispatch = useDispatch()
+
+  // Register pagehide event listener
+  usePageHideFlush()
 
   const { text: injectedValue, cursorPos: injectedCursorPos } =
     useInjectedEditorText(charsPerLine)
@@ -62,6 +67,10 @@ const MarkdownEditor: React.FC = () => {
   }, [dispatch, captureTab])
 
   useCustomHotkey(HotkeyId.ToggleCaptureTab, toggleCaptureTab)
+
+  const handleBlur = useCallback(() => {
+    dispatch(flushDocumentSave({ mode }))
+  }, [dispatch, mode])
 
   // Handle custom list behaviours and Shift+Enter soft line breaks
   const handleKeyDown = useCallback(
@@ -221,6 +230,7 @@ const MarkdownEditor: React.FC = () => {
       captureTab={captureTab}
       onKeyDown={handleKeyDown}
       onCopy={handleCopy}
+      onBlur={handleBlur}
       containerRef={containerRef}
     />
   )

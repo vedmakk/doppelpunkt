@@ -29,7 +29,7 @@ export class DocumentSyncManager {
   private saveTimers: Partial<
     Record<WritingMode, ReturnType<typeof globalThis.setTimeout>>
   > = {}
-  private readonly SAVE_DEBOUNCE_MS = 1000
+  private readonly SAVE_DEBOUNCE_MS = 5000
 
   startListening(
     userId: string,
@@ -121,13 +121,7 @@ export class DocumentSyncManager {
               resolution.wasConflicted &&
               resolution.mergedText !== documentData.text
             ) {
-              this.scheduleDocumentSave(
-                userId,
-                mode,
-                resolution.mergedText,
-                getState,
-                dispatch,
-              )
+              this.scheduleDocumentSave(userId, mode, getState, dispatch)
             }
           } else {
             // No conflict - update base and apply remote changes if different
@@ -165,10 +159,35 @@ export class DocumentSyncManager {
     this.clearAllSaveTimers()
   }
 
+  private async executeSave(
+    userId: string,
+    mode: WritingMode,
+    getState: () => any,
+    dispatch: (action: any) => void,
+  ): Promise<void> {
+    try {
+      const state = getState()
+      const text = state.editor.documents[mode].text
+      const cloudDoc = state.cloud.docs[mode]
+
+      await this.saveDocument(
+        userId,
+        mode,
+        text,
+        cloudDoc.baseRev,
+        cloudDoc.baseText,
+        dispatch,
+        getState,
+      )
+      dispatch(setCloudError(undefined))
+    } catch {
+      dispatch(setCloudError('Failed to write to cloud'))
+    }
+  }
+
   scheduleDocumentSave(
     userId: string,
     mode: WritingMode,
-    text: string,
     getState: () => any,
     dispatch: (action: any) => void,
   ): void {
@@ -176,23 +195,37 @@ export class DocumentSyncManager {
       globalThis.clearTimeout(this.saveTimers[mode])
     }
 
-    this.saveTimers[mode] = globalThis.setTimeout(async () => {
-      try {
-        const cloudDoc = getState().cloud.docs[mode]
-        await this.saveDocument(
-          userId,
-          mode,
-          text,
-          cloudDoc.baseRev,
-          cloudDoc.baseText,
-          dispatch,
-          getState,
-        )
-        dispatch(setCloudError(undefined))
-      } catch {
-        dispatch(setCloudError('Failed to write to cloud'))
-      }
+    this.saveTimers[mode] = globalThis.setTimeout(() => {
+      this.executeSave(userId, mode, getState, dispatch)
     }, this.SAVE_DEBOUNCE_MS)
+  }
+
+  flushPendingSave(
+    userId: string,
+    mode: WritingMode,
+    getState: () => any,
+    dispatch: (action: any) => void,
+  ): void {
+    const timer = this.saveTimers[mode]
+    if (!timer) return
+
+    // Clear the timer and execute immediately
+    globalThis.clearTimeout(timer)
+    delete this.saveTimers[mode]
+
+    // Execute save immediately (fire-and-forget for lifecycle events)
+    this.executeSave(userId, mode, getState, dispatch)
+  }
+
+  flushAllPendingSaves(
+    userId: string,
+    getState: () => any,
+    dispatch: (action: any) => void,
+  ): void {
+    const modes: WritingMode[] = ['editor', 'todo']
+    modes.forEach((mode) => {
+      this.flushPendingSave(userId, mode, getState, dispatch)
+    })
   }
 
   async initialSync(
@@ -257,34 +290,42 @@ export class DocumentSyncManager {
     log(`Saving document for '${mode}'`, localText, baseRev, baseText)
 
     dispatch(setCloudIsUploading(true))
-    const result = await saveDocumentWithConflictResolution(
-      userId,
-      mode,
-      localText,
-      baseRev,
-      baseText,
-    )
-    dispatch(setCloudIsUploading(false))
-
-    dispatch(
-      setCloudDocBase({
+    try {
+      const result = await saveDocumentWithConflictResolution(
+        userId,
         mode,
-        baseRev: result.newRevision,
-        baseText: result.finalText,
-      }),
-    )
+        localText,
+        baseRev,
+        baseText,
+      )
+      dispatch(setCloudIsUploading(false))
 
-    if (result.wasConflicted && result.finalText !== localText) {
-      log(`Document was conflicted for '${mode}', updating local text`, result)
-
-      const localDoc = getState().editor.documents[mode]
       dispatch(
-        setText({
+        setCloudDocBase({
           mode,
-          text: result.finalText,
-          cursorPos: Math.min(localDoc.cursorPos, result.finalText.length),
+          baseRev: result.newRevision,
+          baseText: result.finalText,
         }),
       )
+
+      if (result.wasConflicted && result.finalText !== localText) {
+        log(
+          `Document was conflicted for '${mode}', updating local text`,
+          result,
+        )
+
+        const localDoc = getState().editor.documents[mode]
+        dispatch(
+          setText({
+            mode,
+            text: result.finalText,
+            cursorPos: Math.min(localDoc.cursorPos, result.finalText.length),
+          }),
+        )
+      }
+    } catch (error) {
+      dispatch(setCloudIsUploading(false))
+      throw error
     }
   }
 

@@ -110,6 +110,13 @@ const cloudSlice = createSlice({
         cursorPos: number
       }>,
     ) => state,
+    // Flush actions for lifecycle events
+    flushDocumentSave: (
+      state,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _action: PayloadAction<{ mode: WritingMode }>,
+    ) => state,
+    flushAllDocumentSaves: (state) => state,
   },
 })
 
@@ -127,4 +134,6 @@ export const {
   requestDeleteUser,
   appInitialized,
   setTextFromCloud,
+  flushDocumentSave,
+  flushAllDocumentSaves,
 } = cloudSlice.actions

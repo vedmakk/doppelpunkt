@@ -18,6 +18,8 @@ import {
   setCloudUser,
   setTextFromCloud,
   appInitialized,
+  flushDocumentSave,
+  flushAllDocumentSaves,
 } from './cloudSlice'
 
 // Import our manager classes
@@ -258,12 +260,10 @@ cloudListenerMiddleware.startListening({
     if (!isCloudSyncReady(state)) return
 
     const userId = state.cloud.user.uid
-    const text = state.editor.documents.editor.text
 
     documentSyncManager.scheduleDocumentSave(
       userId,
       'editor',
-      text,
       api.getState,
       api.dispatch,
     )
@@ -299,15 +299,42 @@ cloudListenerMiddleware.startListening({
     if (!isCloudSyncReady(state)) return
 
     const userId = state.cloud.user.uid
-    const text = state.editor.documents.todo.text
 
     documentSyncManager.scheduleDocumentSave(
       userId,
       'todo',
-      text,
       api.getState,
       api.dispatch,
     )
+  },
+})
+
+// Centralized flush handler for all lifecycle events
+cloudListenerMiddleware.startListening({
+  matcher: isAnyOf(flushDocumentSave, flushAllDocumentSaves),
+  effect: async (action, api) => {
+    const state: any = api.getState()
+
+    if (!isCloudSyncReady(state)) return
+
+    const userId = state.cloud.user.uid
+
+    if (action.type === flushDocumentSave.type) {
+      const { mode } = (action as any).payload
+      documentSyncManager.flushPendingSave(
+        userId,
+        mode,
+        api.getState,
+        api.dispatch,
+      )
+    } else {
+      // flushAllDocumentSaves
+      documentSyncManager.flushAllPendingSaves(
+        userId,
+        api.getState,
+        api.dispatch,
+      )
+    }
   },
 })
 

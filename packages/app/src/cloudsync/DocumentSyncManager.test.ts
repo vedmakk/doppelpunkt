@@ -33,6 +33,10 @@ const mockSetCloudError = mock((payload: any) => ({
   type: 'cloud/setCloudError',
   payload,
 }))
+const mockSetCloudIsUploading = mock((payload: any) => ({
+  type: 'cloud/setCloudIsUploading',
+  payload,
+}))
 const mockSetCloudDocBase = mock((payload: any) => ({
   type: 'cloud/setCloudDocBase',
   payload,
@@ -65,6 +69,7 @@ mock.module('../editor/editorSlice', () => ({
 
 mock.module('./cloudSlice', () => ({
   setCloudError: mockSetCloudError,
+  setCloudIsUploading: mockSetCloudIsUploading,
   setCloudDocBase: mockSetCloudDocBase,
   setCloudDocSnapshotMeta: mockSetCloudDocSnapshotMeta,
   setTextFromCloud: mockSetTextFromCloud,
@@ -104,6 +109,7 @@ describe('DocumentSyncManager', () => {
     mockGetDocumentPath.mockClear()
     mockSetText.mockClear()
     mockSetCloudError.mockClear()
+    mockSetCloudIsUploading.mockClear()
     mockSetCloudDocBase.mockClear()
     mockSetCloudDocSnapshotMeta.mockClear()
     mockSetTextFromCloud.mockClear()
@@ -549,7 +555,6 @@ describe('DocumentSyncManager', () => {
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        'test text',
         mockGetState,
         mockDispatch,
       )
@@ -588,19 +593,16 @@ describe('DocumentSyncManager', () => {
 
     it('should debounce multiple save requests', () => {
       const userId = 'test-user'
-      const text = 'updated text'
 
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        text,
         mockGetState,
         mockDispatch,
       )
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        text,
         mockGetState,
         mockDispatch,
       )
@@ -610,12 +612,10 @@ describe('DocumentSyncManager', () => {
 
     it('should call saveDocument with correct parameters', () => {
       const userId = 'test-user'
-      const text = 'updated text'
 
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        text,
         mockGetState,
         mockDispatch,
       )
@@ -626,7 +626,7 @@ describe('DocumentSyncManager', () => {
       expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
         userId,
         'editor',
-        text,
+        'local editor text', // text from mockState
         1, // baseRev from mockState
         'base editor text', // baseText from mockState
       )
@@ -634,16 +634,17 @@ describe('DocumentSyncManager', () => {
 
     it('should dispatch error on save failure', async () => {
       const userId = 'test-user'
-      const text = 'updated text'
 
-      mockSaveDocumentWithConflictResolution.mockRejectedValueOnce(
-        new Error('Save failed'),
-      )
+      // Temporarily replace the mock implementation to throw an error
+      const originalImplementation =
+        mockSaveDocumentWithConflictResolution.getMockImplementation()!
+      mockSaveDocumentWithConflictResolution.mockImplementation(() => {
+        throw new Error('Save failed')
+      })
 
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        text,
         mockGetState,
         mockDispatch,
       )
@@ -651,14 +652,20 @@ describe('DocumentSyncManager', () => {
       // Execute the timer callback and wait for promise to resolve
       await timerCallbacks[0]()
 
+      // Restore original implementation
+      mockSaveDocumentWithConflictResolution.mockImplementation(
+        originalImplementation,
+      )
+
       expect(mockDispatch).toHaveBeenCalledWith(
         mockSetCloudError('Failed to write to cloud'),
       )
+      expect(mockDispatch).toHaveBeenCalledWith(mockSetCloudIsUploading(true))
+      expect(mockDispatch).toHaveBeenCalledWith(mockSetCloudIsUploading(false))
     })
 
     it('should update state after successful save', async () => {
       const userId = 'test-user'
-      const text = 'updated text'
 
       mockSaveDocumentWithConflictResolution.mockResolvedValueOnce({
         newRevision: 3,
@@ -669,7 +676,6 @@ describe('DocumentSyncManager', () => {
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        text,
         mockGetState,
         mockDispatch,
       )
@@ -688,7 +694,6 @@ describe('DocumentSyncManager', () => {
 
     it('should update editor text when conflict was resolved and text changed', async () => {
       const userId = 'test-user'
-      const text = 'original text'
 
       mockSaveDocumentWithConflictResolution.mockResolvedValueOnce({
         newRevision: 3,
@@ -699,7 +704,6 @@ describe('DocumentSyncManager', () => {
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        text,
         mockGetState,
         mockDispatch,
       )
@@ -729,7 +733,6 @@ describe('DocumentSyncManager', () => {
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        text,
         mockGetState,
         mockDispatch,
       )
@@ -909,21 +912,18 @@ describe('DocumentSyncManager', () => {
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        'text1',
         mockGetState,
         mockDispatch,
       )
       syncManager.scheduleDocumentSave(
         userId,
         'editor',
-        'text2',
         mockGetState,
         mockDispatch,
       )
       syncManager.scheduleDocumentSave(
         userId,
         'todo',
-        'todo1',
         mockGetState,
         mockDispatch,
       )
