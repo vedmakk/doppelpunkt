@@ -45,6 +45,7 @@ export class StructuredTodosManager {
     const settingsRef = doc(db, `users/${userId}/settings/structuredTodos`)
 
     // First, get initial settings
+    // TODO: Is this necessary? I think once we register with onSnapshot, we get the initial settings immediately.
     const settingsSnap = await getDoc(settingsRef)
     if (settingsSnap.exists()) {
       const settings = settingsSnap.data() as StructuredTodosSettings
