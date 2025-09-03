@@ -6,7 +6,7 @@ import {
   selectCloudUser,
   selectCloudError,
   selectCloudDocMetas,
-  selectCloudSyncStatusText,
+  selectCloudSyncStatus,
 } from './selectors'
 
 export const useCloudEnabled = () => useAppSelector(selectCloudEnabled)
@@ -19,5 +19,4 @@ export const useCloudError = () => useAppSelector(selectCloudError)
 
 export const useCloudDocMetas = () => useAppSelector(selectCloudDocMetas)
 
-export const useCloudSyncStatusText = (): string =>
-  useAppSelector(selectCloudSyncStatusText)
+export const useCloudSyncStatus = () => useAppSelector(selectCloudSyncStatus)

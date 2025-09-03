@@ -37,6 +37,7 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
       initializing: theme.colors.primary,
       error: theme.colors.todoPriorityHigh,
       disconnected: theme.colors.secondary,
+      pending: theme.colors.primary,
       syncing: theme.colors.primary,
       offline: theme.colors.todoPriorityMedium,
       synced: theme.colors.primary,
@@ -50,6 +51,7 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
       background-color: ${colorMap[status]};
       transition: background-color ${theme.animations.transition};
       flex-shrink: 0;
+      opacity: ${status === 'pending' ? 0.2 : 1};
       ${status === 'syncing' || status === 'initializing'
         ? pulseAnimationCss
         : ''}
@@ -89,6 +91,8 @@ const getStatusTooltip = (status: CloudSyncUiStatus): string => {
       return 'Cloud sync error - check your connection'
     case 'disconnected':
       return 'Disconnected from cloud sync'
+    case 'pending':
+      return 'Has pending local changes...'
     case 'syncing':
       return 'Syncing changes to cloud...'
     case 'offline':
@@ -110,6 +114,8 @@ const getStatusText = (status: CloudSyncUiStatus): string => {
       return 'Error'
     case 'disconnected':
       return 'Disconnected'
+    case 'pending':
+      return 'Pending'
     case 'syncing':
       return 'Syncing…'
     case 'offline':

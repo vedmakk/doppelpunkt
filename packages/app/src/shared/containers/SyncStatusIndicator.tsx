@@ -1,6 +1,6 @@
 import React from 'react'
-import { useAppSelector } from '../../store'
-import { selectCloudSyncStatus } from '../../cloudsync/selectors'
+
+import { useCloudSyncStatus } from '../../cloudsync/hooks'
 import { SyncStatusIndicator as SyncStatusIndicatorComponent } from '../components/SyncStatusIndicator'
 
 interface Props {
@@ -14,7 +14,7 @@ export const SyncStatusIndicator: React.FC<Props> = ({
   size = 'medium',
   onlyIcon = false,
 }) => {
-  const status = useAppSelector(selectCloudSyncStatus)
+  const status = useCloudSyncStatus()
 
   if (featureName !== 'cloudSync') {
     // Currently only supports cloudSync, but designed for future extensibility

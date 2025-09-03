@@ -12,6 +12,11 @@ export const selectCurrentDocument = createSelector(
   (editor, mode) => editor.documents[mode],
 )
 
+export const selectRawEditorText = createSelector(
+  selectCurrentDocument,
+  (doc) => doc.text,
+)
+
 export const selectEditorText = createSelector(
   selectCurrentDocument,
   selectWritingMode,

@@ -1,6 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit'
 
 import { RootState } from '../store'
+import { selectRawEditorText } from '../editor/selectors'
+import { selectWritingMode } from '../mode/selectors'
 
 export const selectCloudState = (s: RootState) => s.cloud
 
@@ -34,14 +36,26 @@ export type CloudSyncUiStatus =
   | 'initializing'
   | 'error'
   | 'disconnected'
+  | 'pending'
   | 'syncing'
   | 'offline'
   | 'synced'
 
+const selectCurrentCloudDocMeta = createSelector(
+  selectWritingMode,
+  selectCloudDocMetas,
+  (mode, docs) => docs[mode],
+)
+
 // Derived selectors for sync status indicators
 export const selectCloudHasPendingWrites = createSelector(
   selectCloudDocMetas,
-  (docs) => docs.editor.hasPendingWrites || docs.todo.hasPendingWrites,
+  selectCurrentCloudDocMeta,
+  selectRawEditorText,
+  (docs, docMeta, currentText) =>
+    docs.editor.hasPendingWrites ||
+    docs.todo.hasPendingWrites ||
+    docMeta.baseText !== currentText,
 )
 
 export const selectCloudIsFromCache = createSelector(
@@ -71,32 +85,8 @@ export const selectCloudSyncStatus = createSelector(
     if (error) return 'error'
     if (isUploading) return 'syncing'
     if (status !== 'connected') return 'disconnected'
-    if (hasPending) return 'syncing'
+    if (hasPending) return 'pending'
     if (fromCache && hasPending) return 'offline'
     return 'synced'
-  },
-)
-
-export const selectCloudSyncStatusText = createSelector(
-  selectCloudSyncStatus,
-  (status): string => {
-    switch (status) {
-      case 'disabled':
-        return 'Disabled'
-      case 'initializing':
-        return 'Connecting…'
-      case 'error':
-        return 'Error'
-      case 'disconnected':
-        return 'Disconnected'
-      case 'syncing':
-        return 'Syncing…'
-      case 'offline':
-        return 'Offline'
-      case 'synced':
-        return 'Synced'
-      default:
-        return 'Unknown'
-    }
   },
 )
