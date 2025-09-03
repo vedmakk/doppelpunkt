@@ -19,14 +19,16 @@ storageSanitizationMiddleware.startListening({
 
     const result = storagePipeline.sanitize(text, context)
 
+    const setTextInternalAction = setTextInternal({
+      mode,
+      text: result.text,
+      cursorPos: result.cursorPos,
+    })
+    // Copy metadata from the original setText action
+    ;(setTextInternalAction as any).meta = (action as any)?.meta
+
     // Always dispatch the sanitized version using setTextInternal
     // to avoid infinite loops and ensure consistent processing
-    listenerApi.dispatch(
-      setTextInternal({
-        mode,
-        text: result.text,
-        cursorPos: result.cursorPos,
-      }),
-    )
+    listenerApi.dispatch(setTextInternalAction)
   },
 })

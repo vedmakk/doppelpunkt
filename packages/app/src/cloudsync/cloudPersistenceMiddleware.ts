@@ -1,5 +1,6 @@
 // Cloud persistence middleware - RTK listener middleware configuration
 // Orchestrates authentication and document synchronization
+import debug from 'debug'
 
 import {
   createListenerMiddleware,
@@ -26,6 +27,8 @@ import { structuredTodosManager } from '../structuredTodos/persistenceMiddleware
 import { clearAllStructuredTodosData } from '../structuredTodos/structuredTodosSlice'
 import { setText } from '../editor/editorSlice'
 import { safeLocalStorage } from '../shared/storage'
+
+const log = debug('cloudPersistenceMiddleware')
 
 const CLOUD_ENABLED_KEY = 'cloud.enabled'
 
@@ -230,7 +233,8 @@ cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
     if (
-      (action as any)?.type === 'editor/setText' &&
+      ((action as any)?.type === 'editor/setText' ||
+        (action as any)?.type === 'editor/setTextInternal') &&
       (action as any)?.meta?.fromCloud
     ) {
       return false
@@ -248,6 +252,7 @@ cloudListenerMiddleware.startListening({
     )
   },
   effect: async (_action, api) => {
+    log('scheduleDocumentSave for editor', _action)
     const state: any = api.getState()
 
     if (!isCloudSyncReady(state)) return
@@ -270,7 +275,8 @@ cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
     if (
-      (action as any)?.type === 'editor/setText' &&
+      ((action as any)?.type === 'editor/setText' ||
+        (action as any)?.type === 'editor/setTextInternal') &&
       (action as any)?.meta?.fromCloud
     ) {
       return false
@@ -287,6 +293,7 @@ cloudListenerMiddleware.startListening({
     )
   },
   effect: async (_action, api) => {
+    log('scheduleDocumentSave for todo', _action)
     const state: any = api.getState()
 
     if (!isCloudSyncReady(state)) return

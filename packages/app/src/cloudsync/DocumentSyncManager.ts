@@ -1,6 +1,8 @@
 // Document synchronization management for cloud sync
 // Handles real-time document sync, conflict resolution, and debounced saves
 
+import debug from 'debug'
+
 import { type WritingMode } from '../mode/modeSlice'
 import { setText } from '../editor/editorSlice'
 import {
@@ -19,6 +21,8 @@ import {
 import { getFirebase } from './firebase'
 import { doc, deleteDoc } from 'firebase/firestore'
 import { resolveTextConflict } from './conflictResolution'
+
+const log = debug('DocumentSyncManager')
 
 export class DocumentSyncManager {
   private documentListeners: Partial<Record<WritingMode, () => void>> = {}
@@ -40,6 +44,8 @@ export class DocumentSyncManager {
         userId,
         mode,
         (documentData, metadata) => {
+          log(`Received document update for '${mode}'`, documentData, metadata)
+
           dispatch(
             setCloudDocSnapshotMeta({
               mode,
@@ -72,6 +78,13 @@ export class DocumentSyncManager {
             localDocument.text !== documentData.text // And they're different from each other
 
           if (needsConflictResolution) {
+            log(
+              `Performing conflict resolution for '${mode}'`,
+              cloudDoc,
+              localDocument,
+              documentData,
+            )
+
             // Perform bidirectional conflict resolution
             const resolution = resolveTextConflict(
               cloudDoc.baseText, // base (last known common version)
@@ -197,6 +210,9 @@ export class DocumentSyncManager {
 
           // If document doesn't exist, save the local version
           if (!existingDoc) {
+            log(
+              `Initial sync: no existing document for '${mode}', saving local version`,
+            )
             const state = getState()
             const localText = state.editor.documents[mode].text
 
@@ -238,6 +254,8 @@ export class DocumentSyncManager {
     dispatch: (action: any) => void,
     getState: () => any,
   ): Promise<void> {
+    log(`Saving document for '${mode}'`, localText, baseRev, baseText)
+
     dispatch(setCloudIsUploading(true))
     const result = await saveDocumentWithConflictResolution(
       userId,
@@ -257,6 +275,8 @@ export class DocumentSyncManager {
     )
 
     if (result.wasConflicted && result.finalText !== localText) {
+      log(`Document was conflicted for '${mode}', updating local text`, result)
+
       const localDoc = getState().editor.documents[mode]
       dispatch(
         setText({
