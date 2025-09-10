@@ -3,7 +3,7 @@ import { test, expect, mock } from 'bun:test'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from '@emotion/react'
 
-import { render, screen, waitFor } from '../../test/test-utils'
+import { render, screen, waitFor, within } from '../../test/test-utils'
 import { DestructiveButton, DestructiveActionId } from '..'
 import { LIGHT_THEME } from '../../theme/theme'
 
@@ -36,12 +36,12 @@ test('shows confirmation modal on click', async () => {
     />,
   )
 
-  const button = screen.getByText('Delete Account')
+  const button = screen.getByRole('button', { name: 'Delete Account' })
 
   await userEvent.click(button)
 
   await waitFor(() => {
-    expect(screen.getByText('Delete Account')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(
       screen.getByText(
         'Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data from our servers, including all your documents and settings.',
@@ -61,16 +61,22 @@ test('calls onClick when confirmed', async () => {
     />,
   )
 
-  const button = screen.getByText('Delete Account')
+  const button = screen.getByRole('button', { name: 'Delete Account' })
 
   // Click the button to open modal
   await userEvent.click(button)
 
   // Wait for modal to appear and click confirm
-  await waitFor(async () => {
-    const confirmButton = screen.getByText('Delete Account')
-    await userEvent.click(confirmButton)
+  await waitFor(() => {
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
+
+  // Find the confirm button within the dialog specifically
+  const dialog = screen.getByRole('dialog')
+  const confirmButton = within(dialog).getByRole('button', {
+    name: 'Delete Account',
+  })
+  await userEvent.click(confirmButton)
 
   expect(onClickMock).toHaveBeenCalledTimes(1)
 })
@@ -196,18 +202,20 @@ test('uses config-based confirmation labels', async () => {
     />,
   )
 
-  const button = screen.getByText('Clear API Key')
+  const button = screen.getByRole('button', { name: 'Clear API Key' })
 
   await userEvent.click(button)
 
   await waitFor(() => {
-    expect(screen.getByText('Clear API Key')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(
       screen.getByText(
         'Are you sure you want to clear your OpenAI API key? You will need to enter it again to use structured todos.',
       ),
     ).toBeInTheDocument()
-    expect(screen.getByText('Clear Key')).toBeInTheDocument()
-    expect(screen.getByText('Cancel')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Clear Key' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
 })
