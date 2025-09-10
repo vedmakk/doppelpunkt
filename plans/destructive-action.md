@@ -4,6 +4,8 @@
 
 This document outlines the design for implementing a DestructiveButton component that handles actions which may lead to data loss. The component will provide a consistent user experience with proper confirmation dialogs for destructive operations throughout the application.
 
+> **⚠️ Important**: This document covers destructive actions for UI buttons only. For keyboard shortcuts (hotkeys) that trigger destructive actions, see the [Destructive Shortcuts Design](./destructive-shortcuts.md) document which extends this concept to ensure consistent behavior across all interaction methods.
+
 ## Current State
 
 Currently, destructive actions are handled inconsistently:
@@ -567,6 +569,10 @@ cd packages/app && bun run test
 - Consistent styling and behavior
 - Easy to extend and modify
 - Clear separation of concerns
+
+## Related Documentation
+
+📋 **[Destructive Shortcuts Design](./destructive-shortcuts.md)** - Extension of this plan to cover keyboard shortcuts (hotkeys) that trigger destructive actions. This addresses the current inconsistency where destructive buttons show confirmations but their corresponding hotkeys bypass them.
 
 ## Implementation Status
 
