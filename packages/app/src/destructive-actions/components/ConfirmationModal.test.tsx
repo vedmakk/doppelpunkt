@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from '@emotion/react'
 
 import { render, screen } from '../../test/test-utils'
-import { ConfirmationModal } from './ConfirmationModal'
+import { ConfirmationModal } from '..'
 import { LIGHT_THEME } from '../../theme/theme'
 
 const defaultProps = {

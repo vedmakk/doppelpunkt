@@ -4,10 +4,14 @@ import styled from '@emotion/styled'
 import { EditorStats } from '../../shared/types'
 
 import { HotkeyId } from '../../hotkeys/registry'
-import { useCustomHotkey } from '../../hotkeys/hooks'
 
 import { Button } from '../../app/components/Button'
-import { DestructiveButton } from '../../app/components/DestructiveButton'
+import {
+  DestructiveButton,
+  useDestructiveHotkey,
+  DestructiveActionId,
+  ConfirmationModal,
+} from '../../destructive-actions'
 import { Label } from '../../app/components/Label'
 import { SectionTitle } from './SectionTitle'
 import { SectionContainer } from './SectionContainer'
@@ -81,9 +85,18 @@ const ToolbarEditorSection: React.FC<Props> = ({
     window.print()
   }, [])
 
-  // Hotkeys
-  useCustomHotkey(HotkeyId.NewDocument, onNew)
-  useCustomHotkey(HotkeyId.OpenDocument, handleOpen)
+  // Destructive hotkeys with confirmations
+  const { confirmationProps: newConfirmationProps } = useDestructiveHotkey(
+    HotkeyId.NewDocument,
+    onNew,
+    () => Boolean(content),
+  )
+
+  const { confirmationProps: openConfirmationProps } = useDestructiveHotkey(
+    HotkeyId.OpenDocument,
+    handleOpen,
+    () => Boolean(content),
+  )
 
   return (
     <>
@@ -91,20 +104,14 @@ const ToolbarEditorSection: React.FC<Props> = ({
         <SectionTitle>Actions</SectionTitle>
         <DestructiveButton
           label="New"
+          configId={DestructiveActionId.NewDocument}
           onClick={onNew}
-          confirmationTitle="Create New Document"
-          confirmationMessage="Discard current content and create a new document? Any unsaved changes will be lost."
-          confirmButtonLabel="Create New"
-          cancelButtonLabel="Keep Current"
           requiresCondition={() => Boolean(content)}
         />
         <DestructiveButton
           label="Open"
+          configId={DestructiveActionId.OpenDocument}
           onClick={handleOpen}
-          confirmationTitle="Open Document"
-          confirmationMessage="Discard current content and open a new file? Any unsaved changes will be lost."
-          confirmButtonLabel="Open File"
-          cancelButtonLabel="Keep Current"
           requiresCondition={() => Boolean(content)}
         />
         <HiddenInput
@@ -136,6 +143,9 @@ const ToolbarEditorSection: React.FC<Props> = ({
           </ListItem>
         </List>
       </SectionContainer>
+      {/* Confirmation modals for hotkeys */}
+      <ConfirmationModal {...newConfirmationProps} />
+      <ConfirmationModal {...openConfirmationProps} />
     </>
   )
 }

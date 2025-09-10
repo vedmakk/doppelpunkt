@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from '@emotion/react'
 
 import { render, screen, waitFor } from '../../test/test-utils'
-import { DestructiveButton } from './DestructiveButton'
+import { DestructiveButton, DestructiveActionId } from '..'
 import { LIGHT_THEME } from '../../theme/theme'
 
 const renderWithTheme = (component: React.ReactElement) => {
@@ -16,13 +16,13 @@ test('renders button with correct label', () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="Delete Account"
+      configId={DestructiveActionId.DeleteAccount}
       onClick={onClickMock}
-      confirmationMessage="Are you sure?"
     />,
   )
 
-  expect(screen.getByText('Delete Item')).toBeInTheDocument()
+  expect(screen.getByText('Delete Account')).toBeInTheDocument()
 })
 
 test('shows confirmation modal on click', async () => {
@@ -30,20 +30,22 @@ test('shows confirmation modal on click', async () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="Delete Account"
+      configId={DestructiveActionId.DeleteAccount}
       onClick={onClickMock}
-      confirmationMessage="Are you sure you want to delete this item?"
     />,
   )
 
-  const button = screen.getByText('Delete Item')
+  const button = screen.getByText('Delete Account')
 
   await userEvent.click(button)
 
   await waitFor(() => {
-    expect(screen.getByText('Confirm Action')).toBeInTheDocument()
+    expect(screen.getByText('Delete Account')).toBeInTheDocument()
     expect(
-      screen.getByText('Are you sure you want to delete this item?'),
+      screen.getByText(
+        'Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data from our servers, including all your documents and settings.',
+      ),
     ).toBeInTheDocument()
   })
 })
@@ -53,20 +55,20 @@ test('calls onClick when confirmed', async () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="Delete Account"
+      configId={DestructiveActionId.DeleteAccount}
       onClick={onClickMock}
-      confirmationMessage="Are you sure?"
     />,
   )
 
-  const button = screen.getByText('Delete Item')
+  const button = screen.getByText('Delete Account')
 
   // Click the button to open modal
   await userEvent.click(button)
 
   // Wait for modal to appear and click confirm
   await waitFor(async () => {
-    const confirmButton = screen.getByText('Confirm')
+    const confirmButton = screen.getByText('Delete Account')
     await userEvent.click(confirmButton)
   })
 
@@ -78,13 +80,13 @@ test('does not call onClick when cancelled', async () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="Delete Account"
+      configId={DestructiveActionId.DeleteAccount}
       onClick={onClickMock}
-      confirmationMessage="Are you sure?"
     />,
   )
 
-  const button = screen.getByText('Delete Item')
+  const button = screen.getByText('Delete Account')
 
   // Click the button to open modal
   await userEvent.click(button)
@@ -104,20 +106,20 @@ test('skips confirmation when requiresCondition returns false', async () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="New Document"
+      configId={DestructiveActionId.NewDocument}
       onClick={onClickMock}
-      confirmationMessage="Are you sure?"
       requiresCondition={requiresConditionMock}
     />,
   )
 
-  const button = screen.getByText('Delete Item')
+  const button = screen.getByText('New Document')
 
   await userEvent.click(button)
 
   expect(requiresConditionMock).toHaveBeenCalledTimes(1)
   expect(onClickMock).toHaveBeenCalledTimes(1)
-  expect(screen.queryByText('Confirm Action')).not.toBeInTheDocument()
+  expect(screen.queryByText('Create New Document')).not.toBeInTheDocument()
 })
 
 test('shows confirmation when requiresCondition returns true', async () => {
@@ -126,14 +128,14 @@ test('shows confirmation when requiresCondition returns true', async () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="New Document"
+      configId={DestructiveActionId.NewDocument}
       onClick={onClickMock}
-      confirmationMessage="Are you sure?"
       requiresCondition={requiresConditionMock}
     />,
   )
 
-  const button = screen.getByText('Delete Item')
+  const button = screen.getByText('New Document')
 
   await userEvent.click(button)
 
@@ -141,7 +143,7 @@ test('shows confirmation when requiresCondition returns true', async () => {
   expect(onClickMock).not.toHaveBeenCalled()
 
   await waitFor(() => {
-    expect(screen.getByText('Confirm Action')).toBeInTheDocument()
+    expect(screen.getByText('Create New Document')).toBeInTheDocument()
   })
 })
 
@@ -150,14 +152,14 @@ test('handles disabled state correctly', () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="Delete Account"
+      configId={DestructiveActionId.DeleteAccount}
       onClick={onClickMock}
-      confirmationMessage="Are you sure?"
       disabled={true}
     />,
   )
 
-  const button = screen.getByText('Delete Item')
+  const button = screen.getByText('Delete Account')
   expect(button.closest('button')).toBeDisabled()
 })
 
@@ -166,16 +168,16 @@ test('passes through button props correctly', () => {
 
   renderWithTheme(
     <DestructiveButton
-      label="Delete Item"
+      label="Delete Account"
+      configId={DestructiveActionId.DeleteAccount}
       onClick={onClickMock}
-      confirmationMessage="Are you sure?"
       active={true}
       href="https://example.com"
       externalLink={true}
     />,
   )
 
-  const button = screen.getByText('Delete Item')
+  const button = screen.getByText('Delete Account')
   expect(button).toBeInTheDocument()
 
   // The button should be rendered as a link when href is provided
@@ -183,28 +185,29 @@ test('passes through button props correctly', () => {
   expect(button.closest('a')).toHaveAttribute('target', '_blank')
 })
 
-test('uses custom confirmation labels', async () => {
+test('uses config-based confirmation labels', async () => {
   const onClickMock = mock(() => {})
 
   renderWithTheme(
     <DestructiveButton
-      label="Clear Data"
+      label="Clear API Key"
+      configId={DestructiveActionId.ClearApiKey}
       onClick={onClickMock}
-      confirmationTitle="Clear All Data"
-      confirmationMessage="This will remove everything"
-      confirmButtonLabel="Clear All"
-      cancelButtonLabel="Keep Data"
     />,
   )
 
-  const button = screen.getByText('Clear Data')
+  const button = screen.getByText('Clear API Key')
 
   await userEvent.click(button)
 
   await waitFor(() => {
-    expect(screen.getByText('Clear All Data')).toBeInTheDocument()
-    expect(screen.getByText('This will remove everything')).toBeInTheDocument()
-    expect(screen.getByText('Clear All')).toBeInTheDocument()
-    expect(screen.getByText('Keep Data')).toBeInTheDocument()
+    expect(screen.getByText('Clear API Key')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Are you sure you want to clear your OpenAI API key? You will need to enter it again to use structured todos.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Clear Key')).toBeInTheDocument()
+    expect(screen.getByText('Cancel')).toBeInTheDocument()
   })
 })

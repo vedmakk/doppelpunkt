@@ -610,7 +610,46 @@ The new system maintains full backward compatibility:
 
 ## Implementation Status
 
-🚧 **PLANNED** - Ready for implementation
+✅ **COMPLETED** - Fully implemented and tested
+
+### What was implemented:
+
+1. **Core Infrastructure**: Created `src/destructive-actions/` directory with:
+
+   - `types.ts` - DestructiveActionId enum and DestructiveActionConfig interface
+   - `config.ts` - Centralized configuration for all destructive actions
+   - `hooks/useDestructiveAction.ts` - Core hook for destructive action logic
+   - `hooks/useDestructiveHotkey.ts` - Hotkey-specific wrapper hook
+   - `index.ts` - Barrel exports for clean imports
+
+2. **Component Migration**:
+
+   - Moved `DestructiveButton` and `ConfirmationModal` to `src/destructive-actions/components/`
+   - Updated `DestructiveButton` to support both legacy props and new config-based approach
+   - Maintained full backward compatibility
+
+3. **Hotkey Integration**:
+
+   - Extended `HotkeyDefinition` interface with `destructive` property
+   - Updated hotkey registry to mark `NewDocument` and `OpenDocument` as destructive
+   - Created `useDestructiveHotkey` hook for consistent behavior
+
+4. **Component Updates**:
+
+   - Updated `ToolbarEditorSection` to use new config-based destructive buttons
+   - Added destructive hotkeys with confirmation modals
+   - Updated `SettingsModal` to use new config approach
+   - Updated all imports throughout codebase
+
+5. **Testing**:
+
+   - Created comprehensive tests for configuration and registry
+   - All existing tests continue to pass
+   - Added test coverage for new destructive action system
+
+6. **Documentation**:
+   - Updated Storybook stories with config-based examples
+   - Enhanced documentation with implementation details
 
 This design document provides a complete plan for extending the destructive actions system to cover keyboard shortcuts, ensuring consistent user experience across all interaction methods.
 

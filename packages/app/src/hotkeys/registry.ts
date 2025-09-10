@@ -10,12 +10,15 @@ export enum HotkeyScope {
   Editor = 'editor',
 }
 
+import { DestructiveActionId } from '../destructive-actions/types'
+
 export interface HotkeyDefinition {
   id: HotkeyId
   label: string
   description: string
   defaultKeys: string
   scope: HotkeyScope
+  destructive?: DestructiveActionId | false // New field: either false or destructive action ID
 }
 
 export const hotkeys: HotkeyDefinition[] = [
@@ -26,6 +29,7 @@ export const hotkeys: HotkeyDefinition[] = [
       'Toggle capturing the Tab key in the editor (insert tab vs. focus change).',
     defaultKeys: 'ctrl+shift+l',
     scope: HotkeyScope.Editor,
+    destructive: false,
   },
   {
     id: HotkeyId.NewDocument,
@@ -33,6 +37,7 @@ export const hotkeys: HotkeyDefinition[] = [
     description: 'Create a new document.',
     defaultKeys: 'ctrl+shift+n',
     scope: HotkeyScope.Editor,
+    destructive: DestructiveActionId.NewDocument,
   },
   {
     id: HotkeyId.OpenDocument,
@@ -40,6 +45,7 @@ export const hotkeys: HotkeyDefinition[] = [
     description: 'Open a document from the file system.',
     defaultKeys: 'ctrl+shift+o',
     scope: HotkeyScope.Editor,
+    destructive: DestructiveActionId.OpenDocument,
   },
   {
     id: HotkeyId.ToggleMenu,
@@ -47,6 +53,7 @@ export const hotkeys: HotkeyDefinition[] = [
     description: 'Toggle the editor menu.',
     defaultKeys: 'escape',
     scope: HotkeyScope.Global,
+    destructive: false,
   },
 ]
 

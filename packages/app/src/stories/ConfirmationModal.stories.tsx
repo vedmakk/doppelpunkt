@@ -1,5 +1,5 @@
 import React from 'react'
-import { ConfirmationModal } from '../app/components/ConfirmationModal'
+import { ConfirmationModal } from '../destructive-actions'
 import { Button } from '../app/components/Button'
 import { CommonStoryDecorator } from './CommonStoryDecorator'
 

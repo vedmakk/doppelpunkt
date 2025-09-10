@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import Modal from './Modal'
-import { Button } from './Button'
+import Modal from '../../app/components/Modal'
+import { Button } from '../../app/components/Button'
 
 interface ConfirmationModalProps {
   isOpen: boolean
