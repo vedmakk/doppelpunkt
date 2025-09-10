@@ -24,6 +24,7 @@ interface Props {
   ) => void
   onCopy: (e: React.ClipboardEvent<HTMLDivElement>) => void
   onBlur?: () => void
+  onFocus?: () => void
   containerRef: React.RefObject<HTMLDivElement | null>
 }
 
@@ -148,6 +149,7 @@ const MarkdownEditor: React.FC<Props> = ({
   onKeyDown,
   onCopy,
   onBlur,
+  onFocus,
   containerRef,
 }) => {
   const theme = useTheme()
@@ -185,6 +187,7 @@ const MarkdownEditor: React.FC<Props> = ({
           highlight={highlight}
           ignoreTabKey={!captureTab}
           onBlur={onBlur}
+          onFocus={onFocus}
         />
       </EditorContainer>
     </>

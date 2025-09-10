@@ -10,7 +10,10 @@ import { SettingsPage } from '../settingsSlice'
 import { HotkeysInfo } from '../../hotkeys/containers/HotkeysInfo'
 import { MutedLabel } from '../../menu/components/MutedLabel'
 import { Button } from '../../app/components/Button'
-import { DestructiveButton } from '../../app/components/DestructiveButton'
+import {
+  DestructiveButton,
+  DestructiveActionId,
+} from '../../destructive-actions'
 import { Label } from '../../app/components/Label'
 import { SyncStatusIndicator } from '../../shared/containers/SyncStatusIndicator'
 
@@ -271,11 +274,8 @@ export const SettingsModal: React.FC<Props> = ({
                             <Button label="Sign out" onClick={onSignOut} />
                             <DestructiveButton
                               label="Delete account"
+                              configId={DestructiveActionId.DeleteAccount}
                               onClick={onDeleteUser}
-                              confirmationTitle="Delete Account"
-                              confirmationMessage="Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data from our servers, including all your documents and settings."
-                              confirmButtonLabel="Delete Account"
-                              cancelButtonLabel="Cancel"
                             />
                           </SpaceBetweenRow>
                         </UserInfoContainer>
@@ -406,11 +406,8 @@ export const SettingsModal: React.FC<Props> = ({
                         {structuredTodosApiKeyIsSet && (
                           <DestructiveButton
                             label="Clear Key"
+                            configId={DestructiveActionId.ClearApiKey}
                             onClick={handleApiKeyClear}
-                            confirmationTitle="Clear API Key"
-                            confirmationMessage="Are you sure you want to clear your OpenAI API key? You will need to enter it again to use structured todos."
-                            confirmButtonLabel="Clear Key"
-                            cancelButtonLabel="Keep Key"
                           />
                         )}
                       </SpaceBetweenRow>

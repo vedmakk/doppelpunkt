@@ -3,12 +3,17 @@ export enum HotkeyId {
   ToggleMenu = 'toggleMenu',
   NewDocument = 'newDocument',
   OpenDocument = 'openDocument',
+  EditorMode = 'editorMode',
+  TodoMode = 'todoMode',
 }
 
 export enum HotkeyScope {
   Global = 'global',
   Editor = 'editor',
+  EditorUnfocused = 'editorUnfocused',
 }
+
+import { DestructiveActionId } from '../destructive-actions/types'
 
 export interface HotkeyDefinition {
   id: HotkeyId
@@ -16,6 +21,7 @@ export interface HotkeyDefinition {
   description: string
   defaultKeys: string
   scope: HotkeyScope
+  destructive?: DestructiveActionId | false // New field: either false or destructive action ID
 }
 
 export const hotkeys: HotkeyDefinition[] = [
@@ -26,6 +32,7 @@ export const hotkeys: HotkeyDefinition[] = [
       'Toggle capturing the Tab key in the editor (insert tab vs. focus change).',
     defaultKeys: 'ctrl+shift+l',
     scope: HotkeyScope.Editor,
+    destructive: false,
   },
   {
     id: HotkeyId.NewDocument,
@@ -33,6 +40,7 @@ export const hotkeys: HotkeyDefinition[] = [
     description: 'Create a new document.',
     defaultKeys: 'ctrl+shift+n',
     scope: HotkeyScope.Editor,
+    destructive: DestructiveActionId.NewDocument,
   },
   {
     id: HotkeyId.OpenDocument,
@@ -40,13 +48,31 @@ export const hotkeys: HotkeyDefinition[] = [
     description: 'Open a document from the file system.',
     defaultKeys: 'ctrl+shift+o',
     scope: HotkeyScope.Editor,
+    destructive: DestructiveActionId.OpenDocument,
   },
   {
     id: HotkeyId.ToggleMenu,
     label: 'Menu',
     description: 'Toggle the editor menu.',
-    defaultKeys: 'escape',
+    defaultKeys: 'ctrl+shift+m',
     scope: HotkeyScope.Global,
+    destructive: false,
+  },
+  {
+    id: HotkeyId.EditorMode,
+    label: 'Editor Mode',
+    description: 'Switch to editor mode.',
+    defaultKeys: 'e',
+    scope: HotkeyScope.EditorUnfocused,
+    destructive: false,
+  },
+  {
+    id: HotkeyId.TodoMode,
+    label: 'Todo Mode',
+    description: 'Switch to todo mode.',
+    defaultKeys: 't',
+    scope: HotkeyScope.EditorUnfocused,
+    destructive: false,
   },
 ]
 
