@@ -3,11 +3,14 @@ export enum HotkeyId {
   ToggleMenu = 'toggleMenu',
   NewDocument = 'newDocument',
   OpenDocument = 'openDocument',
+  EditorMode = 'editorMode',
+  TodoMode = 'todoMode',
 }
 
 export enum HotkeyScope {
   Global = 'global',
   Editor = 'editor',
+  EditorUnfocused = 'editorUnfocused',
 }
 
 import { DestructiveActionId } from '../destructive-actions/types'
@@ -51,8 +54,24 @@ export const hotkeys: HotkeyDefinition[] = [
     id: HotkeyId.ToggleMenu,
     label: 'Menu',
     description: 'Toggle the editor menu.',
-    defaultKeys: 'escape',
+    defaultKeys: 'ctrl+shift+m',
     scope: HotkeyScope.Global,
+    destructive: false,
+  },
+  {
+    id: HotkeyId.EditorMode,
+    label: 'Editor Mode',
+    description: 'Switch to editor mode.',
+    defaultKeys: 'e',
+    scope: HotkeyScope.EditorUnfocused,
+    destructive: false,
+  },
+  {
+    id: HotkeyId.TodoMode,
+    label: 'Todo Mode',
+    description: 'Switch to todo mode.',
+    defaultKeys: 't',
+    scope: HotkeyScope.EditorUnfocused,
     destructive: false,
   },
 ]

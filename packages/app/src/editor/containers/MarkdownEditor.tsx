@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useHotkeysContext } from 'react-hotkeys-hook'
 
 import { stripString } from '../utils/visualIndent'
 import { computeListEnter } from '../utils/computeListEnter'
@@ -9,8 +10,10 @@ import { useDispatch } from 'react-redux'
 import { useCaptureTabEnabled, useInjectedEditorText } from '../hooks'
 import { setText, setCaptureTab } from '../editorSlice'
 import { useWritingMode } from '../../mode/hooks'
+
+import { HotkeyId, HotkeyScope } from '../../hotkeys/registry'
 import { useCustomHotkey } from '../../hotkeys/hooks'
-import { HotkeyId } from '../../hotkeys/registry'
+
 import { flushDocumentSave } from '../../cloudsync/cloudSlice'
 import { usePageHideFlush } from '../../cloudsync/hooks'
 
@@ -23,6 +26,8 @@ const MarkdownEditor: React.FC = () => {
 
   const captureTab = useCaptureTabEnabled()
   const mode = useWritingMode()
+
+  const { enableScope, disableScope } = useHotkeysContext()
 
   const dispatch = useDispatch()
 
@@ -68,9 +73,14 @@ const MarkdownEditor: React.FC = () => {
 
   useCustomHotkey(HotkeyId.ToggleCaptureTab, toggleCaptureTab)
 
+  const handleFocus = useCallback(() => {
+    disableScope(HotkeyScope.EditorUnfocused)
+  }, [disableScope])
+
   const handleBlur = useCallback(() => {
     dispatch(flushDocumentSave({ mode }))
-  }, [dispatch, mode])
+    enableScope(HotkeyScope.EditorUnfocused)
+  }, [dispatch, mode, enableScope])
 
   // Handle custom list behaviours and Shift+Enter soft line breaks
   const handleKeyDown = useCallback(
@@ -232,6 +242,7 @@ const MarkdownEditor: React.FC = () => {
       onKeyDown={handleKeyDown}
       onCopy={handleCopy}
       onBlur={handleBlur}
+      onFocus={handleFocus}
       containerRef={containerRef}
     />
   )
