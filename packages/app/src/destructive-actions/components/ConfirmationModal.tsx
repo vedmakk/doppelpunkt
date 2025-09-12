@@ -31,11 +31,11 @@ const Actions = styled.div(({ theme }) => ({
 
 const DestructiveButton = styled(Button)(({ theme }) => ({
   '.button__label': {
-    color: theme.colors.todoPriorityHigh,
+    color: theme.colors.error,
   },
   '&:not(:disabled) .button__label:hover': {
-    color: theme.colors.todoPriorityHigh,
-    textDecorationColor: theme.colors.todoPriorityHigh,
+    color: theme.colors.error,
+    textDecorationColor: theme.colors.error,
   },
 }))
 

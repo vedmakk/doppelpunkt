@@ -141,7 +141,7 @@ const Input = styled.input(({ theme }) => ({
 
 const DisabledReasonText = styled.div(({ theme }) => ({
   fontSize: theme.fontSize.tiny,
-  color: theme.colors.todoPriorityHigh,
+  color: theme.colors.error,
   marginTop: theme.spacing(0.5),
   fontFamily: 'Fira Code, monospace',
 }))

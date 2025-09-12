@@ -35,11 +35,11 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
     const colorMap = {
       disabled: theme.colors.secondary,
       initializing: theme.colors.primary,
-      error: theme.colors.todoPriorityHigh,
+      error: theme.colors.error,
       disconnected: theme.colors.secondary,
       pending: theme.colors.primary,
       syncing: theme.colors.primary,
-      offline: theme.colors.todoPriorityMedium,
+      offline: theme.colors.warning,
       synced: theme.colors.primary,
     }
 

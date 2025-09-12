@@ -70,8 +70,8 @@ const StatusMessage = styled(MutedLabel)({})
 const ErrorMessage = styled(MutedLabel)(({ theme }) => ({
   padding: theme.spacing(1),
   borderRadius: '4px',
-  backgroundColor: `${theme.colors.todoPriorityHigh}10`,
-  color: theme.colors.todoPriorityHigh,
+  backgroundColor: `${theme.colors.error}10`,
+  color: theme.colors.error,
 }))
 
 const EmptyMessage = styled(MutedLabel)({

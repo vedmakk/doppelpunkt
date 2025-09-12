@@ -38,15 +38,15 @@ const PriorityBadge = styled(MutedLabel)<{ priority: string }>(
     fontWeight: 500,
     backgroundColor:
       priority === 'high'
-        ? `${theme.colors.todoPriorityHigh}20`
+        ? `${theme.colors.error}20`
         : priority === 'medium'
-          ? `${theme.colors.todoPriorityMedium}20`
+          ? `${theme.colors.warning}20`
           : theme.colors.backdrop,
     color:
       priority === 'high'
-        ? '#ff4444'
+        ? theme.colors.error
         : priority === 'medium'
-          ? '#ffaa00'
+          ? theme.colors.warning
           : theme.colors.secondary,
   }),
 )
@@ -91,7 +91,7 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
               css={(theme) => ({
                 color:
                   todo.due && todo.due <= new Date().setHours(0, 0, 0, 0)
-                    ? theme.colors.todoPriorityHigh
+                    ? theme.colors.error
                     : theme.colors.secondary,
               })}
             >

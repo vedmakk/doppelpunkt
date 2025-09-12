@@ -13,6 +13,7 @@ interface Props {
   externalLink?: boolean
   active?: boolean
   disabled?: boolean
+  className?: string
 }
 
 export const interactiveStyles = ({ theme }: { theme: Theme }) =>
@@ -88,6 +89,7 @@ export const Button: React.FC<Props> = ({
   externalLink = false,
   disabled = false,
   active = false,
+  className,
 }) => {
   const interactiveProps = href
     ? {
@@ -106,7 +108,7 @@ export const Button: React.FC<Props> = ({
 
   return (
     <Appear>
-      <StyledInteractive {...interactiveProps}>
+      <StyledInteractive {...interactiveProps} className={className}>
         <StyledLabel className="button__label" active={active}>
           {label}
         </StyledLabel>
