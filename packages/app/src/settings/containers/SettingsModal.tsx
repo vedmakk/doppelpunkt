@@ -23,9 +23,9 @@ import {
   setCloudEnabled,
 } from '../../cloudsync/cloudSlice'
 import { requestDeleteUser } from '../../cloudsync/cloudSlice'
-import { useStructuredTodos } from '../../structuredTodos/hooks'
+import { useStructuredTodos } from '../../structured-todos/hooks'
 import { useAppSelector } from '../../store'
-import { selectStructuredTodosDependencyStatus } from '../../structuredTodos/selectors'
+import { selectStructuredTodosDependencyStatus } from '../../structured-todos/selectors'
 
 const SettingsModal: React.FC = () => {
   const isOpen = useIsSettingsOpen()

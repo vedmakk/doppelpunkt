@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { TodoItem } from '../structuredTodos/components/TodoItem'
-import { StructuredTodo } from '../structuredTodos/types'
+import { TodoItem } from '../structured-todos/components/TodoItem'
+import { StructuredTodo } from '../structured-todos/types'
 import { CommonStoryDecorator } from './CommonStoryDecorator'
 
 export default {

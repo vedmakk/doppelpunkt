@@ -25,8 +25,8 @@ import {
 // Import our manager classes
 import { AuthManager } from './AuthManager'
 import { DocumentSyncManager } from './DocumentSyncManager'
-import { structuredTodosManager } from '../structuredTodos/persistenceMiddleware'
-import { clearAllStructuredTodosData } from '../structuredTodos/structuredTodosSlice'
+import { structuredTodosManager } from '../structured-todos/persistenceMiddleware'
+import { clearAllStructuredTodosData } from '../structured-todos/structuredTodosSlice'
 import { setText } from '../editor/editorSlice'
 import { safeLocalStorage } from '../shared/storage'
 

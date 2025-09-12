@@ -2,7 +2,7 @@ import React from 'react'
 
 import { SectionTitle } from './SectionTitle'
 import { SectionContainer } from './SectionContainer'
-import { StructuredTodosList } from '../../structuredTodos/containers/StructuredTodosList'
+import { StructuredTodosList } from '../../structured-todos/containers/StructuredTodosList'
 import { MutedLabel } from './MutedLabel'
 
 interface Props {

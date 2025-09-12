@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useStructuredTodos } from '../../structuredTodos/hooks'
+import { useStructuredTodos } from '../../structured-todos/hooks'
 
 import ToolbarTodoSectionComponent from '../components/ToolbarTodoSection'
 

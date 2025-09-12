@@ -21,11 +21,11 @@ import {
 } from './hotkeys/persistenceMiddleware'
 import { settingsReducer } from './settings/settingsSlice'
 import { modeReducer } from './mode/modeSlice'
-import { structuredTodosReducer } from './structuredTodos/structuredTodosSlice'
+import { structuredTodosReducer } from './structured-todos/structuredTodosSlice'
 import {
   structuredTodosListenerMiddleware,
   hydrateStructuredTodosStateFromStorage,
-} from './structuredTodos/persistenceMiddleware'
+} from './structured-todos/persistenceMiddleware'
 
 export const createStore = () =>
   configureStore({
