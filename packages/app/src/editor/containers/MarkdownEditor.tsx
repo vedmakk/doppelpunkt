@@ -117,18 +117,19 @@ const MarkdownEditor: React.FC = () => {
     [handleContentChange],
   )
 
-  const focusEditor = useCallback(() => {
-    if (containerRef.current) {
-      const textarea = getTextarea()
-      if (textarea) {
-        ;(textarea as HTMLTextAreaElement).focus()
+  // Use this to focus the editor if needed
+  // const focusEditor = useCallback(() => {
+  //   if (containerRef.current) {
+  //     const textarea = getTextarea()
+  //     if (textarea) {
+  //       ;(textarea as HTMLTextAreaElement).focus()
 
-        // Move cursor to the end
-        const len = (textarea as HTMLTextAreaElement).value.length
-        ;(textarea as HTMLTextAreaElement).setSelectionRange(len, len)
-      }
-    }
-  }, [containerRef])
+  //       // Move cursor to the end
+  //       const len = (textarea as HTMLTextAreaElement).value.length
+  //       ;(textarea as HTMLTextAreaElement).setSelectionRange(len, len)
+  //     }
+  //   }
+  // }, [containerRef])
 
   const handleCopy = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -221,18 +222,6 @@ const MarkdownEditor: React.FC = () => {
       })
     }
   }, [injectedCursorPos])
-
-  // Focus the editor initially
-  useEffect(() => {
-    focusEditor()
-  }, [focusEditor])
-
-  // Focus the editor when a new file is created
-  useEffect(() => {
-    if (injectedValue === '') {
-      focusEditor()
-    }
-  }, [injectedValue, focusEditor])
 
   return (
     <MarkdownEditorComponent

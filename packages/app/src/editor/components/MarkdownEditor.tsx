@@ -188,6 +188,7 @@ const MarkdownEditor: React.FC<Props> = ({
           ignoreTabKey={!captureTab}
           onBlur={onBlur}
           onFocus={onFocus}
+          placeholder="Write markdown..."
         />
       </EditorContainer>
     </>

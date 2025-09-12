@@ -21,7 +21,11 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <HotkeysProvider
-        initiallyActiveScopes={[HotkeyScope.Global, HotkeyScope.Editor]}
+        initiallyActiveScopes={[
+          HotkeyScope.Global,
+          HotkeyScope.Editor,
+          HotkeyScope.EditorUnfocused,
+        ]}
       >
         <App />
       </HotkeysProvider>
