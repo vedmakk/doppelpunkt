@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useHotkeysContext } from 'react-hotkeys-hook'
 
 import { stripString } from '../utils/visualIndent'
@@ -214,12 +220,10 @@ const MarkdownEditor: React.FC = () => {
   }, [])
 
   // Restore caret position once we've injected visual indents
-  useEffect(() => {
+  useLayoutEffect(() => {
     const textarea = getTextarea()
     if (textarea) {
-      requestAnimationFrame(() => {
-        textarea.setSelectionRange(injectedCursorPos, injectedCursorPos)
-      })
+      textarea.setSelectionRange(injectedCursorPos, injectedCursorPos)
     }
   }, [injectedCursorPos])
 
