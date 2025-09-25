@@ -96,6 +96,14 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
     color: theme.colors.text,
     fontWeight: 'bold',
   },
+  // Code block backgrounds - make span behave like block
+  '& .token.code-block': {
+    display: 'inline-block',
+    background: theme.colors.paper,
+    borderRadius: theme.spacing(0.5),
+    width: '100%',
+    boxSizing: 'border-box',
+  },
   '& .token.code-snippet': {
     color: theme.colors.primary,
     background: theme.colors.paper,
