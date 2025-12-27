@@ -110,6 +110,34 @@ structuredTodosListenerMiddleware.startListening({
   },
 })
 
+// Listen for setStructuredTodos and sync to Firestore (only for non-cloud updates)
+structuredTodosListenerMiddleware.startListening({
+  matcher: isAnyOf(setStructuredTodos),
+  effect: async (action, listenerApi) => {
+    // Skip if this update came from cloud
+    if ((action as any)?.meta?.fromCloud) {
+      return
+    }
+
+    const state: any = listenerApi.getState()
+    const cloudUser = state.cloud?.user
+
+    if (!cloudUser || !state.cloud?.enabled) {
+      return
+    }
+
+    try {
+      // Save todos to Firestore
+      await structuredTodosManager.saveTodosData(cloudUser.uid, {
+        todos: state.structuredTodos.todos,
+        contentHash: state.structuredTodos.lastProcessedContentHash,
+      })
+    } catch (error) {
+      console.error('Failed to sync structured todos to Firestore:', error)
+    }
+  },
+})
+
 // Listen for settings changes and sync to Firestore
 structuredTodosListenerMiddleware.startListening({
   matcher: isAnyOf(setStructuredTodosEnabled, setApiKey, clearApiKey),
@@ -234,14 +262,16 @@ structuredTodosListenerMiddleware.startListening({
     }
 
     // Check if we even need to process (same content hash)
+    let currentHash: string
     try {
-      const currentHash = await generateContentHash(todoText)
+      currentHash = await generateContentHash(todoText)
       if (currentHash === lastHash) {
         // Content hasn't changed, skip processing
         return
       }
     } catch {
       // Continue with processing if hash check fails
+      currentHash = ''
     }
 
     // Debounce the processing call
@@ -256,8 +286,40 @@ structuredTodosListenerMiddleware.startListening({
       if (currentState.cloud?.status !== 'connected') {
         return
       }
+      const cloudUser = currentState.cloud?.user
+      if (!cloudUser) {
+        return
+      }
 
       const currentTodoText = currentState.editor?.documents?.todo?.text ?? ''
+
+      // Re-compute hash after debounce
+      let finalHash: string
+      try {
+        finalHash = await generateContentHash(currentTodoText)
+      } catch {
+        finalHash = ''
+      }
+
+      // Check if Firestore already has data with this hash
+      // (another client may have already processed it)
+      try {
+        const cloudData = await structuredTodosManager.loadTodosData(
+          cloudUser.uid,
+        )
+        if (cloudData && cloudData.contentHash === finalHash) {
+          // Cloud already has the latest data, use it instead of calling the function
+          listenerApi.dispatch(
+            setStructuredTodos({
+              todos: cloudData.todos,
+              contentHash: cloudData.contentHash,
+            }),
+          )
+          return
+        }
+      } catch {
+        // Continue with processing if cloud check fails
+      }
 
       try {
         listenerApi.dispatch(setProcessing(true))

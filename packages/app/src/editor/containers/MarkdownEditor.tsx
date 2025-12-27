@@ -20,9 +20,6 @@ import { useWritingMode } from '../../mode/hooks'
 import { HotkeyId, HotkeyScope } from '../../hotkeys/registry'
 import { useCustomHotkey } from '../../hotkeys/hooks'
 
-import { flushDocumentSave } from '../../cloudsync/cloudSlice'
-import { usePageHideFlush } from '../../cloudsync/hooks'
-
 import MarkdownEditorComponent from '../components/MarkdownEditor'
 
 const MarkdownEditor: React.FC = () => {
@@ -36,9 +33,6 @@ const MarkdownEditor: React.FC = () => {
   const { enableScope, disableScope } = useHotkeysContext()
 
   const dispatch = useDispatch()
-
-  // Register pagehide event listener
-  usePageHideFlush()
 
   const { text: injectedValue, cursorPos: injectedCursorPos } =
     useInjectedEditorText(charsPerLine)
@@ -84,9 +78,8 @@ const MarkdownEditor: React.FC = () => {
   }, [disableScope])
 
   const handleBlur = useCallback(() => {
-    dispatch(flushDocumentSave({ mode }))
     enableScope(HotkeyScope.EditorUnfocused)
-  }, [dispatch, mode, enableScope])
+  }, [enableScope])
 
   // Handle custom list behaviours and Shift+Enter soft line breaks
   const handleKeyDown = useCallback(

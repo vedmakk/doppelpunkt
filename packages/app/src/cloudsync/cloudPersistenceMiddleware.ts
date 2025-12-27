@@ -18,8 +18,6 @@ import {
   setCloudUser,
   setTextFromCloud,
   appInitialized,
-  flushDocumentSave,
-  flushAllDocumentSaves,
 } from './cloudSlice'
 
 // Import our manager classes
@@ -230,7 +228,7 @@ cloudListenerMiddleware.startListening({
 
 // === Document Change Listeners ===
 
-// Handle editor document changes
+// Handle editor document changes - save immediately
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
@@ -254,14 +252,15 @@ cloudListenerMiddleware.startListening({
     )
   },
   effect: async (_action, api) => {
-    log('scheduleDocumentSave for editor', _action)
+    log('saveDocumentNow for editor', _action)
     const state: any = api.getState()
 
     if (!isCloudSyncReady(state)) return
 
     const userId = state.cloud.user.uid
 
-    documentSyncManager.scheduleDocumentSave(
+    // Save immediately - no debounce
+    documentSyncManager.saveDocumentNow(
       userId,
       'editor',
       api.getState,
@@ -270,7 +269,7 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-// Handle todo document changes
+// Handle todo document changes - save immediately
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
@@ -293,48 +292,20 @@ cloudListenerMiddleware.startListening({
     )
   },
   effect: async (_action, api) => {
-    log('scheduleDocumentSave for todo', _action)
+    log('saveDocumentNow for todo', _action)
     const state: any = api.getState()
 
     if (!isCloudSyncReady(state)) return
 
     const userId = state.cloud.user.uid
 
-    documentSyncManager.scheduleDocumentSave(
+    // Save immediately - no debounce
+    documentSyncManager.saveDocumentNow(
       userId,
       'todo',
       api.getState,
       api.dispatch,
     )
-  },
-})
-
-// Centralized flush handler for all lifecycle events
-cloudListenerMiddleware.startListening({
-  matcher: isAnyOf(flushDocumentSave, flushAllDocumentSaves),
-  effect: async (action, api) => {
-    const state: any = api.getState()
-
-    if (!isCloudSyncReady(state)) return
-
-    const userId = state.cloud.user.uid
-
-    if (action.type === flushDocumentSave.type) {
-      const { mode } = (action as any).payload
-      documentSyncManager.flushPendingSave(
-        userId,
-        mode,
-        api.getState,
-        api.dispatch,
-      )
-    } else {
-      // flushAllDocumentSaves
-      documentSyncManager.flushAllPendingSaves(
-        userId,
-        api.getState,
-        api.dispatch,
-      )
-    }
   },
 })
 

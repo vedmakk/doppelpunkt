@@ -3,6 +3,7 @@ import { StructuredTodosManager } from './StructuredTodosManager'
 import {
   setStructuredTodosEnabled,
   setApiKeyIsSet,
+  setStructuredTodos,
 } from './structuredTodosSlice'
 import { StructuredTodosSettings } from './types'
 import {
@@ -71,19 +72,86 @@ describe('StructuredTodosManager', () => {
     })
   })
 
+  describe('saveTodosData', () => {
+    it('should save todos data to Firestore', async () => {
+      const mockTodosRef = { id: 'todos-ref' }
+      mockDoc.mockReturnValue(mockTodosRef)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      const data = {
+        todos: [{ id: 'todo-1', description: 'Test todo' }],
+        contentHash: 'abc123',
+      }
+
+      await manager.saveTodosData(userId, data)
+
+      expect(mockDoc).toHaveBeenCalledWith(
+        mockDb,
+        `users/${userId}/structuredTodos/data`,
+      )
+      expect(mockSetDoc).toHaveBeenCalledWith(
+        mockTodosRef,
+        expect.objectContaining({
+          todos: data.todos,
+          contentHash: data.contentHash,
+          updatedAt: expect.any(Number),
+        }),
+      )
+    })
+  })
+
+  describe('loadTodosData', () => {
+    it('should load todos data from Firestore', async () => {
+      const mockTodosRef = { id: 'todos-ref' }
+      mockDoc.mockReturnValue(mockTodosRef)
+
+      const mockData = {
+        todos: [{ id: 'todo-1', description: 'Test todo' }],
+        contentHash: 'abc123',
+        updatedAt: Date.now(),
+      }
+      mockGetDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => mockData,
+      } as any)
+
+      const result = await manager.loadTodosData(userId)
+
+      expect(result).toEqual(mockData)
+    })
+
+    it('should return null when no data exists', async () => {
+      mockDoc.mockReturnValue({ id: 'todos-ref' })
+      mockGetDoc.mockResolvedValue({
+        exists: () => false,
+        data: () => undefined,
+      } as any)
+
+      const result = await manager.loadTodosData(userId)
+
+      expect(result).toBeNull()
+    })
+  })
+
   describe('startListening', () => {
-    it('should set up listener for settings only', async () => {
+    it('should set up listeners for settings and todos', async () => {
       const mockSettingsRef = { id: 'settings-ref' }
+      const mockTodosRef = { id: 'todos-ref' }
       const mockSettingsSnapshot = {
         exists: () => true,
         data: () => ({ enabled: true, apiKey: 'test-key' }),
       }
 
-      mockDoc.mockReturnValue(mockSettingsRef)
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef)
+        .mockReturnValueOnce(mockTodosRef)
       mockGetDoc.mockResolvedValue(mockSettingsSnapshot as any)
 
       const mockSettingsUnsubscribe = mock(() => {})
-      mockOnSnapshot.mockReturnValue(mockSettingsUnsubscribe)
+      const mockTodosUnsubscribe = mock(() => {})
+      mockOnSnapshot
+        .mockReturnValueOnce(mockSettingsUnsubscribe)
+        .mockReturnValueOnce(mockTodosUnsubscribe)
 
       await manager.startListening(userId, mockDispatch)
 
@@ -92,8 +160,8 @@ describe('StructuredTodosManager', () => {
       expect(mockDispatch).toHaveBeenCalledWith(setStructuredTodosEnabled(true))
       expect(mockDispatch).toHaveBeenCalledWith(setApiKeyIsSet(true))
 
-      // Verify only settings listener is set up (not todos - that's handled by callable now)
-      expect(mockOnSnapshot).toHaveBeenCalledTimes(1)
+      // Verify both listeners are set up (settings + todos)
+      expect(mockOnSnapshot).toHaveBeenCalledTimes(2)
     })
 
     it('should handle settings without initial data', async () => {
@@ -104,8 +172,8 @@ describe('StructuredTodosManager', () => {
 
       await manager.startListening(userId, mockDispatch)
 
-      // Only settings listener should be set up
-      expect(mockOnSnapshot).toHaveBeenCalledTimes(1)
+      // Both listeners should still be set up
+      expect(mockOnSnapshot).toHaveBeenCalledTimes(2)
     })
 
     it('should dispatch apiKeyIsSet false when no API key', async () => {
@@ -119,13 +187,62 @@ describe('StructuredTodosManager', () => {
 
       expect(mockDispatch).toHaveBeenCalledWith(setApiKeyIsSet(false))
     })
+
+    it('should dispatch setStructuredTodos when receiving todos from cloud', async () => {
+      const mockSettingsRef = { id: 'settings-ref' }
+      const mockTodosRef = { id: 'todos-ref' }
+      let todosSnapshotCallback: any
+
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef)
+        .mockReturnValueOnce(mockTodosRef)
+
+      const mockSettingsUnsubscribe = mock(() => {})
+      const mockTodosUnsubscribe = mock(() => {})
+      mockOnSnapshot
+        .mockImplementationOnce(() => mockSettingsUnsubscribe)
+        .mockImplementationOnce((ref: any, callback: any) => {
+          todosSnapshotCallback = callback
+          return mockTodosUnsubscribe
+        })
+
+      await manager.startListening(userId, mockDispatch)
+
+      // Simulate receiving todos from cloud
+      const cloudTodos = {
+        todos: [{ id: 'todo-1', description: 'Cloud todo' }],
+        contentHash: 'cloud-hash-123',
+      }
+
+      todosSnapshotCallback({
+        exists: () => true,
+        data: () => cloudTodos,
+      })
+
+      // Should dispatch setStructuredTodos with cloud data
+      const dispatchCalls = mockDispatch.mock.calls as any[][]
+      const setTodosCall = dispatchCalls.find(
+        (call) => call[0]?.type === setStructuredTodos.type,
+      )
+
+      expect(setTodosCall).toBeDefined()
+      expect(setTodosCall![0].payload).toEqual({
+        todos: cloudTodos.todos,
+        contentHash: cloudTodos.contentHash,
+      })
+      // Should have fromCloud metadata
+      expect(setTodosCall![0].meta?.fromCloud).toBe(true)
+    })
   })
 
   describe('stopListening', () => {
-    it('should unsubscribe from settings listener', async () => {
-      const mockUnsubscribe = mock(() => {})
+    it('should unsubscribe from all listeners', async () => {
+      const mockUnsubscribe1 = mock(() => {})
+      const mockUnsubscribe2 = mock(() => {})
 
-      mockOnSnapshot.mockReturnValue(mockUnsubscribe)
+      mockOnSnapshot
+        .mockReturnValueOnce(mockUnsubscribe1)
+        .mockReturnValueOnce(mockUnsubscribe2)
 
       mockGetDoc.mockResolvedValue({
         exists: () => false,
@@ -135,7 +252,8 @@ describe('StructuredTodosManager', () => {
       await manager.startListening(userId, mockDispatch)
       manager.stopListening()
 
-      expect(mockUnsubscribe).toHaveBeenCalled()
+      expect(mockUnsubscribe1).toHaveBeenCalled()
+      expect(mockUnsubscribe2).toHaveBeenCalled()
     })
 
     it('should handle multiple calls gracefully', () => {
@@ -147,9 +265,12 @@ describe('StructuredTodosManager', () => {
   })
 
   describe('deleteUserData', () => {
-    it('should delete settings document', async () => {
+    it('should delete both settings and todos documents', async () => {
       const mockSettingsRef = { id: 'settings-ref' }
-      mockDoc.mockReturnValue(mockSettingsRef)
+      const mockTodosRef = { id: 'todos-ref' }
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef)
+        .mockReturnValueOnce(mockTodosRef)
       mockDeleteDoc.mockResolvedValue(undefined)
 
       await manager.deleteUserData(userId)
@@ -158,7 +279,11 @@ describe('StructuredTodosManager', () => {
         mockDb,
         `users/${userId}/settings/structuredTodos`,
       )
-      expect(mockDeleteDoc).toHaveBeenCalledWith(mockSettingsRef)
+      expect(mockDoc).toHaveBeenCalledWith(
+        mockDb,
+        `users/${userId}/structuredTodos/data`,
+      )
+      expect(mockDeleteDoc).toHaveBeenCalledTimes(2)
     })
 
     it('should handle deletion errors gracefully', async () => {

@@ -1,5 +1,5 @@
 // Document synchronization management for cloud sync
-// Handles real-time document sync with last-write-wins and debounced saves
+// Handles real-time document sync with last-write-wins
 
 import debug from 'debug'
 
@@ -22,10 +22,6 @@ const log = debug('DocumentSyncManager')
 
 export class DocumentSyncManager {
   private documentListeners: Partial<Record<WritingMode, () => void>> = {}
-  private saveTimers: Partial<
-    Record<WritingMode, ReturnType<typeof globalThis.setTimeout>>
-  > = {}
-  private readonly SAVE_DEBOUNCE_MS = 5000
 
   startListening(
     userId: string,
@@ -80,10 +76,9 @@ export class DocumentSyncManager {
       if (unsubscribe) unsubscribe()
     })
     this.documentListeners = {}
-    this.clearAllSaveTimers()
   }
 
-  private async executeSave(
+  async saveDocumentNow(
     userId: string,
     mode: WritingMode,
     getState: () => any,
@@ -98,49 +93,6 @@ export class DocumentSyncManager {
     } catch {
       dispatch(setCloudError('Failed to write to cloud'))
     }
-  }
-
-  scheduleDocumentSave(
-    userId: string,
-    mode: WritingMode,
-    getState: () => any,
-    dispatch: (action: any) => void,
-  ): void {
-    if (this.saveTimers[mode]) {
-      globalThis.clearTimeout(this.saveTimers[mode])
-    }
-
-    this.saveTimers[mode] = globalThis.setTimeout(() => {
-      this.executeSave(userId, mode, getState, dispatch)
-    }, this.SAVE_DEBOUNCE_MS)
-  }
-
-  flushPendingSave(
-    userId: string,
-    mode: WritingMode,
-    getState: () => any,
-    dispatch: (action: any) => void,
-  ): void {
-    const timer = this.saveTimers[mode]
-    if (!timer) return
-
-    // Clear the timer and execute immediately
-    globalThis.clearTimeout(timer)
-    delete this.saveTimers[mode]
-
-    // Execute save immediately (fire-and-forget for lifecycle events)
-    this.executeSave(userId, mode, getState, dispatch)
-  }
-
-  flushAllPendingSaves(
-    userId: string,
-    getState: () => any,
-    dispatch: (action: any) => void,
-  ): void {
-    const modes: WritingMode[] = ['editor', 'todo']
-    modes.forEach((mode) => {
-      this.flushPendingSave(userId, mode, getState, dispatch)
-    })
   }
 
   async initialSync(userId: string, getState: () => any): Promise<void> {
@@ -186,12 +138,5 @@ export class DocumentSyncManager {
 
     const userDocRef = doc(db, 'users', userId)
     await deleteDoc(userDocRef)
-  }
-
-  private clearAllSaveTimers(): void {
-    Object.values(this.saveTimers).forEach((timer) => {
-      if (timer) globalThis.clearTimeout(timer)
-    })
-    this.saveTimers = {}
   }
 }

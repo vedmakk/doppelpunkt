@@ -302,7 +302,7 @@ describe('DocumentSyncManager', () => {
   })
 
   describe('stopListening', () => {
-    it('should unsubscribe all listeners and clear save timers', () => {
+    it('should unsubscribe all listeners', () => {
       const userId = 'test-user'
       const mockUnsubscribe1 = mock(() => {})
       const mockUnsubscribe2 = mock(() => {})
@@ -321,81 +321,18 @@ describe('DocumentSyncManager', () => {
     it('should be safe to call when no listeners are active', () => {
       expect(() => syncManager.stopListening()).not.toThrow()
     })
-
-    it('should clear pending save timers', () => {
-      const userId = 'test-user'
-
-      // Set up a timer by scheduling a save
-      syncManager.scheduleDocumentSave(
-        userId,
-        'editor',
-        mockGetState,
-        mockDispatch,
-      )
-
-      // Stop listening should clear the timer
-      syncManager.stopListening()
-
-      // Timer should be cleared (we can't easily test this directly, but it shouldn't throw)
-      expect(() => syncManager.stopListening()).not.toThrow()
-    })
   })
 
-  describe('scheduleDocumentSave', () => {
-    let originalSetTimeout: typeof globalThis.setTimeout
-    let originalClearTimeout: typeof globalThis.clearTimeout
-    let timerCallbacks: (() => void)[]
-    let timerIdCounter = 123
-
-    beforeEach(() => {
-      originalSetTimeout = globalThis.setTimeout
-      originalClearTimeout = globalThis.clearTimeout
-      timerCallbacks = []
-      timerIdCounter = 123
-
-      globalThis.setTimeout = mock((callback: () => void) => {
-        timerCallbacks.push(callback)
-        return timerIdCounter++
-      }) as any
-      globalThis.clearTimeout = mock(() => {}) as any
-    })
-
-    afterEach(() => {
-      globalThis.setTimeout = originalSetTimeout
-      globalThis.clearTimeout = originalClearTimeout
-    })
-
-    it('should debounce multiple save requests', () => {
-      const userId = 'test-user'
-
-      syncManager.scheduleDocumentSave(
-        userId,
-        'editor',
-        mockGetState,
-        mockDispatch,
-      )
-      syncManager.scheduleDocumentSave(
-        userId,
-        'editor',
-        mockGetState,
-        mockDispatch,
-      )
-
-      expect(globalThis.clearTimeout).toHaveBeenCalled()
-    })
-
+  describe('saveDocumentNow', () => {
     it('should call saveDocument with correct parameters', async () => {
       const userId = 'test-user'
 
-      syncManager.scheduleDocumentSave(
+      await syncManager.saveDocumentNow(
         userId,
         'editor',
         mockGetState,
         mockDispatch,
       )
-
-      // Execute the timer callback
-      await timerCallbacks[0]()
 
       expect(mockSaveDocument).toHaveBeenCalledWith(
         userId,
@@ -412,15 +349,12 @@ describe('DocumentSyncManager', () => {
         throw new Error('Save failed')
       })
 
-      syncManager.scheduleDocumentSave(
+      await syncManager.saveDocumentNow(
         userId,
         'editor',
         mockGetState,
         mockDispatch,
       )
-
-      // Execute the timer callback
-      await timerCallbacks[0]()
 
       // Restore original implementation
       mockSaveDocument.mockImplementation(() => Promise.resolve())
@@ -435,17 +369,31 @@ describe('DocumentSyncManager', () => {
 
       mockSaveDocument.mockResolvedValueOnce(undefined)
 
-      syncManager.scheduleDocumentSave(
+      await syncManager.saveDocumentNow(
         userId,
         'editor',
         mockGetState,
         mockDispatch,
       )
 
-      // Execute the timer callback
-      await timerCallbacks[0]()
-
       expect(mockDispatch).toHaveBeenCalledWith(mockSetCloudError(undefined))
+    })
+
+    it('should save todo document correctly', async () => {
+      const userId = 'test-user'
+
+      await syncManager.saveDocumentNow(
+        userId,
+        'todo',
+        mockGetState,
+        mockDispatch,
+      )
+
+      expect(mockSaveDocument).toHaveBeenCalledWith(
+        userId,
+        'todo',
+        'local todo text',
+      )
     })
   })
 
@@ -573,7 +521,7 @@ describe('DocumentSyncManager', () => {
   })
 
   describe('integration scenarios', () => {
-    it('should handle rapid successive operations', () => {
+    it('should handle rapid successive operations', async () => {
       const userId = 'test-user'
 
       // Start and stop multiple times
@@ -581,20 +529,14 @@ describe('DocumentSyncManager', () => {
       syncManager.stopListening()
       syncManager.startListening(userId, mockGetState, mockDispatch)
 
-      // Schedule multiple saves rapidly
-      syncManager.scheduleDocumentSave(
+      // Save multiple documents
+      await syncManager.saveDocumentNow(
         userId,
         'editor',
         mockGetState,
         mockDispatch,
       )
-      syncManager.scheduleDocumentSave(
-        userId,
-        'editor',
-        mockGetState,
-        mockDispatch,
-      )
-      syncManager.scheduleDocumentSave(
+      await syncManager.saveDocumentNow(
         userId,
         'todo',
         mockGetState,
@@ -604,7 +546,7 @@ describe('DocumentSyncManager', () => {
       syncManager.stopListening()
 
       // Should handle all operations without errors
-      expect(() => {}).not.toThrow()
+      expect(mockSaveDocument).toHaveBeenCalledTimes(2)
     })
   })
 })
