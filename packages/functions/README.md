@@ -4,19 +4,18 @@ A collection of firebase functions used in the doppelpunkt app.
 
 ## Available Functions
 
-### `processTodoDocument`
+### `processTodos`
 
-**Type:** Firestore Trigger  
-**Path:** `users/{userId}/doc/todo`  
-**Purpose:** Processes todo documents to extract structured todos using OpenAI's API.
+**Type:** HTTP Callable
+**Purpose:** Processes todo text to extract structured todos using OpenAI's API.
 
 This function:
 
-- Triggers when a todo document is created or updated
+- Called by the client when todo text changes (with 3s debounce)
 - Checks if structured todos are enabled for the user
-- Uses the user's OpenAI API key to process the text
+- Uses the user's OpenAI API key from Firestore settings
 - Extracts tasks with descriptions, due dates, and priorities
-- Writes the structured todos back to Firestore
+- Returns structured todos and content hash to the client
 
 ## Development
 

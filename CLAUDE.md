@@ -47,7 +47,7 @@ VITE_USE_FIREBASE_EMULATOR=true bun run --filter app dev
 The app uses Redux Toolkit with feature-based slices in `packages/app/src/`:
 
 - `editor/editorSlice.ts` - Document text, cursor position, auto-save settings. Text changes go through sanitization middleware before storage.
-- `cloudsync/cloudSlice.ts` - Cloud sync state, auth status, per-document sync metadata with optimistic concurrency (baseRev/baseText)
+- `cloudsync/cloudSlice.ts` - Cloud sync state, auth status, per-document sync metadata (hasPendingWrites, fromCache)
 - `mode/modeSlice.ts` - Writing mode toggle (editor vs todo document)
 - `theme/themeSlice.ts` - Light/dark theme
 - `settings/settingsSlice.ts` - General settings
@@ -66,11 +66,11 @@ Text changes follow this flow:
 
 ### Cloud Sync
 
-Firebase integration is lazily loaded when enabled. Uses Firestore with optimistic concurrency via revision numbers. Auth supports Google sign-in. Documents synced: `users/{userId}/doc/editor` and `users/{userId}/doc/todo`.
+Firebase integration is lazily loaded when enabled. Uses Firestore with last-write-wins semantics (immediate saves, no conflict resolution). Auth supports Google sign-in. Documents synced: `users/{userId}/doc/editor` and `users/{userId}/doc/todo`. Sync status UI shows 4 states: disabled, connected, pending (has pending writes), disconnected.
 
 ### Cloud Functions
 
-`processTodoDocument` triggers on todo document writes, uses OpenAI to extract structured todos when user has feature enabled with API key stored in `users/{userId}/settings/structuredTodos`.
+`processTodos` is an HTTP callable function that extracts structured todos using OpenAI. The client calls it with debounced todo text changes (3s). Settings and API key stored in `users/{userId}/settings/structuredTodos`. Extracted todos + content hash synced to `users/{userId}/structuredTodos/data` to avoid redundant processing across clients.
 
 ## Testing
 
