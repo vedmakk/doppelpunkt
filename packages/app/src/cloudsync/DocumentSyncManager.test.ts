@@ -4,13 +4,7 @@ import type { WritingMode } from '../mode/modeSlice'
 import { mockDeleteDoc, clearAllFirebaseMocks } from '../test/firebase-mocks'
 
 // Mock document persistence functions
-const mockSaveDocumentWithConflictResolution = mock(() =>
-  Promise.resolve({
-    newRevision: 2,
-    finalText: 'merged text',
-    wasConflicted: false,
-  }),
-)
+const mockSaveDocument = mock(() => Promise.resolve())
 
 const mockDeleteDocument = mock(() => Promise.resolve())
 
@@ -22,23 +16,9 @@ const mockGetDocumentPath = mock(
   (userId: string, mode: WritingMode) => `users/${userId}/doc/${mode}`,
 )
 
-// We don't mock conflict resolution for DocumentSyncManager tests - we want to test the integration
-
 // Mock Redux actions
-const mockSetText = mock((payload: any) => ({
-  type: 'editor/setText',
-  payload,
-}))
 const mockSetCloudError = mock((payload: any) => ({
   type: 'cloud/setCloudError',
-  payload,
-}))
-const mockSetCloudIsUploading = mock((payload: any) => ({
-  type: 'cloud/setCloudIsUploading',
-  payload,
-}))
-const mockSetCloudDocBase = mock((payload: any) => ({
-  type: 'cloud/setCloudDocBase',
   payload,
 }))
 const mockSetCloudDocSnapshotMeta = mock((payload: any) => ({
@@ -53,24 +33,15 @@ const mockSetTextFromCloud = mock((payload: any) => ({
 // Mock modules (Firebase mocks are already set up globally)
 
 mock.module('./documentPersistence', () => ({
-  saveDocumentWithConflictResolution: mockSaveDocumentWithConflictResolution,
+  saveDocument: mockSaveDocument,
   deleteDocument: mockDeleteDocument,
   loadDocument: mockLoadDocument,
   listenToDocument: mockListenToDocument,
   getDocumentPath: mockGetDocumentPath,
 }))
 
-// Don't mock conflict resolution for DocumentSyncManager tests - we want to test the integration
-// The conflict resolution itself is tested separately in conflictResolution.test.ts
-
-mock.module('../editor/editorSlice', () => ({
-  setText: mockSetText,
-}))
-
 mock.module('./cloudSlice', () => ({
   setCloudError: mockSetCloudError,
-  setCloudIsUploading: mockSetCloudIsUploading,
-  setCloudDocBase: mockSetCloudDocBase,
   setCloudDocSnapshotMeta: mockSetCloudDocSnapshotMeta,
   setTextFromCloud: mockSetTextFromCloud,
 }))
@@ -89,8 +60,8 @@ describe('DocumentSyncManager', () => {
     },
     cloud: {
       docs: {
-        editor: { baseRev: 1, baseText: 'base editor text' },
-        todo: { baseRev: 1, baseText: 'base todo text' },
+        editor: { hasPendingWrites: false, fromCache: false },
+        todo: { hasPendingWrites: false, fromCache: false },
       },
     },
   }
@@ -102,15 +73,12 @@ describe('DocumentSyncManager', () => {
 
     // Clear all mocks
     clearAllFirebaseMocks()
-    mockSaveDocumentWithConflictResolution.mockClear()
+    mockSaveDocument.mockClear()
     mockDeleteDocument.mockClear()
     mockLoadDocument.mockClear()
     mockListenToDocument.mockClear()
     mockGetDocumentPath.mockClear()
-    mockSetText.mockClear()
     mockSetCloudError.mockClear()
-    mockSetCloudIsUploading.mockClear()
-    mockSetCloudDocBase.mockClear()
     mockSetCloudDocSnapshotMeta.mockClear()
     mockSetTextFromCloud.mockClear()
     mockDispatch.mockClear()
@@ -170,21 +138,9 @@ describe('DocumentSyncManager', () => {
       expect(mockUnsubscribe2).toHaveBeenCalled()
     })
 
-    it('should handle document updates without conflicts', () => {
+    it('should handle document updates and apply remote text when different', () => {
       const userId = 'test-user'
       let onUpdateCallback: any
-
-      // Set up state where local text matches base (no local changes)
-      const stateWithoutLocalChanges = {
-        ...mockState,
-        editor: {
-          documents: {
-            editor: { text: 'base editor text', cursorPos: 10 },
-            todo: { text: 'base todo text', cursorPos: 5 },
-          },
-        },
-      }
-      mockGetState.mockReturnValue(stateWithoutLocalChanges)
 
       mockListenToDocument.mockImplementation(
         (userId: any, mode: any, callback: any) => {
@@ -197,10 +153,9 @@ describe('DocumentSyncManager', () => {
 
       syncManager.startListening(userId, mockGetState, mockDispatch)
 
-      // Simulate document update
+      // Simulate document update with different text
       const documentData = {
         text: 'updated remote text',
-        rev: 2,
         updatedAt: { seconds: 123456789 },
       }
       const metadata = {
@@ -219,18 +174,10 @@ describe('DocumentSyncManager', () => {
       )
 
       expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetCloudDocBase({
-          mode: 'editor',
-          baseRev: 2,
-          baseText: 'updated remote text',
-        }),
-      )
-
-      expect(mockDispatch).toHaveBeenCalledWith(
         mockSetTextFromCloud({
           mode: 'editor',
           text: 'updated remote text',
-          cursorPos: 10, // Should preserve cursor position (min of current and new text length)
+          cursorPos: 10,
         }),
       )
     })
@@ -253,7 +200,6 @@ describe('DocumentSyncManager', () => {
       // Simulate document update with same text as local
       const documentData = {
         text: 'local editor text', // Same as mockState.editor.documents.editor.text
-        rev: 2,
         updatedAt: { seconds: 123456789 },
       }
       const metadata = {
@@ -263,20 +209,12 @@ describe('DocumentSyncManager', () => {
 
       onUpdateCallback(documentData, metadata)
 
-      // Should still update snapshot metadata and base
+      // Should still update snapshot metadata
       expect(mockDispatch).toHaveBeenCalledWith(
         mockSetCloudDocSnapshotMeta({
           mode: 'editor',
           hasPendingWrites: false,
           fromCache: false,
-        }),
-      )
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetCloudDocBase({
-          mode: 'editor',
-          baseRev: 2,
-          baseText: 'local editor text',
         }),
       )
 
@@ -310,10 +248,9 @@ describe('DocumentSyncManager', () => {
         { hasPendingWrites: false, fromCache: false },
       )
 
-      // Should only update snapshot metadata, not base or text
+      // Should only update snapshot metadata, not text
       expect(mockDispatch).toHaveBeenCalledTimes(3)
       expect(mockSetCloudDocSnapshotMeta).toHaveBeenCalledTimes(3)
-      expect(mockSetCloudDocBase).not.toHaveBeenCalled()
       expect(mockSetTextFromCloud).not.toHaveBeenCalled()
     })
 
@@ -325,7 +262,7 @@ describe('DocumentSyncManager', () => {
         ...mockState,
         editor: {
           documents: {
-            editor: { text: 'base editor text', cursorPos: 100 }, // Same as base, so no local changes
+            editor: { text: 'some long text here', cursorPos: 100 },
             todo: { text: 'local todo text', cursorPos: 5 },
           },
         },
@@ -346,7 +283,6 @@ describe('DocumentSyncManager', () => {
 
       const documentData = {
         text: 'short', // Much shorter than cursor position
-        rev: 2,
         updatedAt: { seconds: 123456789 },
       }
 
@@ -362,168 +298,6 @@ describe('DocumentSyncManager', () => {
           cursorPos: 5, // Should be adjusted to text length
         }),
       )
-    })
-
-    it('should handle conflicts with bidirectional resolution', () => {
-      const userId = 'test-user'
-      let onUpdateCallback: any
-
-      // Set up state where both local and remote have changes from base
-      const stateWithConflict = {
-        ...mockState,
-        editor: {
-          documents: {
-            editor: { text: 'Line 1\nLine 2 LOCAL\nLine 3', cursorPos: 10 },
-            todo: { text: 'base todo text', cursorPos: 5 },
-          },
-        },
-        cloud: {
-          docs: {
-            editor: { baseRev: 1, baseText: 'Line 1\nLine 2\nLine 3' },
-            todo: { baseRev: 1, baseText: 'base todo text' },
-          },
-        },
-      }
-      mockGetState.mockReturnValue(stateWithConflict)
-
-      mockListenToDocument.mockImplementation(
-        (userId: any, mode: any, callback: any) => {
-          if (mode === 'editor') {
-            onUpdateCallback = callback
-          }
-          return mock(() => {})
-        },
-      )
-
-      syncManager.startListening(userId, mockGetState, mockDispatch)
-
-      // Simulate remote document update that conflicts with local changes
-      const documentData = {
-        text: 'Line 1\nLine 2 REMOTE\nLine 3',
-        rev: 2,
-        updatedAt: { seconds: 123456789 },
-      }
-      const metadata = {
-        hasPendingWrites: false,
-        fromCache: false,
-      }
-
-      onUpdateCallback(documentData, metadata)
-
-      // Conflict resolution should have been performed (we can't easily test the exact call since we're not mocking it)
-
-      // Should update base to remote version
-      expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetCloudDocBase({
-          mode: 'editor',
-          baseRev: 2,
-          baseText: 'Line 1\nLine 2 REMOTE\nLine 3',
-        }),
-      )
-
-      // Should apply resolved text (actual result will depend on diff-match-patch algorithm)
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'cloud/setTextFromCloud',
-          payload: expect.objectContaining({
-            mode: 'editor',
-            cursorPos: 10,
-            // text will be the result of conflict resolution
-          }),
-        }),
-      )
-    })
-
-    it('should schedule save when conflict resolution produces different text than remote', () => {
-      const userId = 'test-user'
-      let onUpdateCallback: any
-
-      // Set up a scenario where local and remote have different changes from base
-      // This should trigger conflict resolution and potentially schedule a save
-      const stateWithConflict = {
-        ...mockState,
-        editor: {
-          documents: {
-            editor: { text: 'base text with local changes', cursorPos: 10 },
-            todo: { text: 'base todo text', cursorPos: 5 },
-          },
-        },
-        cloud: {
-          docs: {
-            editor: { baseRev: 1, baseText: 'base text' },
-            todo: { baseRev: 1, baseText: 'base todo text' },
-          },
-        },
-      }
-      mockGetState.mockReturnValue(stateWithConflict)
-
-      mockListenToDocument.mockImplementation(
-        (userId: any, mode: any, callback: any) => {
-          if (mode === 'editor') {
-            onUpdateCallback = callback
-          }
-          return mock(() => {})
-        },
-      )
-
-      // Mock the scheduleDocumentSave method
-      const originalScheduleDocumentSave = syncManager.scheduleDocumentSave
-      const mockScheduleDocumentSave = mock(() => {})
-      syncManager.scheduleDocumentSave = mockScheduleDocumentSave
-
-      syncManager.startListening(userId, mockGetState, mockDispatch)
-
-      const documentData = {
-        text: 'base text with remote changes',
-        rev: 2,
-        updatedAt: { seconds: 123456789 },
-      }
-
-      onUpdateCallback(documentData, {
-        hasPendingWrites: false,
-        fromCache: false,
-      })
-
-      // Should schedule a save if the merged result is different from remote
-      // (We can't predict the exact merged text, but we can check if save was scheduled)
-      expect(mockScheduleDocumentSave).toHaveBeenCalled()
-
-      // Restore original method
-      syncManager.scheduleDocumentSave = originalScheduleDocumentSave
-    })
-
-    it('should skip processing when revision and text match current base', () => {
-      const userId = 'test-user'
-      let onUpdateCallback: any
-
-      mockListenToDocument.mockImplementation(
-        (userId: any, mode: any, callback: any) => {
-          if (mode === 'editor') {
-            onUpdateCallback = callback
-          }
-          return mock(() => {})
-        },
-      )
-
-      syncManager.startListening(userId, mockGetState, mockDispatch)
-
-      // Simulate document update with same revision and text as current base
-      const documentData = {
-        text: 'base editor text', // Same as mockState.cloud.docs.editor.baseText
-        rev: 1, // Same as mockState.cloud.docs.editor.baseRev
-        updatedAt: { seconds: 123456789 },
-      }
-
-      onUpdateCallback(documentData, {
-        hasPendingWrites: false,
-        fromCache: false,
-      })
-
-      // Should only update snapshot metadata, skip everything else
-      expect(mockDispatch).toHaveBeenCalledTimes(1)
-      expect(mockSetCloudDocSnapshotMeta).toHaveBeenCalledTimes(1)
-      expect(mockSetCloudDocBase).not.toHaveBeenCalled()
-      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
     })
   })
 
@@ -610,7 +384,7 @@ describe('DocumentSyncManager', () => {
       expect(globalThis.clearTimeout).toHaveBeenCalled()
     })
 
-    it('should call saveDocument with correct parameters', () => {
+    it('should call saveDocument with correct parameters', async () => {
       const userId = 'test-user'
 
       syncManager.scheduleDocumentSave(
@@ -621,14 +395,12 @@ describe('DocumentSyncManager', () => {
       )
 
       // Execute the timer callback
-      timerCallbacks[0]()
+      await timerCallbacks[0]()
 
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+      expect(mockSaveDocument).toHaveBeenCalledWith(
         userId,
         'editor',
         'local editor text', // text from mockState
-        1, // baseRev from mockState
-        'base editor text', // baseText from mockState
       )
     })
 
@@ -636,9 +408,7 @@ describe('DocumentSyncManager', () => {
       const userId = 'test-user'
 
       // Temporarily replace the mock implementation to throw an error
-      const originalImplementation =
-        mockSaveDocumentWithConflictResolution.getMockImplementation()!
-      mockSaveDocumentWithConflictResolution.mockImplementation(() => {
+      mockSaveDocument.mockImplementation(() => {
         throw new Error('Save failed')
       })
 
@@ -649,29 +419,21 @@ describe('DocumentSyncManager', () => {
         mockDispatch,
       )
 
-      // Execute the timer callback and wait for promise to resolve
+      // Execute the timer callback
       await timerCallbacks[0]()
 
       // Restore original implementation
-      mockSaveDocumentWithConflictResolution.mockImplementation(
-        originalImplementation,
-      )
+      mockSaveDocument.mockImplementation(() => Promise.resolve())
 
       expect(mockDispatch).toHaveBeenCalledWith(
         mockSetCloudError('Failed to write to cloud'),
       )
-      expect(mockDispatch).toHaveBeenCalledWith(mockSetCloudIsUploading(true))
-      expect(mockDispatch).toHaveBeenCalledWith(mockSetCloudIsUploading(false))
     })
 
-    it('should update state after successful save', async () => {
+    it('should clear error after successful save', async () => {
       const userId = 'test-user'
 
-      mockSaveDocumentWithConflictResolution.mockResolvedValueOnce({
-        newRevision: 3,
-        finalText: 'saved text',
-        wasConflicted: false,
-      })
+      mockSaveDocument.mockResolvedValueOnce(undefined)
 
       syncManager.scheduleDocumentSave(
         userId,
@@ -680,65 +442,10 @@ describe('DocumentSyncManager', () => {
         mockDispatch,
       )
 
-      // Execute the timer callback and wait for promise to resolve
+      // Execute the timer callback
       await timerCallbacks[0]()
 
-      expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetCloudDocBase({
-          mode: 'editor',
-          baseRev: 3,
-          baseText: 'saved text',
-        }),
-      )
-    })
-
-    it('should update editor text when conflict was resolved and text changed', async () => {
-      const userId = 'test-user'
-
-      mockSaveDocumentWithConflictResolution.mockResolvedValueOnce({
-        newRevision: 3,
-        finalText: 'conflict resolved text',
-        wasConflicted: true,
-      })
-
-      syncManager.scheduleDocumentSave(
-        userId,
-        'editor',
-        mockGetState,
-        mockDispatch,
-      )
-
-      // Execute the timer callback and wait for promise to resolve
-      await timerCallbacks[0]()
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        mockSetText({
-          mode: 'editor',
-          text: 'conflict resolved text',
-          cursorPos: 10, // Should preserve cursor position
-        }),
-      )
-    })
-
-    it('should not update editor text when no conflict occurred', () => {
-      const userId = 'test-user'
-      const text = 'original text'
-
-      mockSaveDocumentWithConflictResolution.mockResolvedValueOnce({
-        newRevision: 3,
-        finalText: text,
-        wasConflicted: false,
-      })
-
-      syncManager.scheduleDocumentSave(
-        userId,
-        'editor',
-        mockGetState,
-        mockDispatch,
-      )
-
-      // Should not call setText when no conflict
-      expect(mockSetText).not.toHaveBeenCalled()
+      expect(mockDispatch).toHaveBeenCalledWith(mockSetCloudError(undefined))
     })
   })
 
@@ -761,7 +468,7 @@ describe('DocumentSyncManager', () => {
 
       mockDeleteDocument.mockRejectedValueOnce(new Error('Delete failed'))
 
-      // Should not throw even if deletion fails
+      // Should throw when deletion fails
       await expect(syncManager.deleteUserDocuments(userId)).rejects.toThrow()
     })
   })
@@ -773,7 +480,7 @@ describe('DocumentSyncManager', () => {
       // Mock loadDocument to return null (document doesn't exist)
       mockLoadDocument.mockResolvedValue(null)
 
-      await syncManager.initialSync(userId, mockGetState, mockDispatch)
+      await syncManager.initialSync(userId, mockGetState)
 
       // Should check for both documents
       expect(mockLoadDocument).toHaveBeenCalledTimes(2)
@@ -781,20 +488,16 @@ describe('DocumentSyncManager', () => {
       expect(mockLoadDocument).toHaveBeenCalledWith(userId, 'todo')
 
       // Should save both documents since they don't exist
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(2)
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+      expect(mockSaveDocument).toHaveBeenCalledTimes(2)
+      expect(mockSaveDocument).toHaveBeenCalledWith(
         userId,
         'editor',
-        'local editor text', // From mockState
-        0, // No existing revision
-        '', // No base text
+        'local editor text',
       )
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+      expect(mockSaveDocument).toHaveBeenCalledWith(
         userId,
         'todo',
-        'local todo text', // From mockState
-        0, // No existing revision
-        '', // No base text
+        'local todo text',
       )
     })
 
@@ -804,17 +507,16 @@ describe('DocumentSyncManager', () => {
       // Mock loadDocument to return existing documents
       mockLoadDocument.mockResolvedValue({
         text: 'existing cloud text',
-        rev: 5,
         updatedAt: { seconds: 123456789 },
       })
 
-      await syncManager.initialSync(userId, mockGetState, mockDispatch)
+      await syncManager.initialSync(userId, mockGetState)
 
       // Should check for both documents
       expect(mockLoadDocument).toHaveBeenCalledTimes(2)
 
       // Should NOT save documents since they already exist
-      expect(mockSaveDocumentWithConflictResolution).not.toHaveBeenCalled()
+      expect(mockSaveDocument).not.toHaveBeenCalled()
     })
 
     it('should handle mixed scenarios - one exists, one does not', async () => {
@@ -824,12 +526,11 @@ describe('DocumentSyncManager', () => {
       mockLoadDocument
         .mockResolvedValueOnce({
           text: 'existing editor text',
-          rev: 3,
           updatedAt: { seconds: 123456789 },
         })
         .mockResolvedValueOnce(null)
 
-      await syncManager.initialSync(userId, mockGetState, mockDispatch)
+      await syncManager.initialSync(userId, mockGetState)
 
       // Should check for both documents
       expect(mockLoadDocument).toHaveBeenCalledTimes(2)
@@ -837,13 +538,11 @@ describe('DocumentSyncManager', () => {
       expect(mockLoadDocument).toHaveBeenNthCalledWith(2, userId, 'todo')
 
       // Should only save the todo document
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(1)
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+      expect(mockSaveDocument).toHaveBeenCalledTimes(1)
+      expect(mockSaveDocument).toHaveBeenCalledWith(
         userId,
         'todo',
         'local todo text',
-        0,
-        '',
       )
     })
 
@@ -857,45 +556,19 @@ describe('DocumentSyncManager', () => {
 
       // Should not throw error
       await expect(
-        syncManager.initialSync(userId, mockGetState, mockDispatch),
+        syncManager.initialSync(userId, mockGetState),
       ).resolves.toBeUndefined()
 
       // Should have attempted to check both documents
       expect(mockLoadDocument).toHaveBeenCalledTimes(2)
 
       // Should still save the todo document despite editor error
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(1)
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledWith(
+      expect(mockSaveDocument).toHaveBeenCalledTimes(1)
+      expect(mockSaveDocument).toHaveBeenCalledWith(
         userId,
         'todo',
         'local todo text',
-        0,
-        '',
       )
-    })
-
-    it('should handle save errors gracefully', async () => {
-      const userId = 'test-user'
-
-      // Mock documents don't exist
-      mockLoadDocument.mockResolvedValue(null)
-
-      // Mock save to fail for editor but succeed for todo
-      mockSaveDocumentWithConflictResolution
-        .mockRejectedValueOnce(new Error('Save failed'))
-        .mockResolvedValueOnce({
-          newRevision: 1,
-          finalText: 'local todo text',
-          wasConflicted: false,
-        })
-
-      // Should not throw error
-      await expect(
-        syncManager.initialSync(userId, mockGetState, mockDispatch),
-      ).resolves.toBeUndefined()
-
-      // Should have attempted to save both documents
-      expect(mockSaveDocumentWithConflictResolution).toHaveBeenCalledTimes(2)
     })
   })
 

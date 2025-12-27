@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import { keyframes, css } from '@emotion/react'
+import { css } from '@emotion/react'
 
 import { CloudSyncUiStatus } from '../../cloudsync/selectors'
 
@@ -15,15 +15,6 @@ interface IndicatorStyleProps {
   size: NonNullable<Props['size']>
 }
 
-const pulseAnimation = keyframes`
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 0.2; }
-`
-
-const pulseAnimationCss = css`
-  animation: ${pulseAnimation} 1s infinite;
-`
-
 const StatusIndicator = styled.span<IndicatorStyleProps>`
   ${({ theme, status, size }) => {
     const sizeMap = {
@@ -32,15 +23,11 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
       large: theme.spacing(2),
     }
 
-    const colorMap = {
+    const colorMap: Record<CloudSyncUiStatus, string> = {
       disabled: theme.colors.secondary,
-      initializing: theme.colors.primary,
-      error: theme.colors.error,
       disconnected: theme.colors.secondary,
       pending: theme.colors.primary,
-      syncing: theme.colors.primary,
-      offline: theme.colors.warning,
-      synced: theme.colors.primary,
+      connected: theme.colors.primary,
     }
 
     return css`
@@ -51,10 +38,7 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
       background-color: ${colorMap[status]};
       transition: background-color ${theme.animations.transition};
       flex-shrink: 0;
-      opacity: ${status === 'pending' ? 0.2 : 1};
-      ${status === 'syncing' || status === 'initializing'
-        ? pulseAnimationCss
-        : ''}
+      opacity: ${status === 'pending' ? 0.4 : 1};
     `
   }}
 `
@@ -85,19 +69,11 @@ const getStatusTooltip = (status: CloudSyncUiStatus): string => {
   switch (status) {
     case 'disabled':
       return 'Cloud sync is disabled'
-    case 'initializing':
-      return 'Connecting to cloud sync...'
-    case 'error':
-      return 'Cloud sync error - check your connection'
     case 'disconnected':
-      return 'Disconnected from cloud sync'
+      return 'Connecting to cloud...'
     case 'pending':
-      return 'Has pending local changes...'
-    case 'syncing':
-      return 'Syncing changes to cloud...'
-    case 'offline':
-      return 'Offline - showing cached data'
-    case 'synced':
+      return 'Syncing changes...'
+    case 'connected':
       return 'Synced with cloud'
     default:
       return 'Unknown sync status'
@@ -108,19 +84,11 @@ const getStatusText = (status: CloudSyncUiStatus): string => {
   switch (status) {
     case 'disabled':
       return 'Disabled'
-    case 'initializing':
-      return 'Connecting…'
-    case 'error':
-      return 'Error'
     case 'disconnected':
-      return 'Disconnected'
+      return 'Connecting'
     case 'pending':
-      return 'Pending'
-    case 'syncing':
-      return 'Syncing…'
-    case 'offline':
-      return 'Offline'
-    case 'synced':
+      return 'Syncing'
+    case 'connected':
       return 'Synced'
     default:
       return 'Unknown'

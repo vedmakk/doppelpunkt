@@ -13,26 +13,16 @@ service cloud.firestore {
                    && (docId == 'editor' || docId == 'todo')
                    // Validate required fields
                    && request.resource.data.text is string
-                   && request.resource.data.rev is int
                    // Validate optional fields if present
                    && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp)
                    && (!('structuredTodos' in request.resource.data) || request.resource.data.structuredTodos is list)
                    && (!('structuredTodosProcessedAt' in request.resource.data) || request.resource.data.structuredTodosProcessedAt is timestamp)
                    && (!('structuredTodosError' in request.resource.data) || request.resource.data.structuredTodosError is string)
+                   // Allow rev field for backward compatibility but don't require it
+                   && (!('rev' in request.resource.data) || request.resource.data.rev is int)
                    // Ensure no unexpected fields (allow only known fields)
-                   && request.resource.data.keys().hasAll(['text', 'rev'])
-                   && request.resource.data.keys().hasOnly(['text', 'rev', 'updatedAt', 'structuredTodos', 'structuredTodosProcessedAt', 'structuredTodosError'])
-                   // Enforce optimistic locking: rev must increment by exactly 1
-                   && (
-                     // If creating a new document, require rev == 1
-                     (!exists(/databases/$(database)/documents/users/$(userId)/doc/$(docId))
-                       && request.resource.data.rev == 1)
-                     ||
-                     // If document exists, require rev to increment by 1
-                     (exists(/databases/$(database)/documents/users/$(userId)/doc/$(docId))
-                       && resource.data.rev is int
-                       && request.resource.data.rev == resource.data.rev + 1)
-                   );
+                   && request.resource.data.keys().hasAll(['text'])
+                   && request.resource.data.keys().hasOnly(['text', 'rev', 'updatedAt', 'structuredTodos', 'structuredTodosProcessedAt', 'structuredTodosError']);
 
       // Allow deletes only to the known docs and authenticated user
       allow delete: if request.auth != null
@@ -67,5 +57,3 @@ service cloud.firestore {
     }
   }
 }
-
-

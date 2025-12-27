@@ -32,8 +32,12 @@ const structuredTodosSlice = createSlice({
       state.apiKeyIsSet = action.payload
     },
 
-    setStructuredTodos(state, action: PayloadAction<StructuredTodo[]>) {
-      state.todos = action.payload
+    setStructuredTodos(
+      state,
+      action: PayloadAction<{ todos: StructuredTodo[]; contentHash: string }>,
+    ) {
+      state.todos = action.payload.todos
+      state.lastProcessedContentHash = action.payload.contentHash
       state.lastProcessedAt = Date.now()
     },
 
@@ -48,6 +52,7 @@ const structuredTodosSlice = createSlice({
     clearStructuredTodos(state) {
       state.todos = []
       state.lastProcessedAt = undefined
+      state.lastProcessedContentHash = undefined
     },
 
     clearAllStructuredTodosData(state) {
@@ -58,6 +63,7 @@ const structuredTodosSlice = createSlice({
       state.isProcessing = false
       state.error = undefined
       state.lastProcessedAt = undefined
+      state.lastProcessedContentHash = undefined
     },
   },
 })

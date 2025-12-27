@@ -1,6 +1,9 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test'
 import { StructuredTodosManager } from './StructuredTodosManager'
-import { setStructuredTodosEnabled } from './structuredTodosSlice'
+import {
+  setStructuredTodosEnabled,
+  setApiKeyIsSet,
+} from './structuredTodosSlice'
 import { StructuredTodosSettings } from './types'
 import {
   mockDb,
@@ -69,33 +72,28 @@ describe('StructuredTodosManager', () => {
   })
 
   describe('startListening', () => {
-    it('should set up listeners for settings and todos', async () => {
+    it('should set up listener for settings only', async () => {
       const mockSettingsRef = { id: 'settings-ref' }
-      const mockTodoDocRef = { id: 'todo-doc-ref' }
       const mockSettingsSnapshot = {
         exists: () => true,
         data: () => ({ enabled: true, apiKey: 'test-key' }),
       }
 
-      mockDoc
-        .mockReturnValueOnce(mockSettingsRef)
-        .mockReturnValueOnce(mockTodoDocRef)
+      mockDoc.mockReturnValue(mockSettingsRef)
       mockGetDoc.mockResolvedValue(mockSettingsSnapshot as any)
 
       const mockSettingsUnsubscribe = mock(() => {})
-      const mockTodosUnsubscribe = mock(() => {})
-      mockOnSnapshot
-        .mockReturnValueOnce(mockSettingsUnsubscribe)
-        .mockReturnValueOnce(mockTodosUnsubscribe)
+      mockOnSnapshot.mockReturnValue(mockSettingsUnsubscribe)
 
       await manager.startListening(userId, mockDispatch)
 
       // Verify initial settings fetch
       expect(mockGetDoc).toHaveBeenCalledWith(mockSettingsRef)
       expect(mockDispatch).toHaveBeenCalledWith(setStructuredTodosEnabled(true))
+      expect(mockDispatch).toHaveBeenCalledWith(setApiKeyIsSet(true))
 
-      // Verify listeners setup
-      expect(mockOnSnapshot).toHaveBeenCalledTimes(2)
+      // Verify only settings listener is set up (not todos - that's handled by callable now)
+      expect(mockOnSnapshot).toHaveBeenCalledTimes(1)
     })
 
     it('should handle settings without initial data', async () => {
@@ -106,18 +104,28 @@ describe('StructuredTodosManager', () => {
 
       await manager.startListening(userId, mockDispatch)
 
-      expect(mockOnSnapshot).toHaveBeenCalledTimes(2)
+      // Only settings listener should be set up
+      expect(mockOnSnapshot).toHaveBeenCalledTimes(1)
+    })
+
+    it('should dispatch apiKeyIsSet false when no API key', async () => {
+      const mockSettingsSnapshot = {
+        exists: () => true,
+        data: () => ({ enabled: true }), // No apiKey
+      }
+      mockGetDoc.mockResolvedValue(mockSettingsSnapshot as any)
+
+      await manager.startListening(userId, mockDispatch)
+
+      expect(mockDispatch).toHaveBeenCalledWith(setApiKeyIsSet(false))
     })
   })
 
   describe('stopListening', () => {
-    it('should unsubscribe from all listeners', async () => {
-      const mockUnsubscribe1 = mock(() => {})
-      const mockUnsubscribe2 = mock(() => {})
+    it('should unsubscribe from settings listener', async () => {
+      const mockUnsubscribe = mock(() => {})
 
-      mockOnSnapshot
-        .mockReturnValueOnce(mockUnsubscribe1)
-        .mockReturnValueOnce(mockUnsubscribe2)
+      mockOnSnapshot.mockReturnValue(mockUnsubscribe)
 
       mockGetDoc.mockResolvedValue({
         exists: () => false,
@@ -127,8 +135,7 @@ describe('StructuredTodosManager', () => {
       await manager.startListening(userId, mockDispatch)
       manager.stopListening()
 
-      expect(mockUnsubscribe1).toHaveBeenCalled()
-      expect(mockUnsubscribe2).toHaveBeenCalled()
+      expect(mockUnsubscribe).toHaveBeenCalled()
     })
 
     it('should handle multiple calls gracefully', () => {

@@ -5,15 +5,23 @@ import {
   clearApiKey,
   setStructuredTodos,
   clearStructuredTodos,
+  setProcessing,
+  setStructuredTodosError,
 } from './structuredTodosSlice'
 import { StructuredTodosSettings, StructuredTodosState } from './types'
 import { StructuredTodosManager } from './StructuredTodosManager'
 import { safeLocalStorage } from '../shared/storage'
 import { setCloudEnabled } from '../cloudsync/cloudSlice'
+import { processTodos, generateContentHash } from './structuredTodosService'
 
 const STRUCTURED_TODOS_KEY = 'structuredTodos'
 const STRUCTURED_TODOS_ENABLED_KEY = `${STRUCTURED_TODOS_KEY}.enabled`
 const STRUCTURED_TODOS_ITEMS_KEY = `${STRUCTURED_TODOS_KEY}.items`
+const STRUCTURED_TODOS_HASH_KEY = `${STRUCTURED_TODOS_KEY}.hash`
+
+// Debounce timer for processing todos
+const PROCESS_DEBOUNCE_MS = 3000
+let processTimer: ReturnType<typeof setTimeout> | null = null
 
 export const structuredTodosStorageKeys = {
   STRUCTURED_TODOS_ENABLED_KEY,
@@ -27,6 +35,7 @@ export function hydrateStructuredTodosStateFromStorage(): {
     const enabled =
       safeLocalStorage.getItem(STRUCTURED_TODOS_ENABLED_KEY) === 'true'
     const storedTodos = safeLocalStorage.getItem(STRUCTURED_TODOS_ITEMS_KEY)
+    const storedHash = safeLocalStorage.getItem(STRUCTURED_TODOS_HASH_KEY)
     const todos = storedTodos ? JSON.parse(storedTodos) : []
 
     const structuredTodos: StructuredTodosState = {
@@ -35,6 +44,7 @@ export function hydrateStructuredTodosStateFromStorage(): {
       apiKey: null, // Never loaded from storage (write-only)
       apiKeyIsSet: false,
       isProcessing: false,
+      lastProcessedContentHash: storedHash ?? undefined,
       error: undefined,
     }
 
@@ -84,6 +94,16 @@ structuredTodosListenerMiddleware.startListening({
       } else {
         safeLocalStorage.removeItem(STRUCTURED_TODOS_ITEMS_KEY)
       }
+
+      // Persist content hash
+      if (state.structuredTodos.lastProcessedContentHash) {
+        safeLocalStorage.setItem(
+          STRUCTURED_TODOS_HASH_KEY,
+          state.structuredTodos.lastProcessedContentHash,
+        )
+      } else {
+        safeLocalStorage.removeItem(STRUCTURED_TODOS_HASH_KEY)
+      }
     } catch {
       // Ignore storage failures
     }
@@ -120,7 +140,7 @@ structuredTodosListenerMiddleware.startListening({
   },
 })
 
-// Listen for structured todos updates from Firestore
+// Listen for cloud connection and start settings listener
 structuredTodosListenerMiddleware.startListening({
   predicate: (_action, currentState: any, previousState: any) => {
     const wasConnected = previousState?.cloud?.status === 'connected'
@@ -175,6 +195,93 @@ structuredTodosListenerMiddleware.startListening({
       api.dispatch(setStructuredTodosEnabled(false))
       api.dispatch(clearStructuredTodos())
     }
+  },
+})
+
+// Listen for todo text changes and call the cloud function
+structuredTodosListenerMiddleware.startListening({
+  predicate: (action, currentState: any, previousState: any) => {
+    // Ignore if this is a cloud-sourced update
+    if ((action as any)?.meta?.fromCloud) {
+      return false
+    }
+
+    // Only trigger when structured todos is enabled and cloud is connected
+    if (!currentState.structuredTodos?.enabled) {
+      return false
+    }
+    if (currentState.cloud?.status !== 'connected') {
+      return false
+    }
+    if (!currentState.cloud?.user) {
+      return false
+    }
+
+    // Only trigger when todo text changes
+    const currentTodoText = currentState.editor?.documents?.todo?.text
+    const previousTodoText = previousState?.editor?.documents?.todo?.text
+
+    return currentTodoText !== previousTodoText
+  },
+  effect: async (_action, listenerApi) => {
+    const state: any = listenerApi.getState()
+    const todoText = state.editor?.documents?.todo?.text ?? ''
+    const lastHash = state.structuredTodos?.lastProcessedContentHash
+
+    // Clear any existing debounce timer
+    if (processTimer) {
+      clearTimeout(processTimer)
+    }
+
+    // Check if we even need to process (same content hash)
+    try {
+      const currentHash = await generateContentHash(todoText)
+      if (currentHash === lastHash) {
+        // Content hasn't changed, skip processing
+        return
+      }
+    } catch {
+      // Continue with processing if hash check fails
+    }
+
+    // Debounce the processing call
+    processTimer = setTimeout(async () => {
+      processTimer = null
+
+      // Re-check state since this is debounced
+      const currentState: any = listenerApi.getState()
+      if (!currentState.structuredTodos?.enabled) {
+        return
+      }
+      if (currentState.cloud?.status !== 'connected') {
+        return
+      }
+
+      const currentTodoText = currentState.editor?.documents?.todo?.text ?? ''
+
+      try {
+        listenerApi.dispatch(setProcessing(true))
+        listenerApi.dispatch(setStructuredTodosError(undefined))
+
+        const result = await processTodos(currentTodoText)
+
+        listenerApi.dispatch(
+          setStructuredTodos({
+            todos: result.todos,
+            contentHash: result.contentHash,
+          }),
+        )
+      } catch (error) {
+        console.error('Failed to process todos:', error)
+        listenerApi.dispatch(
+          setStructuredTodosError(
+            error instanceof Error ? error.message : 'Failed to process todos',
+          ),
+        )
+      } finally {
+        listenerApi.dispatch(setProcessing(false))
+      }
+    }, PROCESS_DEBOUNCE_MS)
   },
 })
 

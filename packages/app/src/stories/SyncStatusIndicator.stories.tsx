@@ -13,12 +13,8 @@ export const Disabled = () => {
   return <SyncStatusIndicator status="disabled" />
 }
 
-export const Initializing = () => {
-  return <SyncStatusIndicator status="initializing" />
-}
-
-export const Error = () => {
-  return <SyncStatusIndicator status="error" />
+export const Connected = () => {
+  return <SyncStatusIndicator status="connected" />
 }
 
 export const Disconnected = () => {
@@ -29,40 +25,24 @@ export const Pending = () => {
   return <SyncStatusIndicator status="pending" />
 }
 
-export const Syncing = () => {
-  return <SyncStatusIndicator status="syncing" />
-}
-
-export const Offline = () => {
-  return <SyncStatusIndicator status="offline" />
-}
-
-export const Synced = () => {
-  return <SyncStatusIndicator status="synced" />
-}
-
 export const SmallSize = () => {
-  return <SyncStatusIndicator status="synced" size="small" />
+  return <SyncStatusIndicator status="connected" size="small" />
 }
 
 export const MediumSize = () => {
-  return <SyncStatusIndicator status="synced" size="medium" />
+  return <SyncStatusIndicator status="connected" size="medium" />
 }
 
 export const LargeSize = () => {
-  return <SyncStatusIndicator status="synced" size="large" />
+  return <SyncStatusIndicator status="connected" size="large" />
 }
 
 export const AllStatesSmall = () => {
   const statuses: CloudSyncUiStatus[] = [
     'disabled',
-    'initializing',
-    'error',
-    'disconnected',
+    'connected',
     'pending',
-    'syncing',
-    'offline',
-    'synced',
+    'disconnected',
   ]
 
   return (
@@ -77,13 +57,9 @@ export const AllStatesSmall = () => {
 export const AllStatesMedium = () => {
   const statuses: CloudSyncUiStatus[] = [
     'disabled',
-    'initializing',
-    'error',
-    'disconnected',
+    'connected',
     'pending',
-    'syncing',
-    'offline',
-    'synced',
+    'disconnected',
   ]
 
   return (
@@ -98,13 +74,9 @@ export const AllStatesMedium = () => {
 export const AllStatesLarge = () => {
   const statuses: CloudSyncUiStatus[] = [
     'disabled',
-    'initializing',
-    'error',
-    'disconnected',
+    'connected',
     'pending',
-    'syncing',
-    'offline',
-    'synced',
+    'disconnected',
   ]
 
   return (
@@ -119,13 +91,9 @@ export const AllStatesLarge = () => {
 export const AllStatesOnlyIcon = () => {
   const statuses: CloudSyncUiStatus[] = [
     'disabled',
-    'initializing',
-    'error',
-    'disconnected',
+    'connected',
     'pending',
-    'syncing',
-    'offline',
-    'synced',
+    'disconnected',
   ]
 
   return (

@@ -200,7 +200,7 @@ cloudListenerMiddleware.startListening({
 
     // Perform initial sync to write local documents to cloud if they don't exist
     try {
-      await documentSyncManager.initialSync(userId, api.getState, api.dispatch)
+      await documentSyncManager.initialSync(userId, api.getState)
     } catch {
       api.dispatch(setCloudError('Failed to perform initial sync'))
     }
@@ -361,27 +361,20 @@ export function hydrateCloudStateFromStorage() {
     cloud: {
       enabled,
       status: 'idle' as const,
-      isUploading: false,
       user: null,
       error: undefined,
       docs: {
         editor: {
-          baseRev: 0,
-          baseText: '',
           hasPendingWrites: false,
           fromCache: false,
         },
         todo: {
-          baseRev: 0,
-          baseText: '',
           hasPendingWrites: false,
           fromCache: false,
         },
       } as Record<
         WritingMode,
         {
-          baseRev: number
-          baseText: string
           hasPendingWrites: boolean
           fromCache: boolean
         }

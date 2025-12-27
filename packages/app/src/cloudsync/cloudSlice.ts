@@ -13,15 +13,12 @@ export type CloudStatus = 'idle' | 'initializing' | 'connected' | 'error'
 export interface CloudState {
   enabled: boolean
   status: CloudStatus
-  isUploading: boolean
   user: CloudUserInfo | null
   error?: string
-  // Per-document sync metadata and optimistic concurrency base
+  // Per-document sync metadata from Firebase SDK
   docs: Record<
     WritingMode,
     {
-      baseRev: number
-      baseText: string
       hasPendingWrites: boolean
       fromCache: boolean
     }
@@ -31,19 +28,14 @@ export interface CloudState {
 const initialState: CloudState = {
   enabled: false,
   status: 'idle',
-  isUploading: false,
   user: null,
   error: undefined,
   docs: {
     editor: {
-      baseRev: 0,
-      baseText: '',
       hasPendingWrites: false,
       fromCache: false,
     },
     todo: {
-      baseRev: 0,
-      baseText: '',
       hasPendingWrites: false,
       fromCache: false,
     },
@@ -60,26 +52,11 @@ const cloudSlice = createSlice({
     setCloudStatus(state, action: PayloadAction<CloudState['status']>) {
       state.status = action.payload
     },
-    setCloudIsUploading(state, action: PayloadAction<boolean>) {
-      state.isUploading = action.payload
-    },
     setCloudUser(state, action: PayloadAction<CloudUserInfo | null>) {
       state.user = action.payload
     },
     setCloudError(state, action: PayloadAction<string | undefined>) {
       state.error = action.payload
-    },
-    setCloudDocBase(
-      state,
-      action: PayloadAction<{
-        mode: WritingMode
-        baseRev: number
-        baseText: string
-      }>,
-    ) {
-      const { mode, baseRev, baseText } = action.payload
-      state.docs[mode].baseRev = baseRev
-      state.docs[mode].baseText = baseText
     },
     setCloudDocSnapshotMeta(
       state,
@@ -124,10 +101,8 @@ export const cloudReducer = cloudSlice.reducer
 export const {
   setCloudEnabled,
   setCloudStatus,
-  setCloudIsUploading,
   setCloudUser,
   setCloudError,
-  setCloudDocBase,
   setCloudDocSnapshotMeta,
   requestGoogleSignIn,
   requestSignOut,

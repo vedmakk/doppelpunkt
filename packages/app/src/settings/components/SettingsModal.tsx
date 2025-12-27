@@ -328,10 +328,10 @@ export const SettingsModal: React.FC<Props> = ({
                 </div>
                 <MutedLabel size="tiny">
                   Uses AI to automatically extract and organize todos from your
-                  todo document. Requires an OpenAI API key and cloud sync to be
-                  enabled. Please note that the contents of your todo document
-                  will be processed by third party services (Google Firebase,
-                  OpenAI).
+                  todo document. Cloud sync is required to securely store your
+                  API key and access the processing service. Please note that
+                  the contents of your todo document will be processed by third
+                  party services (Google Firebase, OpenAI).
                 </MutedLabel>
               </Col>
             </Row>
@@ -426,8 +426,9 @@ export const SettingsModal: React.FC<Props> = ({
                   <Row>
                     <Col>
                       <MutedLabel size="tiny">
-                        ⚠️ Cloud sync must be enabled for structured todos to
-                        work. Please enable cloud sync in the General settings.
+                        ⚠️ Cloud sync must be enabled to store your API key and
+                        access the processing service. Please enable cloud sync
+                        in the General settings.
                       </MutedLabel>
                     </Col>
                   </Row>

@@ -1,26 +1,22 @@
 // Document synchronization management for cloud sync
-// Handles real-time document sync, conflict resolution, and debounced saves
+// Handles real-time document sync with last-write-wins and debounced saves
 
 import debug from 'debug'
 
 import { type WritingMode } from '../mode/modeSlice'
-import { setText } from '../editor/editorSlice'
 import {
   setCloudError,
-  setCloudDocBase,
   setCloudDocSnapshotMeta,
   setTextFromCloud,
-  setCloudIsUploading,
 } from './cloudSlice'
 import {
-  saveDocumentWithConflictResolution,
+  saveDocument,
   deleteDocument,
   listenToDocument,
   loadDocument,
 } from './documentPersistence'
 import { getFirebase } from './firebase'
 import { doc, deleteDoc } from 'firebase/firestore'
-import { resolveTextConflict } from './conflictResolution'
 
 const log = debug('DocumentSyncManager')
 
@@ -60,91 +56,19 @@ export class DocumentSyncManager {
 
           const state = getState()
           const localDocument = state.editor.documents[mode]
-          const cloudDoc = state.cloud.docs[mode]
 
-          // Skip processing if this is the same revision we already have
-          if (
-            documentData.rev === cloudDoc.baseRev &&
-            documentData.text === cloudDoc.baseText
-          ) {
-            return
-          }
-
-          // Check if we need conflict resolution
-          const needsConflictResolution =
-            cloudDoc.baseRev !== 0 && // We have a base (synced before)
-            localDocument.text !== cloudDoc.baseText && // Local has changes
-            documentData.text !== cloudDoc.baseText && // Remote has changes
-            localDocument.text !== documentData.text // And they're different from each other
-
-          if (needsConflictResolution) {
-            log(
-              `Performing conflict resolution for '${mode}'`,
-              cloudDoc,
-              localDocument,
-              documentData,
-            )
-
-            // Perform bidirectional conflict resolution
-            const resolution = resolveTextConflict(
-              cloudDoc.baseText, // base (last known common version)
-              localDocument.text, // local changes
-              documentData.text, // remote changes
-            )
-
-            // Update cloud base to the new remote version
+          // Apply remote text if it differs from local
+          if (localDocument.text !== documentData.text) {
             dispatch(
-              setCloudDocBase({
+              setTextFromCloud({
                 mode,
-                baseRev: documentData.rev,
-                baseText: documentData.text,
+                text: documentData.text,
+                cursorPos: Math.min(
+                  localDocument.cursorPos,
+                  documentData.text.length,
+                ),
               }),
             )
-
-            // Apply resolved text if it differs from current local text
-            if (resolution.mergedText !== localDocument.text) {
-              dispatch(
-                setTextFromCloud({
-                  mode,
-                  text: resolution.mergedText,
-                  cursorPos: Math.min(
-                    localDocument.cursorPos,
-                    resolution.mergedText.length,
-                  ),
-                }),
-              )
-            }
-
-            // If there was a conflict and we changed the text, schedule a save
-            // to push the merged result back to the cloud
-            if (
-              resolution.wasConflicted &&
-              resolution.mergedText !== documentData.text
-            ) {
-              this.scheduleDocumentSave(userId, mode, getState, dispatch)
-            }
-          } else {
-            // No conflict - update base and apply remote changes if different
-            dispatch(
-              setCloudDocBase({
-                mode,
-                baseRev: documentData.rev,
-                baseText: documentData.text,
-              }),
-            )
-
-            if (localDocument.text !== documentData.text) {
-              dispatch(
-                setTextFromCloud({
-                  mode,
-                  text: documentData.text,
-                  cursorPos: Math.min(
-                    localDocument.cursorPos,
-                    documentData.text.length,
-                  ),
-                }),
-              )
-            }
           }
         },
       )
@@ -168,17 +92,8 @@ export class DocumentSyncManager {
     try {
       const state = getState()
       const text = state.editor.documents[mode].text
-      const cloudDoc = state.cloud.docs[mode]
 
-      await this.saveDocument(
-        userId,
-        mode,
-        text,
-        cloudDoc.baseRev,
-        cloudDoc.baseText,
-        dispatch,
-        getState,
-      )
+      await saveDocument(userId, mode, text)
       dispatch(setCloudError(undefined))
     } catch {
       dispatch(setCloudError('Failed to write to cloud'))
@@ -228,11 +143,7 @@ export class DocumentSyncManager {
     })
   }
 
-  async initialSync(
-    userId: string,
-    getState: () => any,
-    dispatch: (action: any) => void,
-  ): Promise<void> {
+  async initialSync(userId: string, getState: () => any): Promise<void> {
     const modes: WritingMode[] = ['editor', 'todo']
 
     await Promise.all(
@@ -249,15 +160,7 @@ export class DocumentSyncManager {
             const state = getState()
             const localText = state.editor.documents[mode].text
 
-            await this.saveDocument(
-              userId,
-              mode,
-              localText,
-              0, // No existing revision
-              '', // No base text since document doesn't exist
-              dispatch,
-              getState,
-            )
+            await saveDocument(userId, mode, localText)
           }
         } catch (error) {
           // Log error but don't throw - we don't want initial sync to break connection
@@ -276,57 +179,6 @@ export class DocumentSyncManager {
       ...modes.map((mode) => deleteDocument(userId, mode)),
       this.deleteUserProfile(userId),
     ])
-  }
-
-  private async saveDocument(
-    userId: string,
-    mode: WritingMode,
-    localText: string,
-    baseRev: number,
-    baseText: string,
-    dispatch: (action: any) => void,
-    getState: () => any,
-  ): Promise<void> {
-    log(`Saving document for '${mode}'`, localText, baseRev, baseText)
-
-    dispatch(setCloudIsUploading(true))
-    try {
-      const result = await saveDocumentWithConflictResolution(
-        userId,
-        mode,
-        localText,
-        baseRev,
-        baseText,
-      )
-      dispatch(setCloudIsUploading(false))
-
-      dispatch(
-        setCloudDocBase({
-          mode,
-          baseRev: result.newRevision,
-          baseText: result.finalText,
-        }),
-      )
-
-      if (result.wasConflicted && result.finalText !== localText) {
-        log(
-          `Document was conflicted for '${mode}', updating local text`,
-          result,
-        )
-
-        const localDoc = getState().editor.documents[mode]
-        dispatch(
-          setText({
-            mode,
-            text: result.finalText,
-            cursorPos: Math.min(localDoc.cursorPos, result.finalText.length),
-          }),
-        )
-      }
-    } catch (error) {
-      dispatch(setCloudIsUploading(false))
-      throw error
-    }
   }
 
   private async deleteUserProfile(userId: string): Promise<void> {

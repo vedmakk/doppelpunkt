@@ -2,102 +2,124 @@
  * Firebase Cloud Functions for doppelpunkt app
  */
 
-import { onDocumentWritten } from 'firebase-functions/v2/firestore'
+import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { logger } from 'firebase-functions'
 import { StructuredTodosProcessor } from './structuredTodosProcessor'
-import { DocumentData, StructuredTodosSettings } from './types'
+import { StructuredTodosSettings } from './types'
 
 // Initialize Firebase Admin
 initializeApp()
 const db = getFirestore()
 
+export interface ProcessTodosRequest {
+  todoText: string
+}
+
+export interface ProcessTodosResponse {
+  todos: Array<{
+    id: string
+    description: string
+    due?: number
+    priority?: 'low' | 'medium' | 'high'
+    completed?: boolean
+  }>
+  contentHash: string
+}
+
 /**
- * Process todo documents when they are created or updated
- * Extracts structured todos using OpenAI API
+ * HTTP callable function to process todo text and extract structured todos
+ * Called by the client when todo content changes
  */
-export const processTodoDocument = onDocumentWritten(
+export const processTodos = onCall<ProcessTodosRequest>(
   {
-    document: 'users/{userId}/doc/todo',
-    region: 'europe-west1', // Adjust region as needed
+    region: 'europe-west1',
     maxInstances: 10,
   },
-  async (event) => {
-    const userId = event.params.userId
-    const afterData = event.data?.after?.data() as DocumentData | undefined
-    const beforeData = event.data?.before?.data() as DocumentData | undefined
+  async (request): Promise<ProcessTodosResponse> => {
+    const userId = request.auth?.uid
 
-    // Skip if document was deleted
-    if (!afterData) {
-      logger.info(`Todo document deleted for user ${userId}`)
-      return null
+    if (!userId) {
+      throw new HttpsError(
+        'unauthenticated',
+        'Must be signed in to process todos',
+      )
     }
 
-    // Skip if text hasn't changed
-    if (beforeData?.text === afterData.text) {
-      logger.info(`Todo text unchanged for user ${userId}, skipping processing`)
-      return null
+    const { todoText } = request.data
+
+    if (typeof todoText !== 'string') {
+      throw new HttpsError('invalid-argument', 'todoText must be a string')
     }
 
     try {
-      // Get user's structured todos settings
+      // Get user's structured todos settings (for API key)
       const settingsRef = db.doc(`users/${userId}/settings/structuredTodos`)
       const settingsSnap = await settingsRef.get()
 
       if (!settingsSnap.exists) {
-        logger.info(`No structured todos settings for user ${userId}`)
-        return null
+        throw new HttpsError(
+          'failed-precondition',
+          'Structured todos settings not found',
+        )
       }
 
       const settings = settingsSnap.data() as StructuredTodosSettings
 
-      // Check if structured todos are enabled and API key is provided
       if (!settings.enabled) {
-        logger.info(`Structured todos disabled for user ${userId}`)
-        return null
+        throw new HttpsError(
+          'failed-precondition',
+          'Structured todos is not enabled',
+        )
       }
 
       if (!settings.apiKey) {
-        logger.warn(`No API key provided for user ${userId}`)
-        return null
+        throw new HttpsError(
+          'failed-precondition',
+          'OpenAI API key not configured',
+        )
       }
+
+      // Generate content hash for the input text
+      const contentHash = await generateContentHash(todoText)
 
       // Process the todo text
-      logger.info(`Processing todo document for user ${userId}`)
+      logger.info(`Processing todos for user ${userId}`)
       const processor = new StructuredTodosProcessor(settings.apiKey)
-      const structuredTodos = await processor.extractTodos(
-        afterData,
-        beforeData,
-      )
-
-      // Update the document with structured todos
-      const todoDocRef = db.doc(`users/${userId}/doc/todo`)
-      await todoDocRef.update({
-        structuredTodos,
-        structuredTodosProcessedAt: new Date(),
-      })
+      const todos = await processor.extractTodos(todoText)
 
       logger.info(
-        `Successfully processed ${structuredTodos.length} todos for user ${userId}`,
+        `Successfully processed ${todos.length} todos for user ${userId}`,
       )
-      return { success: true, todosCount: structuredTodos.length }
-    } catch (error) {
-      logger.error(`Error processing todo document for user ${userId}:`, error)
 
-      // Store error state in document for client visibility
-      try {
-        const todoDocRef = db.doc(`users/${userId}/doc/todo`)
-        await todoDocRef.update({
-          structuredTodosError:
-            error instanceof Error ? error.message : 'Processing failed',
-          structuredTodosProcessedAt: new Date(),
-        })
-      } catch (updateError) {
-        logger.error('Failed to update error state:', updateError)
+      return {
+        todos,
+        contentHash,
+      }
+    } catch (error) {
+      logger.error(`Error processing todos for user ${userId}:`, error)
+
+      // Re-throw HttpsError as-is
+      if (error instanceof HttpsError) {
+        throw error
       }
 
-      throw error
+      throw new HttpsError(
+        'internal',
+        error instanceof Error ? error.message : 'Failed to process todos',
+      )
     }
   },
 )
+
+/**
+ * Generate a simple hash of the content for cache comparison
+ */
+async function generateContentHash(text: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(text)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+}

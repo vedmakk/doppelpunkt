@@ -5,17 +5,15 @@ import debug from 'debug'
 
 import { doc, setDoc, onSnapshot, getDoc, deleteDoc } from 'firebase/firestore'
 import { getFirebase } from '../cloudsync/firebase'
-import { StructuredTodo, StructuredTodosSettings } from './types'
+import { StructuredTodosSettings } from './types'
 import {
   setStructuredTodosEnabled,
-  setStructuredTodos,
   setApiKeyIsSet,
 } from './structuredTodosSlice'
 
 const log = debug('StructuredTodosManager')
 
 export class StructuredTodosManager {
-  private todosUnsubscribe: (() => void) | null = null
   private settingsUnsubscribe: (() => void) | null = null
 
   /**
@@ -31,7 +29,9 @@ export class StructuredTodosManager {
   }
 
   /**
-   * Starts listening to structured todos settings and data changes
+   * Starts listening to structured todos settings changes
+   * Note: Structured todos data now comes from the callable function response,
+   * not from Firestore document updates
    */
   async startListening(
     userId: string,
@@ -45,12 +45,12 @@ export class StructuredTodosManager {
     const settingsRef = doc(db, `users/${userId}/settings/structuredTodos`)
 
     // First, get initial settings
-    // TODO: Is this necessary? I think once we register with onSnapshot, we get the initial settings immediately.
     const settingsSnap = await getDoc(settingsRef)
     if (settingsSnap.exists()) {
       const settings = settingsSnap.data() as StructuredTodosSettings
       // Only sync enabled state, not API key
       dispatch(setStructuredTodosEnabled(settings.enabled))
+      dispatch(setApiKeyIsSet(!!settings.apiKey))
     }
 
     // Then set up listener for future changes
@@ -62,27 +62,8 @@ export class StructuredTodosManager {
 
         // Only sync enabled state, not API key
         dispatch(setStructuredTodosEnabled(settings.enabled))
-        // Set a "dummy" API key to indicate that the API key is set!
-        if (settings.apiKey) {
-          dispatch(setApiKeyIsSet(true))
-        } else {
-          dispatch(setApiKeyIsSet(false))
-        }
-      }
-    })
-
-    // Listen to todo document for structured todos updates
-    const todoDocRef = doc(db, `users/${userId}/doc/todo`)
-
-    this.todosUnsubscribe = onSnapshot(todoDocRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data()
-
-        log('Received structured todos update', data)
-
-        if (data?.structuredTodos && Array.isArray(data.structuredTodos)) {
-          dispatch(setStructuredTodos(data.structuredTodos as StructuredTodo[]))
-        }
+        // Set flag to indicate if API key is set
+        dispatch(setApiKeyIsSet(!!settings.apiKey))
       }
     })
   }
@@ -91,10 +72,6 @@ export class StructuredTodosManager {
    * Stops listening to structured todos changes
    */
   stopListening(): void {
-    if (this.todosUnsubscribe) {
-      this.todosUnsubscribe()
-      this.todosUnsubscribe = null
-    }
     if (this.settingsUnsubscribe) {
       this.settingsUnsubscribe()
       this.settingsUnsubscribe = null
@@ -121,9 +98,5 @@ export class StructuredTodosManager {
         )
       }
     }
-
-    // Note: The structured todos data stored in the todo document
-    // will be cleaned up by DocumentSyncManager.deleteUserDocuments()
-    // since it's part of the main document structure
   }
 }

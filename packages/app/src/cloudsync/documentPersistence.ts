@@ -1,5 +1,5 @@
 // Document persistence layer for Firestore operations
-// Handles saving, loading, and syncing documents with conflict resolution
+// Simple last-write-wins using Firebase SDK
 
 import {
   type Timestamp,
@@ -11,19 +11,11 @@ import {
   setDoc,
 } from 'firebase/firestore'
 import { getFirebase } from './firebase'
-import { resolveTextConflict } from './conflictResolution'
 import { type WritingMode } from '../mode/modeSlice'
 
 export interface DocumentData {
   text: string
   updatedAt: Timestamp
-  rev: number
-}
-
-export interface SaveResult {
-  newRevision: number
-  finalText: string
-  wasConflicted: boolean
 }
 
 /**
@@ -34,51 +26,24 @@ export function getDocumentPath(userId: string, mode: WritingMode): string {
 }
 
 /**
- * Saves a document to Firestore with optimistic concurrency control
- * Handles conflicts using three-way merge when they occur
+ * Saves a document to Firestore using last-write-wins
  */
-export async function saveDocumentWithConflictResolution(
+export async function saveDocument(
   userId: string,
   mode: WritingMode,
-  localText: string,
-  expectedRevision: number,
-  baseText: string,
-): Promise<SaveResult> {
+  text: string,
+): Promise<void> {
   const { db } = await getFirebase()
-
   const docRef = doc(db, getDocumentPath(userId, mode))
 
-  // First attempt: try to save with expected revision
-  try {
-    return await saveDocument(userId, mode, localText, expectedRevision)
-  } catch (error: any) {
-    if (error?.message !== 'revision-conflict') {
-      throw error
-    }
-  }
-
-  // Conflict detected - perform three-way merge
-  const remoteDoc = await getDoc(docRef)
-  const remoteData = remoteDoc.data() as Partial<DocumentData> | undefined
-
-  const remoteText = remoteData?.text ?? ''
-  const remoteRevision = remoteData?.rev ?? 0
-
-  const resolution = resolveTextConflict(baseText, localText, remoteText)
-
-  // Save the resolved text with the current remote revision
-  const { newRevision, finalText } = await saveDocument(
-    userId,
-    mode,
-    resolution.mergedText,
-    remoteRevision,
+  await setDoc(
+    docRef,
+    {
+      text,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
   )
-
-  return {
-    newRevision,
-    finalText,
-    wasConflicted: true,
-  }
 }
 
 /**
@@ -102,7 +67,6 @@ export async function loadDocument(
   return {
     text: data.text ?? '',
     updatedAt: data.updatedAt as Timestamp,
-    rev: data.rev ?? 0,
   }
 }
 
@@ -153,7 +117,6 @@ export function listenToDocument(
       const documentData: DocumentData = {
         text: data.text ?? '',
         updatedAt: data.updatedAt as Timestamp,
-        rev: data.rev ?? 0,
       }
 
       onUpdate(documentData, metadata)
@@ -170,40 +133,5 @@ export function listenToDocument(
       unsubscribe()
       unsubscribe = null
     }
-  }
-}
-
-async function saveDocument(
-  userId: string,
-  mode: WritingMode,
-  text: string,
-  expectedRevision: number,
-): Promise<SaveResult> {
-  const currentDoc = await loadDocument(userId, mode)
-
-  if (currentDoc && currentDoc.rev !== expectedRevision) {
-    throw new Error('revision-conflict')
-  }
-
-  const newRevision = (currentDoc?.rev ?? 0) + 1
-
-  const { db } = await getFirebase()
-
-  const docRef = doc(db, getDocumentPath(userId, mode))
-
-  await setDoc(
-    docRef,
-    {
-      text,
-      updatedAt: serverTimestamp(),
-      rev: newRevision,
-    },
-    { merge: true },
-  )
-
-  return {
-    newRevision,
-    finalText: text,
-    wasConflicted: false,
   }
 }
