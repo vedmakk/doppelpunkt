@@ -41,7 +41,6 @@ describe('StructuredTodosManager', () => {
     it('should save settings to Firestore', async () => {
       const settings: StructuredTodosSettings = {
         enabled: true,
-        apiKey: 'test-api-key',
       }
 
       const mockSettingsRef = { id: 'settings-ref' }
@@ -139,7 +138,7 @@ describe('StructuredTodosManager', () => {
       const mockTodosRef = { id: 'todos-ref' }
       const mockSettingsSnapshot = {
         exists: () => true,
-        data: () => ({ enabled: true, apiKey: 'test-key' }),
+        data: () => ({ enabled: true, hasApiKey: true }),
       }
 
       mockDoc
@@ -176,10 +175,22 @@ describe('StructuredTodosManager', () => {
       expect(mockOnSnapshot).toHaveBeenCalledTimes(2)
     })
 
-    it('should dispatch apiKeyIsSet false when no API key', async () => {
+    it('should dispatch apiKeyIsSet false when hasApiKey is false', async () => {
       const mockSettingsSnapshot = {
         exists: () => true,
-        data: () => ({ enabled: true }), // No apiKey
+        data: () => ({ enabled: true, hasApiKey: false }),
+      }
+      mockGetDoc.mockResolvedValue(mockSettingsSnapshot as any)
+
+      await manager.startListening(userId, mockDispatch)
+
+      expect(mockDispatch).toHaveBeenCalledWith(setApiKeyIsSet(false))
+    })
+
+    it('should dispatch apiKeyIsSet false when hasApiKey is not set', async () => {
+      const mockSettingsSnapshot = {
+        exists: () => true,
+        data: () => ({ enabled: true }), // No hasApiKey field
       }
       mockGetDoc.mockResolvedValue(mockSettingsSnapshot as any)
 

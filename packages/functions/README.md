@@ -13,9 +13,31 @@ This function:
 
 - Called by the client when todo text changes (with 3s debounce)
 - Checks if structured todos are enabled for the user
-- Uses the user's OpenAI API key from Firestore settings
+- Retrieves and decrypts the user's OpenAI API key from secure storage
 - Extracts tasks with descriptions, due dates, and priorities
 - Returns structured todos and content hash to the client
+
+### `setApiKey`
+
+**Type:** HTTP Callable
+**Purpose:** Securely stores a user's OpenAI API key.
+
+This function:
+
+- Receives the plaintext API key from the client
+- Encrypts it using AES-256-GCM with a per-user derived key
+- Stores the encrypted key in `users/{userId}/secrets/apiKey` (not accessible to clients)
+- Sets `hasApiKey: true` in the user's settings
+
+### `clearApiKey`
+
+**Type:** HTTP Callable
+**Purpose:** Removes a user's stored API key.
+
+This function:
+
+- Deletes the encrypted key from `users/{userId}/secrets/apiKey`
+- Sets `hasApiKey: false` in the user's settings
 
 ## Development
 
@@ -23,6 +45,23 @@ This function:
 
 ```bash
 bun install
+```
+
+### Setting up secrets for local development
+
+The functions use Firebase secrets for sensitive configuration (e.g., `ENCRYPTION_MASTER_KEY`). For local emulator testing, create a `.secret.local` file in this directory:
+
+```bash
+# packages/functions/.secret.local
+ENCRYPTION_MASTER_KEY=your-local-test-key-at-least-32-chars
+```
+
+This file is automatically read by the Firebase emulator. **Do not commit this file** (it's already in `.gitignore`).
+
+For production, set secrets using:
+
+```bash
+firebase functions:secrets:set ENCRYPTION_MASTER_KEY
 ```
 
 ### Serving the functions for local development

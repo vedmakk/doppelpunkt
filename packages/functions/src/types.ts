@@ -10,5 +10,5 @@ export interface StructuredTodo {
 
 export interface StructuredTodosSettings {
   enabled: boolean
-  apiKey?: string
+  hasApiKey?: boolean
 }

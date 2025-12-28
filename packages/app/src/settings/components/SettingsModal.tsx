@@ -344,9 +344,10 @@ export const SettingsModal: React.FC<Props> = ({
                     <MutedLabel size="tiny">
                       <strong>🔐 Security Information:</strong>
                       <br />
-                      Your API key will be stored in the cloud (Firestore) and
-                      is transmitted over encrypted connections. Access to your
-                      API key is restricted to your login credentials.
+                      Your API key is encrypted and stored securely in the
+                      cloud. It is encrypted both in transit and at rest, and
+                      can only be decrypted by the server when processing your
+                      todos.
                       <br />
                       <br />
                       <strong>⚠️ Important:</strong> Like any web application
