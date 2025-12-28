@@ -209,7 +209,17 @@ cloudListenerMiddleware.startListening({
 cloudListenerMiddleware.startListening({
   predicate: (_action, currentState, previousState) =>
     isCloudSyncReady(previousState) && !isCloudSyncReady(currentState),
-  effect: async () => {
+  effect: async (_action, api) => {
+    // Flush any pending saves before disconnecting
+    const state: any = api.getState()
+    const userId = state.cloud?.user?.uid
+    if (userId) {
+      await documentSyncManager.flushPendingSaves(
+        userId,
+        api.getState,
+        api.dispatch,
+      )
+    }
     documentSyncManager.stopListening()
   },
 })
@@ -228,7 +238,7 @@ cloudListenerMiddleware.startListening({
 
 // === Document Change Listeners ===
 
-// Handle editor document changes - save immediately
+// Handle editor document changes - debounced save
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
@@ -252,15 +262,15 @@ cloudListenerMiddleware.startListening({
     )
   },
   effect: async (_action, api) => {
-    log('saveDocumentNow for editor', _action)
+    log('scheduleDocumentSave for editor', _action)
     const state: any = api.getState()
 
     if (!isCloudSyncReady(state)) return
 
     const userId = state.cloud.user.uid
 
-    // Save immediately - no debounce
-    documentSyncManager.saveDocumentNow(
+    // Schedule debounced save (1s)
+    documentSyncManager.scheduleDocumentSave(
       userId,
       'editor',
       api.getState,
@@ -269,7 +279,7 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-// Handle todo document changes - save immediately
+// Handle todo document changes - debounced save
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
@@ -292,15 +302,15 @@ cloudListenerMiddleware.startListening({
     )
   },
   effect: async (_action, api) => {
-    log('saveDocumentNow for todo', _action)
+    log('scheduleDocumentSave for todo', _action)
     const state: any = api.getState()
 
     if (!isCloudSyncReady(state)) return
 
     const userId = state.cloud.user.uid
 
-    // Save immediately - no debounce
-    documentSyncManager.saveDocumentNow(
+    // Schedule debounced save (1s)
+    documentSyncManager.scheduleDocumentSave(
       userId,
       'todo',
       api.getState,

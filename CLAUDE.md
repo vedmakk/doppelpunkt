@@ -66,7 +66,7 @@ Text changes follow this flow:
 
 ### Cloud Sync
 
-Firebase integration is lazily loaded when enabled. Uses Firestore with last-write-wins semantics (immediate saves, no conflict resolution). Auth supports Google sign-in. Documents synced: `users/{userId}/doc/editor` and `users/{userId}/doc/todo`. Sync status UI shows 4 states: disabled, connected, pending (has pending writes), disconnected.
+Firebase integration is lazily loaded when enabled. Uses Firestore with last-write-wins semantics (300ms debounced saves, no conflict resolution). Auth supports Google sign-in. Documents synced: `users/{userId}/doc/editor` and `users/{userId}/doc/todo`. Sync status UI shows 4 states: disabled, connected, pending (has pending writes), disconnected.
 
 ### Cloud Functions
 

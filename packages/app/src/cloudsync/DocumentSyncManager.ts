@@ -20,8 +20,14 @@ import { doc, deleteDoc } from 'firebase/firestore'
 
 const log = debug('DocumentSyncManager')
 
+// Debounce delay for document saves (300ms)
+const SAVE_DEBOUNCE_MS = 300
+
 export class DocumentSyncManager {
   private documentListeners: Partial<Record<WritingMode, () => void>> = {}
+  private saveTimers: Partial<
+    Record<WritingMode, ReturnType<typeof setTimeout>>
+  > = {}
 
   startListening(
     userId: string,
@@ -72,10 +78,57 @@ export class DocumentSyncManager {
   }
 
   stopListening(): void {
+    // Clear any pending save timers
+    Object.values(this.saveTimers).forEach((timer) => {
+      if (timer) clearTimeout(timer)
+    })
+    this.saveTimers = {}
+
+    // Unsubscribe from document listeners
     Object.values(this.documentListeners).forEach((unsubscribe) => {
       if (unsubscribe) unsubscribe()
     })
     this.documentListeners = {}
+  }
+
+  /**
+   * Schedule a debounced document save
+   */
+  scheduleDocumentSave(
+    userId: string,
+    mode: WritingMode,
+    getState: () => any,
+    dispatch: (action: any) => void,
+  ): void {
+    // Clear any existing timer for this mode
+    if (this.saveTimers[mode]) {
+      clearTimeout(this.saveTimers[mode])
+    }
+
+    // Schedule a new save
+    this.saveTimers[mode] = setTimeout(() => {
+      delete this.saveTimers[mode]
+      this.saveDocumentNow(userId, mode, getState, dispatch)
+    }, SAVE_DEBOUNCE_MS)
+  }
+
+  /**
+   * Flush any pending saves immediately (e.g., before disconnect)
+   */
+  async flushPendingSaves(
+    userId: string,
+    getState: () => any,
+    dispatch: (action: any) => void,
+  ): Promise<void> {
+    const modes: WritingMode[] = ['editor', 'todo']
+
+    for (const mode of modes) {
+      if (this.saveTimers[mode]) {
+        clearTimeout(this.saveTimers[mode])
+        delete this.saveTimers[mode]
+        await this.saveDocumentNow(userId, mode, getState, dispatch)
+      }
+    }
   }
 
   async saveDocumentNow(

@@ -321,6 +321,27 @@ describe('DocumentSyncManager', () => {
     it('should be safe to call when no listeners are active', () => {
       expect(() => syncManager.stopListening()).not.toThrow()
     })
+
+    it('should clear pending save timers', async () => {
+      const userId = 'test-user'
+
+      // Schedule a save
+      syncManager.scheduleDocumentSave(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+
+      // Stop listening (should clear timers)
+      syncManager.stopListening()
+
+      // Wait for what would have been the debounce period
+      await new Promise((resolve) => setTimeout(resolve, 400))
+
+      // Save should not have happened because timer was cleared
+      expect(mockSaveDocument).not.toHaveBeenCalled()
+    })
   })
 
   describe('saveDocumentNow', () => {
@@ -394,6 +415,139 @@ describe('DocumentSyncManager', () => {
         'todo',
         'local todo text',
       )
+    })
+  })
+
+  describe('scheduleDocumentSave', () => {
+    it('should debounce save requests', async () => {
+      const userId = 'test-user'
+
+      // Schedule multiple saves in quick succession
+      syncManager.scheduleDocumentSave(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+      syncManager.scheduleDocumentSave(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+      syncManager.scheduleDocumentSave(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+
+      // Should not have saved yet (still debouncing)
+      expect(mockSaveDocument).not.toHaveBeenCalled()
+
+      // Wait for debounce to complete (300ms + buffer)
+      await new Promise((resolve) => setTimeout(resolve, 400))
+
+      // Should have saved only once
+      expect(mockSaveDocument).toHaveBeenCalledTimes(1)
+      expect(mockSaveDocument).toHaveBeenCalledWith(
+        userId,
+        'editor',
+        'local editor text',
+      )
+    })
+
+    it('should handle separate modes independently', async () => {
+      const userId = 'test-user'
+
+      syncManager.scheduleDocumentSave(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+      syncManager.scheduleDocumentSave(
+        userId,
+        'todo',
+        mockGetState,
+        mockDispatch,
+      )
+
+      // Wait for debounce to complete
+      await new Promise((resolve) => setTimeout(resolve, 400))
+
+      // Should have saved both modes
+      expect(mockSaveDocument).toHaveBeenCalledTimes(2)
+      expect(mockSaveDocument).toHaveBeenCalledWith(
+        userId,
+        'editor',
+        'local editor text',
+      )
+      expect(mockSaveDocument).toHaveBeenCalledWith(
+        userId,
+        'todo',
+        'local todo text',
+      )
+    })
+  })
+
+  describe('flushPendingSaves', () => {
+    it('should immediately save any pending debounced saves', async () => {
+      const userId = 'test-user'
+
+      // Schedule a save (will be pending)
+      syncManager.scheduleDocumentSave(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+
+      // Should not have saved yet
+      expect(mockSaveDocument).not.toHaveBeenCalled()
+
+      // Flush pending saves
+      await syncManager.flushPendingSaves(userId, mockGetState, mockDispatch)
+
+      // Should have saved immediately
+      expect(mockSaveDocument).toHaveBeenCalledTimes(1)
+      expect(mockSaveDocument).toHaveBeenCalledWith(
+        userId,
+        'editor',
+        'local editor text',
+      )
+    })
+
+    it('should flush saves for all modes with pending timers', async () => {
+      const userId = 'test-user'
+
+      // Schedule saves for both modes
+      syncManager.scheduleDocumentSave(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+      syncManager.scheduleDocumentSave(
+        userId,
+        'todo',
+        mockGetState,
+        mockDispatch,
+      )
+
+      // Flush all pending saves
+      await syncManager.flushPendingSaves(userId, mockGetState, mockDispatch)
+
+      // Both should have been saved
+      expect(mockSaveDocument).toHaveBeenCalledTimes(2)
+    })
+
+    it('should do nothing if no saves are pending', async () => {
+      const userId = 'test-user'
+
+      await syncManager.flushPendingSaves(userId, mockGetState, mockDispatch)
+
+      expect(mockSaveDocument).not.toHaveBeenCalled()
     })
   })
 
