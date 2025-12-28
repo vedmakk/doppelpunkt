@@ -411,11 +411,6 @@ export const SettingsModal: React.FC<Props> = ({
                     Local (Ollama)
                   </RadioLabel>
                 </RadioGroup>
-                {processingMode === 'cloud' && !cloudEnabled && (
-                  <DisabledReasonText>
-                    Cloud mode requires cloud sync to be enabled
-                  </DisabledReasonText>
-                )}
               </Col>
             </Row>
 
@@ -501,15 +496,29 @@ export const SettingsModal: React.FC<Props> = ({
                       By using this feature, you acknowledge these
                       considerations and agree to use your own OpenAI API key.
                     </MutedLabel>
-                    <InputContainer>
-                      <Input
-                        type={showApiKey ? 'text' : 'password'}
-                        value={apiKeyInput}
-                        onChange={(e) => setApiKeyInput(e.target.value)}
-                        placeholder="sk-..."
-                        aria-label="OpenAI API Key"
-                      />
-                      <SpaceBetweenRow>
+
+                    {structuredTodosApiKeyIsSet ? (
+                      <SpaceBetweenRow
+                        css={(theme) => ({ marginTop: theme.spacing(1) })}
+                      >
+                        <Label size="tiny">
+                          API key is stored encrypted in the cloud.
+                        </Label>
+                        <DestructiveButton
+                          label="Clear Key"
+                          configId={DestructiveActionId.ClearApiKey}
+                          onClick={handleApiKeyClear}
+                        />
+                      </SpaceBetweenRow>
+                    ) : (
+                      <InputContainer>
+                        <Input
+                          type={showApiKey ? 'text' : 'password'}
+                          value={apiKeyInput}
+                          onChange={(e) => setApiKeyInput(e.target.value)}
+                          placeholder="sk-..."
+                          aria-label="OpenAI API Key"
+                        />
                         <Row>
                           <Button
                             label={showApiKey ? 'Hide' : 'Show'}
@@ -522,22 +531,7 @@ export const SettingsModal: React.FC<Props> = ({
                             disabled={!apiKeyInput.trim()}
                           />
                         </Row>
-                        {structuredTodosApiKeyIsSet && (
-                          <DestructiveButton
-                            label="Clear Key"
-                            configId={DestructiveActionId.ClearApiKey}
-                            onClick={handleApiKeyClear}
-                          />
-                        )}
-                      </SpaceBetweenRow>
-                    </InputContainer>
-                    {structuredTodosApiKeyIsSet && (
-                      <MutedLabel
-                        size="tiny"
-                        css={(theme) => ({ marginTop: theme.spacing(1) })}
-                      >
-                        API key is set
-                      </MutedLabel>
+                      </InputContainer>
                     )}
                   </Col>
                 </Row>

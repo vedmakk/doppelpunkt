@@ -117,13 +117,13 @@ export const selectStructuredTodosDependencyStatus = createSelector(
     if (!cloudEnabled) {
       return {
         canEnable: false,
-        disabledReason: 'Cloud sync must be enabled first',
+        disabledReason: 'Cloud mode requires cloud sync to be enabled',
       }
     }
     if (cloudStatus !== 'connected') {
       return {
         canEnable: false,
-        disabledReason: 'Waiting for cloud sync connection',
+        disabledReason: 'Waiting for cloud sync connection (Signed in?)',
       }
     }
     return { canEnable: true, disabledReason: undefined }
