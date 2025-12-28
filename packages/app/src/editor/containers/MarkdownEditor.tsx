@@ -222,6 +222,9 @@ const MarkdownEditor: React.FC = () => {
 
   return (
     <MarkdownEditorComponent
+      // Reset browser undo/redo stack when switching modes to prevent
+      // cross-mode content mixing (see issue #51)
+      key={mode}
       content={injectedValue}
       onContentChange={handleContentChange}
       captureTab={captureTab}
