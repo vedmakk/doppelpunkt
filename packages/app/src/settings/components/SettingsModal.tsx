@@ -16,6 +16,10 @@ import {
 } from '../../destructive-actions'
 import { Label } from '../../app/components/Label'
 import { SyncStatusIndicator } from '../../shared/containers/SyncStatusIndicator'
+import {
+  ProcessingMode,
+  OllamaConnectionStatus,
+} from '../../structured-todos/types'
 
 interface Props {
   readonly isOpen: boolean
@@ -47,6 +51,16 @@ interface Props {
     canEnable: boolean
     disabledReason?: string
   }
+
+  // Processing mode props
+  readonly processingMode: ProcessingMode
+  readonly ollamaUrl: string
+  readonly ollamaModel: string
+  readonly ollamaConnectionStatus: OllamaConnectionStatus
+  readonly onChangeProcessingMode: (mode: ProcessingMode) => void
+  readonly onUpdateOllamaUrl: (url: string) => void
+  readonly onUpdateOllamaModel: (model: string) => void
+  readonly onTestOllamaConnection: () => Promise<{ success: boolean }>
 }
 
 const Container = styled.div(({ theme }) => ({
@@ -146,6 +160,44 @@ const DisabledReasonText = styled.div(({ theme }) => ({
   fontFamily: 'Fira Code, monospace',
 }))
 
+const RadioGroup = styled.div(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(3),
+  marginTop: theme.spacing(1),
+}))
+
+const RadioLabel = styled.label<{ disabled?: boolean }>(
+  ({ theme, disabled }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.5 : 1,
+    fontSize: theme.fontSize.small,
+    fontFamily: 'Fira Code, monospace',
+  }),
+)
+
+const RadioInput = styled.input(({ theme }) => ({
+  cursor: 'pointer',
+  accentColor: theme.colors.primary,
+}))
+
+const ConnectionStatus = styled.span<{
+  status: 'untested' | 'success' | 'failed' | 'testing'
+}>(({ theme, status }) => ({
+  fontSize: theme.fontSize.tiny,
+  fontFamily: 'Fira Code, monospace',
+  color:
+    status === 'success'
+      ? '#4caf50'
+      : status === 'failed'
+        ? theme.colors.error
+        : status === 'testing'
+          ? '#ff9800'
+          : theme.colors.secondary,
+}))
+
 export const SettingsModal: React.FC<Props> = ({
   isOpen,
   shouldRender,
@@ -167,9 +219,30 @@ export const SettingsModal: React.FC<Props> = ({
   onUpdateApiKey,
   onClearApiKey,
   structuredTodosDependencyStatus,
+  processingMode,
+  ollamaUrl,
+  ollamaModel,
+  ollamaConnectionStatus,
+  onChangeProcessingMode,
+  onUpdateOllamaUrl,
+  onUpdateOllamaModel,
+  onTestOllamaConnection,
 }) => {
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
+
+  const getConnectionStatusText = (status: OllamaConnectionStatus) => {
+    switch (status) {
+      case 'success':
+        return 'Connected'
+      case 'failed':
+        return 'Failed'
+      case 'testing':
+        return 'Testing...'
+      default:
+        return 'Not tested'
+    }
+  }
 
   const handleApiKeySubmit = () => {
     if (apiKeyInput.trim()) {
@@ -303,6 +376,46 @@ export const SettingsModal: React.FC<Props> = ({
 
         {activePage === 'structuredTodos' && (
           <Page aria-label="Structured todos settings">
+            {/* Processing Mode Selector */}
+            <Row>
+              <Col>
+                <Label size="small">Processing Mode</Label>
+                <MutedLabel size="tiny">
+                  Choose where to process your todos: Cloud (OpenAI via
+                  Firebase) or Local (Ollama on your machine).
+                </MutedLabel>
+                <RadioGroup>
+                  <RadioLabel disabled={!cloudEnabled}>
+                    <RadioInput
+                      type="radio"
+                      name="processingMode"
+                      value="cloud"
+                      checked={processingMode === 'cloud'}
+                      onChange={() => onChangeProcessingMode('cloud')}
+                      disabled={!cloudEnabled}
+                    />
+                    Cloud (OpenAI)
+                  </RadioLabel>
+                  <RadioLabel>
+                    <RadioInput
+                      type="radio"
+                      name="processingMode"
+                      value="local"
+                      checked={processingMode === 'local'}
+                      onChange={() => onChangeProcessingMode('local')}
+                    />
+                    Local (Ollama)
+                  </RadioLabel>
+                </RadioGroup>
+                {processingMode === 'cloud' && !cloudEnabled && (
+                  <DisabledReasonText>
+                    Cloud mode requires cloud sync to be enabled
+                  </DisabledReasonText>
+                )}
+              </Col>
+            </Row>
+
+            {/* Enable Toggle */}
             <Row>
               <Col>
                 <div>
@@ -327,22 +440,21 @@ export const SettingsModal: React.FC<Props> = ({
                   )}
                 </div>
                 <MutedLabel size="tiny">
-                  Uses AI to automatically extract and organize todos from your
-                  todo document. Cloud sync is required to securely store your
-                  API key and access the processing service. Please note that
-                  the contents of your todo document will be processed by third
-                  party services (Google Firebase, OpenAI).
+                  {processingMode === 'cloud'
+                    ? 'Uses AI to automatically extract and organize todos from your todo document. Cloud sync is required to securely store your API key and access the processing service. Please note that the contents of your todo document will be processed by third party services (Google Firebase, OpenAI).'
+                    : 'Uses AI to automatically extract and organize todos from your todo document. Processing happens entirely on your local machine using Ollama. Nothing is sent to external servers.'}
                 </MutedLabel>
               </Col>
             </Row>
 
-            {structuredTodosEnabled && (
+            {/* Cloud Mode Settings */}
+            {structuredTodosEnabled && processingMode === 'cloud' && (
               <>
                 <Row>
                   <Col>
                     <Label size="small">OpenAI API Key</Label>
                     <MutedLabel size="tiny">
-                      <strong>🔐 Security Information:</strong>
+                      <strong>Security Information:</strong>
                       <br />
                       Your API key is encrypted and stored securely in the
                       cloud. It is encrypted both in transit and at rest, and
@@ -350,8 +462,8 @@ export const SettingsModal: React.FC<Props> = ({
                       todos.
                       <br />
                       <br />
-                      <strong>⚠️ Important:</strong> Like any web application
-                      that handles API keys, there are inherent security
+                      <strong>Important:</strong> Like any web application that
+                      handles API keys, there are inherent security
                       considerations:
                       <ul
                         css={(theme) => ({
@@ -418,7 +530,7 @@ export const SettingsModal: React.FC<Props> = ({
                         size="tiny"
                         css={(theme) => ({ marginTop: theme.spacing(1) })}
                       >
-                        ✅ API key is set
+                        API key is set
                       </MutedLabel>
                     )}
                   </Col>
@@ -427,13 +539,89 @@ export const SettingsModal: React.FC<Props> = ({
                   <Row>
                     <Col>
                       <MutedLabel size="tiny">
-                        ⚠️ Cloud sync must be enabled to store your API key and
+                        Cloud sync must be enabled to store your API key and
                         access the processing service. Please enable cloud sync
                         in the General settings.
                       </MutedLabel>
                     </Col>
                   </Row>
                 )}
+              </>
+            )}
+
+            {/* Local Mode Settings */}
+            {processingMode === 'local' && (
+              <>
+                <Row>
+                  <Col>
+                    <Label size="small">Ollama Server URL</Label>
+                    <MutedLabel size="tiny">
+                      The URL of your local Ollama instance. Default is
+                      http://localhost:11434.
+                    </MutedLabel>
+                    <InputContainer>
+                      <Input
+                        type="text"
+                        value={ollamaUrl}
+                        onChange={(e) => onUpdateOllamaUrl(e.target.value)}
+                        placeholder="http://localhost:11434"
+                        aria-label="Ollama Server URL"
+                      />
+                    </InputContainer>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col>
+                    <Label size="small">Ollama Model</Label>
+                    <MutedLabel size="tiny">
+                      Specify the model to use (e.g., llama3.2, mistral,
+                      codellama). The model must be installed in Ollama. Run
+                      &quot;ollama pull [model]&quot; to install a model.
+                    </MutedLabel>
+                    <InputContainer>
+                      <Input
+                        type="text"
+                        value={ollamaModel}
+                        onChange={(e) => onUpdateOllamaModel(e.target.value)}
+                        placeholder="llama3.2"
+                        aria-label="Ollama Model"
+                      />
+                    </InputContainer>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col>
+                    <SpaceBetweenRow>
+                      <Button
+                        label={
+                          ollamaConnectionStatus === 'testing'
+                            ? 'Testing...'
+                            : 'Test Connection'
+                        }
+                        onClick={onTestOllamaConnection}
+                        disabled={
+                          !ollamaUrl || ollamaConnectionStatus === 'testing'
+                        }
+                      />
+                      <ConnectionStatus status={ollamaConnectionStatus}>
+                        {getConnectionStatusText(ollamaConnectionStatus)}
+                      </ConnectionStatus>
+                    </SpaceBetweenRow>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col>
+                    <MutedLabel size="tiny">
+                      <strong>Local Processing:</strong> Your todos are
+                      processed entirely on your machine. Nothing is sent to
+                      external servers. Make sure Ollama is running before
+                      enabling structured todos.
+                    </MutedLabel>
+                  </Col>
+                </Row>
               </>
             )}
           </Page>

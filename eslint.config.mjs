@@ -90,4 +90,28 @@ export default defineConfig([
       '@typescript-eslint/no-empty-function': 'off',
     },
   },
+  {
+    files: ['packages/shared/**/*.{ts,js}'],
+    extends: compat.extends(
+      'eslint:recommended',
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ),
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      prettier: prettier,
+    },
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      parser: tsParser,
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+    },
+  },
 ])

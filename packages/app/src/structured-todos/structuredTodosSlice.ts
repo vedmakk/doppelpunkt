@@ -1,12 +1,23 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { StructuredTodo, StructuredTodosState } from './types'
+import {
+  OllamaConnectionStatus,
+  ProcessingMode,
+  StructuredTodo,
+  StructuredTodosState,
+} from './types'
 
 // Initial state is a safe default. Actual persisted values are hydrated at store creation.
 const initialState: StructuredTodosState = {
   todos: [],
   enabled: false,
+  processingMode: 'cloud',
   apiKey: null, // Never loaded from storage (write-only)
   apiKeyIsSet: false,
+  ollamaConfig: {
+    url: 'http://localhost:11434',
+    model: '',
+  },
+  ollamaConnectionStatus: 'untested',
   isProcessing: false,
   error: undefined,
 }
@@ -55,11 +66,46 @@ const structuredTodosSlice = createSlice({
       state.lastProcessedContentHash = undefined
     },
 
+    // Processing mode actions
+    setProcessingMode(state, action: PayloadAction<ProcessingMode>) {
+      state.processingMode = action.payload
+    },
+
+    // Ollama configuration actions
+    setOllamaUrl(state, action: PayloadAction<string>) {
+      state.ollamaConfig = {
+        ...state.ollamaConfig,
+        url: action.payload,
+      }
+      // Reset connection status when URL changes
+      state.ollamaConnectionStatus = 'untested'
+    },
+
+    setOllamaModel(state, action: PayloadAction<string>) {
+      state.ollamaConfig = {
+        ...state.ollamaConfig,
+        model: action.payload,
+      }
+    },
+
+    setOllamaConnectionStatus(
+      state,
+      action: PayloadAction<OllamaConnectionStatus>,
+    ) {
+      state.ollamaConnectionStatus = action.payload
+    },
+
     clearAllStructuredTodosData(state) {
       state.todos = []
       state.enabled = false
+      state.processingMode = 'cloud'
       state.apiKey = null
       state.apiKeyIsSet = false
+      state.ollamaConfig = {
+        url: 'http://localhost:11434',
+        model: '',
+      }
+      state.ollamaConnectionStatus = 'untested'
       state.isProcessing = false
       state.error = undefined
       state.lastProcessedAt = undefined
@@ -78,5 +124,9 @@ export const {
   setProcessing,
   setStructuredTodosError,
   clearStructuredTodos,
+  setProcessingMode,
+  setOllamaUrl,
+  setOllamaModel,
+  setOllamaConnectionStatus,
   clearAllStructuredTodosData,
 } = structuredTodosSlice.actions

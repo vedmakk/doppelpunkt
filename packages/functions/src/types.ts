@@ -1,13 +1,9 @@
 // Type definitions for Firebase functions
 
-export interface StructuredTodo {
-  id: string
-  description: string
-  due?: number // Timestamp in milliseconds
-  priority?: 'low' | 'medium' | 'high'
-  completed?: boolean
-}
+// Re-export shared types
+export { StructuredTodo } from '@doppelpunkt/shared'
 
+// Function-specific types
 export interface StructuredTodosSettings {
   enabled: boolean
   hasApiKey?: boolean

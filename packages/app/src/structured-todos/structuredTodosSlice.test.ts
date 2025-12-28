@@ -10,6 +10,10 @@ import {
   setStructuredTodosError,
   clearStructuredTodos,
   clearAllStructuredTodosData,
+  setProcessingMode,
+  setOllamaUrl,
+  setOllamaModel,
+  setOllamaConnectionStatus,
 } from './structuredTodosSlice'
 import { StructuredTodosState, StructuredTodo } from './types'
 
@@ -20,8 +24,14 @@ describe('structuredTodosSlice', () => {
     initialState = {
       todos: [],
       enabled: false,
+      processingMode: 'cloud',
       apiKey: null,
       apiKeyIsSet: false,
+      ollamaConfig: {
+        url: 'http://localhost:11434',
+        model: '',
+      },
+      ollamaConnectionStatus: 'untested',
       isProcessing: false,
       error: undefined,
     }
@@ -150,6 +160,79 @@ describe('structuredTodosSlice', () => {
     })
   })
 
+  describe('processing mode', () => {
+    it('should set processing mode to local', () => {
+      const state = structuredTodosReducer(
+        initialState,
+        setProcessingMode('local'),
+      )
+      expect(state.processingMode).toBe('local')
+    })
+
+    it('should set processing mode to cloud', () => {
+      const localState = { ...initialState, processingMode: 'local' as const }
+      const state = structuredTodosReducer(
+        localState,
+        setProcessingMode('cloud'),
+      )
+      expect(state.processingMode).toBe('cloud')
+    })
+  })
+
+  describe('Ollama config', () => {
+    it('should set Ollama URL', () => {
+      const state = structuredTodosReducer(
+        initialState,
+        setOllamaUrl('http://custom:11434'),
+      )
+      expect(state.ollamaConfig.url).toBe('http://custom:11434')
+    })
+
+    it('should reset connection status when URL changes', () => {
+      const stateWithConnection = {
+        ...initialState,
+        ollamaConnectionStatus: 'success' as const,
+      }
+      const state = structuredTodosReducer(
+        stateWithConnection,
+        setOllamaUrl('http://other:11434'),
+      )
+      expect(state.ollamaConnectionStatus).toBe('untested')
+    })
+
+    it('should set Ollama model', () => {
+      const state = structuredTodosReducer(
+        initialState,
+        setOllamaModel('mistral'),
+      )
+      expect(state.ollamaConfig.model).toBe('mistral')
+    })
+
+    it('should set connection status to testing', () => {
+      const state = structuredTodosReducer(
+        initialState,
+        setOllamaConnectionStatus('testing'),
+      )
+      expect(state.ollamaConnectionStatus).toBe('testing')
+    })
+
+    it('should set connection status to success', () => {
+      const state = structuredTodosReducer(
+        initialState,
+        setOllamaConnectionStatus('success'),
+      )
+      expect(state.ollamaConnectionStatus).toBe('success')
+    })
+
+    it('should set connection status to failed', () => {
+      const state = structuredTodosReducer(
+        initialState,
+        setOllamaConnectionStatus('failed'),
+      )
+      expect(state.ollamaConnectionStatus).toBe('failed')
+    })
+  })
+
   describe('clearAllStructuredTodosData', () => {
     it('should reset all structured todos state to initial values', () => {
       // Create a state with all fields populated
@@ -164,8 +247,14 @@ describe('structuredTodosSlice', () => {
           },
         ],
         enabled: true,
+        processingMode: 'local',
         apiKey: 'test-api-key',
         apiKeyIsSet: true,
+        ollamaConfig: {
+          url: 'http://custom:11434',
+          model: 'llama3.2',
+        },
+        ollamaConnectionStatus: 'success',
         isProcessing: true,
         error: 'Some error',
         lastProcessedAt: Date.now(),
@@ -179,8 +268,12 @@ describe('structuredTodosSlice', () => {
       // Verify all fields are reset to initial state
       expect(state.todos).toEqual([])
       expect(state.enabled).toBe(false)
+      expect(state.processingMode).toBe('cloud')
       expect(state.apiKey).toBeNull()
       expect(state.apiKeyIsSet).toBe(false)
+      expect(state.ollamaConfig.url).toBe('http://localhost:11434')
+      expect(state.ollamaConfig.model).toBe('')
+      expect(state.ollamaConnectionStatus).toBe('untested')
       expect(state.isProcessing).toBe(false)
       expect(state.error).toBeUndefined()
       expect(state.lastProcessedAt).toBeUndefined()
