@@ -7,8 +7,17 @@ import {
   clearStructuredTodos,
   setProcessing,
   setStructuredTodosError,
+  setProcessingMode,
+  setOllamaUrl,
+  setOllamaModel,
 } from './structuredTodosSlice'
-import { StructuredTodosSettings, StructuredTodosState } from './types'
+import {
+  DEFAULT_OLLAMA_MODEL,
+  DEFAULT_OLLAMA_URL,
+  ProcessingMode,
+  StructuredTodosSettings,
+  StructuredTodosState,
+} from './types'
 import { StructuredTodosManager } from './StructuredTodosManager'
 import { safeLocalStorage } from '../shared/storage'
 import { setCloudEnabled } from '../cloudsync/cloudSlice'
@@ -18,11 +27,15 @@ import {
   setApiKeyToCloud,
   clearApiKeyFromCloud,
 } from './structuredTodosService'
+import { processWithOllama } from './ollamaService'
 
 const STRUCTURED_TODOS_KEY = 'structuredTodos'
 const STRUCTURED_TODOS_ENABLED_KEY = `${STRUCTURED_TODOS_KEY}.enabled`
 const STRUCTURED_TODOS_ITEMS_KEY = `${STRUCTURED_TODOS_KEY}.items`
 const STRUCTURED_TODOS_HASH_KEY = `${STRUCTURED_TODOS_KEY}.hash`
+const STRUCTURED_TODOS_PROCESSING_MODE_KEY = `${STRUCTURED_TODOS_KEY}.processingMode`
+const STRUCTURED_TODOS_OLLAMA_URL_KEY = `${STRUCTURED_TODOS_KEY}.ollamaUrl`
+const STRUCTURED_TODOS_OLLAMA_MODEL_KEY = `${STRUCTURED_TODOS_KEY}.ollamaModel`
 
 // Debounce timer for processing todos
 const PROCESS_DEBOUNCE_MS = 3000
@@ -43,11 +56,29 @@ export function hydrateStructuredTodosStateFromStorage(): {
     const storedHash = safeLocalStorage.getItem(STRUCTURED_TODOS_HASH_KEY)
     const todos = storedTodos ? JSON.parse(storedTodos) : []
 
+    // Load processing mode and Ollama config
+    const storedProcessingMode = safeLocalStorage.getItem(
+      STRUCTURED_TODOS_PROCESSING_MODE_KEY,
+    ) as ProcessingMode | null
+    const processingMode: ProcessingMode = storedProcessingMode || 'cloud'
+    const ollamaUrl =
+      safeLocalStorage.getItem(STRUCTURED_TODOS_OLLAMA_URL_KEY) ||
+      DEFAULT_OLLAMA_URL
+    const ollamaModel =
+      safeLocalStorage.getItem(STRUCTURED_TODOS_OLLAMA_MODEL_KEY) ||
+      DEFAULT_OLLAMA_MODEL
+
     const structuredTodos: StructuredTodosState = {
       todos,
       enabled,
+      processingMode,
       apiKey: null, // Never loaded from storage (write-only)
       apiKeyIsSet: false,
+      ollamaConfig: {
+        url: ollamaUrl,
+        model: ollamaModel,
+      },
+      ollamaConnectionStatus: 'untested',
       isProcessing: false,
       lastProcessedContentHash: storedHash ?? undefined,
       error: undefined,
@@ -59,8 +90,14 @@ export function hydrateStructuredTodosStateFromStorage(): {
     const structuredTodos: StructuredTodosState = {
       todos: [],
       enabled: false,
+      processingMode: 'cloud',
       apiKey: null,
       apiKeyIsSet: false,
+      ollamaConfig: {
+        url: DEFAULT_OLLAMA_URL,
+        model: DEFAULT_OLLAMA_MODEL,
+      },
+      ollamaConnectionStatus: 'untested',
       isProcessing: false,
       error: undefined,
     }
@@ -109,6 +146,33 @@ structuredTodosListenerMiddleware.startListening({
       } else {
         safeLocalStorage.removeItem(STRUCTURED_TODOS_HASH_KEY)
       }
+    } catch {
+      // Ignore storage failures
+    }
+  },
+})
+
+// Listen for processing mode and Ollama config changes and persist to localStorage
+structuredTodosListenerMiddleware.startListening({
+  matcher: isAnyOf(setProcessingMode, setOllamaUrl, setOllamaModel),
+  effect: async (_action, listenerApi) => {
+    const state: any = listenerApi.getState()
+    try {
+      // Persist processing mode
+      safeLocalStorage.setItem(
+        STRUCTURED_TODOS_PROCESSING_MODE_KEY,
+        state.structuredTodos.processingMode,
+      )
+
+      // Persist Ollama config
+      safeLocalStorage.setItem(
+        STRUCTURED_TODOS_OLLAMA_URL_KEY,
+        state.structuredTodos.ollamaConfig.url,
+      )
+      safeLocalStorage.setItem(
+        STRUCTURED_TODOS_OLLAMA_MODEL_KEY,
+        state.structuredTodos.ollamaConfig.model,
+      )
     } catch {
       // Ignore storage failures
     }
@@ -243,20 +307,23 @@ structuredTodosListenerMiddleware.startListening({
   },
 })
 
-// Cascade disable: when cloud is disabled, disable structured todos
+// Cascade disable: when cloud is disabled, disable structured todos (only if in cloud mode)
 structuredTodosListenerMiddleware.startListening({
   matcher: isAnyOf(setCloudEnabled),
   effect: async (action, api) => {
     const enabled = (action as unknown as { payload: boolean }).payload
-    if (!enabled) {
-      // Disable structured todos and clear cached data when cloud is disabled
+    const state: any = api.getState()
+    const processingMode = state.structuredTodos?.processingMode
+
+    if (!enabled && processingMode === 'cloud') {
+      // Disable structured todos and clear cached data when cloud is disabled (only for cloud mode)
       api.dispatch(setStructuredTodosEnabled(false))
       api.dispatch(clearStructuredTodos())
     }
   },
 })
 
-// Listen for todo text changes and call the cloud function
+// Listen for todo text changes and process todos (supports both cloud and local modes)
 structuredTodosListenerMiddleware.startListening({
   predicate: (action, currentState: any, previousState: any) => {
     // Ignore if this is a cloud-sourced update
@@ -264,15 +331,27 @@ structuredTodosListenerMiddleware.startListening({
       return false
     }
 
-    // Only trigger when structured todos is enabled and cloud is connected
+    // Must be enabled
     if (!currentState.structuredTodos?.enabled) {
       return false
     }
-    if (currentState.cloud?.status !== 'connected') {
-      return false
-    }
-    if (!currentState.cloud?.user) {
-      return false
+
+    const processingMode = currentState.structuredTodos?.processingMode
+
+    // Mode-specific requirements
+    if (processingMode === 'cloud') {
+      // Cloud mode: require cloud connected
+      if (currentState.cloud?.status !== 'connected') {
+        return false
+      }
+      if (!currentState.cloud?.user) {
+        return false
+      }
+    } else if (processingMode === 'local') {
+      // Local mode: require Ollama model to be set
+      if (!currentState.structuredTodos?.ollamaConfig?.model) {
+        return false
+      }
     }
 
     // Only trigger when todo text changes
@@ -285,16 +364,24 @@ structuredTodosListenerMiddleware.startListening({
     const state: any = listenerApi.getState()
     const todoText = state.editor?.documents?.todo?.text ?? ''
     const lastHash = state.structuredTodos?.lastProcessedContentHash
+    const processingMode = state.structuredTodos?.processingMode
+    const ollamaConfig = state.structuredTodos?.ollamaConfig
 
     // Clear any existing debounce timer
     if (processTimer) {
       clearTimeout(processTimer)
     }
 
+    // For local mode, include model in hash so switching models invalidates cache
+    const hashInput =
+      processingMode === 'local'
+        ? `${todoText}::${ollamaConfig?.model || ''}`
+        : todoText
+
     // Check if we even need to process (same content hash)
     let currentHash: string
     try {
-      currentHash = await generateContentHash(todoText)
+      currentHash = await generateContentHash(hashInput)
       if (currentHash === lastHash) {
         // Content hasn't changed, skip processing
         return
@@ -313,65 +400,109 @@ structuredTodosListenerMiddleware.startListening({
       if (!currentState.structuredTodos?.enabled) {
         return
       }
-      if (currentState.cloud?.status !== 'connected') {
-        return
-      }
-      const cloudUser = currentState.cloud?.user
-      if (!cloudUser) {
-        return
-      }
 
+      const currentProcessingMode = currentState.structuredTodos?.processingMode
+      const currentOllamaConfig = currentState.structuredTodos?.ollamaConfig
       const currentTodoText = currentState.editor?.documents?.todo?.text ?? ''
 
-      // Re-compute hash after debounce
-      let finalHash: string
-      try {
-        finalHash = await generateContentHash(currentTodoText)
-      } catch {
-        finalHash = ''
-      }
-
-      // Check if Firestore already has data with this hash
-      // (another client may have already processed it)
-      try {
-        const cloudData = await structuredTodosManager.loadTodosData(
-          cloudUser.uid,
-        )
-        if (cloudData && cloudData.contentHash === finalHash) {
-          // Cloud already has the latest data, use it instead of calling the function
-          listenerApi.dispatch(
-            setStructuredTodos({
-              todos: cloudData.todos,
-              contentHash: cloudData.contentHash,
-            }),
-          )
+      // Mode-specific re-checks
+      if (currentProcessingMode === 'cloud') {
+        if (currentState.cloud?.status !== 'connected') {
           return
         }
-      } catch {
-        // Continue with processing if cloud check fails
-      }
+        const cloudUser = currentState.cloud?.user
+        if (!cloudUser) {
+          return
+        }
 
-      try {
-        listenerApi.dispatch(setProcessing(true))
-        listenerApi.dispatch(setStructuredTodosError(undefined))
+        // Re-compute hash after debounce
+        let finalHash: string
+        try {
+          finalHash = await generateContentHash(currentTodoText)
+        } catch {
+          finalHash = ''
+        }
 
-        const result = await processTodos(currentTodoText)
+        // Check if Firestore already has data with this hash
+        // (another client may have already processed it)
+        try {
+          const cloudData = await structuredTodosManager.loadTodosData(
+            cloudUser.uid,
+          )
+          if (cloudData && cloudData.contentHash === finalHash) {
+            // Cloud already has the latest data, use it instead of calling the function
+            listenerApi.dispatch(
+              setStructuredTodos({
+                todos: cloudData.todos,
+                contentHash: cloudData.contentHash,
+              }),
+            )
+            return
+          }
+        } catch {
+          // Continue with processing if cloud check fails
+        }
 
-        listenerApi.dispatch(
-          setStructuredTodos({
-            todos: result.todos,
-            contentHash: result.contentHash,
-          }),
-        )
-      } catch (error) {
-        console.error('Failed to process todos:', error)
-        listenerApi.dispatch(
-          setStructuredTodosError(
-            error instanceof Error ? error.message : 'Failed to process todos',
-          ),
-        )
-      } finally {
-        listenerApi.dispatch(setProcessing(false))
+        // Process with cloud (OpenAI)
+        try {
+          listenerApi.dispatch(setProcessing(true))
+          listenerApi.dispatch(setStructuredTodosError(undefined))
+
+          const result = await processTodos(currentTodoText)
+
+          listenerApi.dispatch(
+            setStructuredTodos({
+              todos: result.todos,
+              contentHash: result.contentHash,
+            }),
+          )
+        } catch (error) {
+          console.error('Failed to process todos (cloud):', error)
+          listenerApi.dispatch(
+            setStructuredTodosError(
+              error instanceof Error
+                ? error.message
+                : 'Failed to process todos',
+            ),
+          )
+        } finally {
+          listenerApi.dispatch(setProcessing(false))
+        }
+      } else if (currentProcessingMode === 'local') {
+        // Local mode: check Ollama model is set
+        if (!currentOllamaConfig?.model) {
+          return
+        }
+
+        // Process with local Ollama
+        try {
+          listenerApi.dispatch(setProcessing(true))
+          listenerApi.dispatch(setStructuredTodosError(undefined))
+
+          const result = await processWithOllama(
+            currentOllamaConfig.url,
+            currentOllamaConfig.model,
+            currentTodoText,
+          )
+
+          listenerApi.dispatch(
+            setStructuredTodos({
+              todos: result.todos,
+              contentHash: result.contentHash,
+            }),
+          )
+        } catch (error) {
+          console.error('Failed to process todos (local):', error)
+          listenerApi.dispatch(
+            setStructuredTodosError(
+              error instanceof Error
+                ? error.message
+                : 'Failed to process todos with Ollama',
+            ),
+          )
+        } finally {
+          listenerApi.dispatch(setProcessing(false))
+        }
       }
     }, PROCESS_DEBOUNCE_MS)
   },

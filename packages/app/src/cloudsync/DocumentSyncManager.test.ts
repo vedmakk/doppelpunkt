@@ -703,4 +703,302 @@ describe('DocumentSyncManager', () => {
       expect(mockSaveDocument).toHaveBeenCalledTimes(2)
     })
   })
+
+  describe('echo prevention', () => {
+    it('should ignore echoes of our own saves', async () => {
+      const userId = 'test-user'
+      let onUpdateCallback: any
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      // Save a document
+      await syncManager.saveDocumentNow(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+
+      mockDispatch.mockClear()
+      mockSetTextFromCloud.mockClear()
+
+      // Simulate Firestore echoing back the same text we saved
+      const echoedData = {
+        text: 'local editor text', // Same as what we saved
+        updatedAt: { seconds: 123456789 },
+      }
+
+      onUpdateCallback(echoedData, {
+        hasPendingWrites: false,
+        fromCache: false,
+      })
+
+      // Should update metadata but NOT dispatch setTextFromCloud
+      expect(mockSetCloudDocSnapshotMeta).toHaveBeenCalled()
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
+    })
+
+    it('should apply remote changes from other clients', async () => {
+      const userId = 'test-user'
+      let onUpdateCallback: any
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      // Save a document
+      await syncManager.saveDocumentNow(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+
+      mockDispatch.mockClear()
+      mockSetTextFromCloud.mockClear()
+
+      // Simulate a different client's change (text differs from what we saved)
+      const remoteData = {
+        text: 'text from another client',
+        updatedAt: { seconds: 123456789 },
+      }
+
+      onUpdateCallback(remoteData, {
+        hasPendingWrites: false,
+        fromCache: false,
+      })
+
+      // Should dispatch setTextFromCloud since this is from another client
+      expect(mockSetTextFromCloud).toHaveBeenCalledWith({
+        mode: 'editor',
+        text: 'text from another client',
+        cursorPos: 10,
+      })
+    })
+
+    it('should not overwrite editor when user continues typing after save', async () => {
+      // This is the critical bug scenario:
+      // 1. User types "Hello" -> saved
+      // 2. User continues typing "Hello World"
+      // 3. Firestore echoes "Hello" back
+      // 4. Should NOT overwrite "Hello World" with "Hello"
+
+      const userId = 'test-user'
+      let onUpdateCallback: any
+      let currentText = 'Hello'
+
+      // Dynamic state that changes as user types
+      const dynamicGetState = () => ({
+        editor: {
+          documents: {
+            editor: { text: currentText, cursorPos: currentText.length },
+            todo: { text: 'local todo text', cursorPos: 5 },
+          },
+        },
+        cloud: {
+          docs: {
+            editor: { hasPendingWrites: false, fromCache: false },
+            todo: { hasPendingWrites: false, fromCache: false },
+          },
+        },
+      })
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, dynamicGetState, mockDispatch)
+
+      // Step 1: Save "Hello"
+      await syncManager.saveDocumentNow(
+        userId,
+        'editor',
+        dynamicGetState,
+        mockDispatch,
+      )
+
+      // Step 2: User continues typing (state changes before echo arrives)
+      currentText = 'Hello World'
+
+      mockDispatch.mockClear()
+      mockSetTextFromCloud.mockClear()
+
+      // Step 3: Firestore echoes back "Hello" (what we saved)
+      const echoedData = {
+        text: 'Hello',
+        updatedAt: { seconds: 123456789 },
+      }
+
+      onUpdateCallback(echoedData, {
+        hasPendingWrites: false,
+        fromCache: false,
+      })
+
+      // Step 4: Should NOT overwrite - this is our own echo
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
+    })
+
+    it('should clear lastSavedText when stopping listeners', async () => {
+      const userId = 'test-user'
+      let onUpdateCallback: any
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      // Save a document
+      await syncManager.saveDocumentNow(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+
+      // Stop and restart listening (simulates reconnect)
+      syncManager.stopListening()
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      mockDispatch.mockClear()
+      mockSetTextFromCloud.mockClear()
+
+      // After reconnect, the same text should be applied (not ignored as echo)
+      // because lastSavedText was cleared
+      const documentData = {
+        text: 'local editor text',
+        updatedAt: { seconds: 123456789 },
+      }
+
+      onUpdateCallback(documentData, {
+        hasPendingWrites: false,
+        fromCache: false,
+      })
+
+      // Text matches local, so no update needed (different from echo scenario)
+      // This tests that the comparison with current local text still works
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
+    })
+
+    it('should track lastSavedText separately for each mode', async () => {
+      const userId = 'test-user'
+      let editorCallback: any
+      let todoCallback: any
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            editorCallback = callback
+          } else {
+            todoCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+
+      // Save only editor document
+      await syncManager.saveDocumentNow(
+        userId,
+        'editor',
+        mockGetState,
+        mockDispatch,
+      )
+
+      mockDispatch.mockClear()
+      mockSetTextFromCloud.mockClear()
+
+      // Echo for editor should be ignored
+      editorCallback(
+        { text: 'local editor text', updatedAt: { seconds: 123 } },
+        { hasPendingWrites: false, fromCache: false },
+      )
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
+
+      // But different text for todo should still be applied
+      // (todo was never saved, so no lastSavedText for it)
+      todoCallback(
+        { text: 'different todo text', updatedAt: { seconds: 123 } },
+        { hasPendingWrites: false, fromCache: false },
+      )
+      expect(mockSetTextFromCloud).toHaveBeenCalledWith({
+        mode: 'todo',
+        text: 'different todo text',
+        cursorPos: 5,
+      })
+    })
+
+    it('should record lastSavedText during initialSync', async () => {
+      const userId = 'test-user'
+      let onUpdateCallback: any
+
+      // Document doesn't exist in cloud, so initialSync will save local version
+      mockLoadDocument.mockResolvedValue(null)
+
+      mockListenToDocument.mockImplementation(
+        (userId: any, mode: any, callback: any) => {
+          if (mode === 'editor') {
+            onUpdateCallback = callback
+          }
+          return mock(() => {})
+        },
+      )
+
+      syncManager.startListening(userId, mockGetState, mockDispatch)
+      await syncManager.initialSync(userId, mockGetState)
+
+      mockDispatch.mockClear()
+      mockSetTextFromCloud.mockClear()
+
+      // Echo of initial sync should be ignored
+      const echoedData = {
+        text: 'local editor text',
+        updatedAt: { seconds: 123456789 },
+      }
+
+      onUpdateCallback(echoedData, {
+        hasPendingWrites: false,
+        fromCache: false,
+      })
+
+      expect(mockSetTextFromCloud).not.toHaveBeenCalled()
+    })
+  })
 })

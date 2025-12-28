@@ -28,6 +28,8 @@ export class DocumentSyncManager {
   private saveTimers: Partial<
     Record<WritingMode, ReturnType<typeof setTimeout>>
   > = {}
+  // Track what we last saved to ignore our own echoes
+  private lastSavedText: Partial<Record<WritingMode, string>> = {}
 
   startListening(
     userId: string,
@@ -56,11 +58,18 @@ export class DocumentSyncManager {
             return
           }
 
+          // Ignore our own echoes - if this matches what we last saved, skip it
+          if (this.lastSavedText[mode] === documentData.text) {
+            log(`Ignoring echo for '${mode}' - matches last saved text`)
+            return
+          }
+
           const state = getState()
           const localDocument = state.editor.documents[mode]
 
           // Apply remote text if it differs from local
           if (localDocument.text !== documentData.text) {
+            log(`Applying remote text for '${mode}'`)
             dispatch(
               setTextFromCloud({
                 mode,
@@ -89,6 +98,9 @@ export class DocumentSyncManager {
       if (unsubscribe) unsubscribe()
     })
     this.documentListeners = {}
+
+    // Clear saved text tracking
+    this.lastSavedText = {}
   }
 
   /**
@@ -141,6 +153,9 @@ export class DocumentSyncManager {
       const state = getState()
       const text = state.editor.documents[mode].text
 
+      // Record what we're saving to ignore the echo when it comes back
+      this.lastSavedText[mode] = text
+
       await saveDocument(userId, mode, text)
       dispatch(setCloudError(undefined))
     } catch {
@@ -164,6 +179,9 @@ export class DocumentSyncManager {
             )
             const state = getState()
             const localText = state.editor.documents[mode].text
+
+            // Record what we're saving to ignore the echo
+            this.lastSavedText[mode] = localText
 
             await saveDocument(userId, mode, localText)
           }

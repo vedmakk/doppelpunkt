@@ -83,20 +83,47 @@ export const selectCompletedTodos = createSelector(
 export const selectStructuredTodosApiKeyIsSet = (state: RootState) =>
   state.structuredTodos.apiKeyIsSet
 
-// Dependency enforcement selector
+// Processing mode selectors
+export const selectProcessingMode = (state: RootState) =>
+  state.structuredTodos.processingMode
+
+export const selectOllamaConfig = (state: RootState) =>
+  state.structuredTodos.ollamaConfig
+
+export const selectOllamaConnectionStatus = (state: RootState) =>
+  state.structuredTodos.ollamaConnectionStatus
+
+// Dependency enforcement selector - mode-aware
 export const selectStructuredTodosDependencyStatus = createSelector(
-  [selectCloudEnabled, selectCloudStatus],
-  (cloudEnabled, cloudStatus) => {
+  [
+    selectCloudEnabled,
+    selectCloudStatus,
+    selectProcessingMode,
+    selectOllamaConfig,
+  ],
+  (cloudEnabled, cloudStatus, processingMode, ollamaConfig) => {
+    // Local mode has no cloud dependency
+    if (processingMode === 'local') {
+      if (!ollamaConfig.model) {
+        return {
+          canEnable: false,
+          disabledReason: 'Please specify an Ollama model',
+        }
+      }
+      return { canEnable: true, disabledReason: undefined }
+    }
+
+    // Cloud mode - require cloud sync
     if (!cloudEnabled) {
       return {
         canEnable: false,
-        disabledReason: 'Cloud sync must be enabled first',
+        disabledReason: 'Cloud mode requires cloud sync to be enabled',
       }
     }
     if (cloudStatus !== 'connected') {
       return {
         canEnable: false,
-        disabledReason: 'Waiting for cloud sync connection',
+        disabledReason: 'Waiting for cloud sync connection (Signed in?)',
       }
     }
     return { canEnable: true, disabledReason: undefined }

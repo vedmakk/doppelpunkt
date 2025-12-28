@@ -84,8 +84,10 @@ export class StructuredTodosManager {
     const settingsSnap = await getDoc(settingsRef)
     if (settingsSnap.exists()) {
       const settings = settingsSnap.data() as StructuredTodosSettings
-      // Sync enabled state and hasApiKey flag
-      dispatch(setStructuredTodosEnabled(settings.enabled))
+      // Only sync enabled state if it's explicitly set in the document
+      if (settings.enabled !== undefined) {
+        dispatch(setStructuredTodosEnabled(settings.enabled))
+      }
       dispatch(setApiKeyIsSet(settings.hasApiKey ?? false))
     }
 
@@ -96,8 +98,10 @@ export class StructuredTodosManager {
 
         log('Received structured todos settings update', settings)
 
-        // Sync enabled state and hasApiKey flag
-        dispatch(setStructuredTodosEnabled(settings.enabled))
+        // Only sync enabled state if it's explicitly set in the document
+        if (settings.enabled !== undefined) {
+          dispatch(setStructuredTodosEnabled(settings.enabled))
+        }
         dispatch(setApiKeyIsSet(settings.hasApiKey ?? false))
       }
     })

@@ -41,6 +41,14 @@ const SettingsModal: React.FC = () => {
     toggleEnabled: toggleStructuredTodos,
     updateApiKey,
     clearKey: clearApiKey,
+    processingMode,
+    ollamaConfig,
+    ollamaConnectionStatus,
+    error: ollamaConnectionError,
+    setMode: setProcessingMode,
+    updateOllamaUrl,
+    updateOllamaModel,
+    testOllamaConnection,
   } = useStructuredTodos()
 
   const structuredTodosDependencyStatus = useAppSelector(
@@ -107,6 +115,15 @@ const SettingsModal: React.FC = () => {
       onUpdateApiKey={updateApiKey}
       onClearApiKey={clearApiKey}
       structuredTodosDependencyStatus={structuredTodosDependencyStatus}
+      processingMode={processingMode}
+      ollamaUrl={ollamaConfig.url}
+      ollamaModel={ollamaConfig.model}
+      ollamaConnectionStatus={ollamaConnectionStatus}
+      ollamaConnectionError={ollamaConnectionError}
+      onChangeProcessingMode={setProcessingMode}
+      onUpdateOllamaUrl={updateOllamaUrl}
+      onUpdateOllamaModel={updateOllamaModel}
+      onTestOllamaConnection={testOllamaConnection}
     />
   )
 }

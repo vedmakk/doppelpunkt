@@ -1,0 +1,28 @@
+{
+  "name": "@doppelpunkt/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint --ext .js,.ts .",
+    "test": "bun test",
+    "test:ci": "CI=true bun test"
+  },
+  "dependencies": {
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.24.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/bun": "^1.2.22",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^9.35.0",
+    "globals": "^16.4.0",
+    "typescript": "^5.9.2"
+  }
+}

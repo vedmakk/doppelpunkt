@@ -32,8 +32,12 @@ Features a `todo.txt`-like document to keep track of your todos in natural langu
 ☁️ **Cloud Sync (opt‑in)**  
 Sync your `editor` and `todo` documents across devices using Firebase Auth + Firestore.
 
-🤖 **Structured Todos (opt‑in)**  
-Automatically extract and organize todos from your todo document using AI. When enabled with your OpenAI API key, the app intelligently parses your natural language tasks, assigns due dates, and displays them in an organized list. Tasks are grouped by "Today", "Upcoming" (next 7 days), and "More" for better task management.
+🤖 **Structured Todos (opt‑in)**
+Automatically extract and organize todos from your todo document using AI. The app intelligently parses your natural language tasks, assigns due dates, and displays them in an organized list. Tasks are grouped by "Today", "Upcoming" (next 7 days), and "More" for better task management.
+
+Two processing modes are available:
+- **Cloud (OpenAI)**: Uses OpenAI API via Firebase Cloud Functions. Requires cloud sync and your own API key.
+- **Local (Ollama)**: Uses a local Ollama instance on your machine. No cloud required, completely private.
 
 ↩️↪️ **Undo/Redo**  
 Supports full undo/redo history for text changes.
@@ -46,7 +50,8 @@ Supports full undo/redo history for text changes.
 - [Redux Toolkit](https://redux-toolkit.js.org/)
 - [@emotion/react](https://emotion.sh/docs/introduction)
 - [Firebase](https://firebase.google.com/)
-- [OpenAI API](https://openai.com/)
+- [OpenAI API](https://openai.com/) (cloud mode)
+- [Ollama](https://ollama.ai/) (local mode)
 
 ### Libraries Used
 
@@ -159,6 +164,30 @@ This file is read by the Firebase emulator and is already in `.gitignore`.
 2. Toggle "Cloud sync" on.
 3. Sign in with Google.
 4. Edits are saved locally (LocalStorage) and synced to Firestore with a short debounce. Remote updates propagate live to the editor.
+
+## 🤖 Local AI with Ollama
+
+Structured Todos can run entirely on your machine using [Ollama](https://ollama.ai), with no cloud services required.
+
+### Setup
+
+1. Install Ollama from https://ollama.ai
+2. Pull a model: `ollama pull llama3.2` (or any model that supports structured outputs)
+3. Start Ollama: `ollama serve`
+4. In the app, go to Settings → Structured Todos
+5. Select "Local (Ollama)" processing mode
+6. Enter your model name and click "Test Connection"
+7. Enable Structured Todos
+
+### CORS Configuration
+
+If you're accessing the app from a non-localhost origin (e.g., https://doppelpunkt.io) or running Ollama on a different machine, configure CORS:
+
+```bash
+OLLAMA_ORIGINS=* ollama serve
+# Or specify specific origins:
+OLLAMA_ORIGINS=https://doppelpunkt.io ollama serve
+```
 
 ## 📜 License
 
