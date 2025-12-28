@@ -8,13 +8,6 @@ export interface StructuredTodo {
   completed?: boolean
 }
 
-export interface DocumentData {
-  text: string
-  updatedAt: any // Firestore Timestamp
-  rev: number
-  structuredTodos?: StructuredTodo[]
-}
-
 export interface StructuredTodosSettings {
   enabled: boolean
   apiKey?: string

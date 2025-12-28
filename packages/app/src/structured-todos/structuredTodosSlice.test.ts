@@ -94,11 +94,12 @@ describe('structuredTodosSlice', () => {
     it('should set structured todos', () => {
       const state = structuredTodosReducer(
         initialState,
-        setStructuredTodos(mockTodos),
+        setStructuredTodos({ todos: mockTodos, contentHash: 'abc123' }),
       )
 
       expect(state.todos).toEqual(mockTodos)
       expect(state.lastProcessedAt).toBeDefined()
+      expect(state.lastProcessedContentHash).toBe('abc123')
     })
 
     it('should clear all structured todos', () => {

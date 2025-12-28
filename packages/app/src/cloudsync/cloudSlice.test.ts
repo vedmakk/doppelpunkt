@@ -4,7 +4,6 @@ import {
   setCloudStatus,
   setCloudUser,
   setCloudError,
-  setCloudDocBase,
   setCloudDocSnapshotMeta,
   requestGoogleSignIn,
   requestSignOut,
@@ -121,56 +120,6 @@ describe('cloudSlice', () => {
       // Then clear it
       store.dispatch(setCloudError(undefined))
       expect(getCloudState().error).toBeUndefined()
-    })
-  })
-
-  describe('setCloudDocBase', () => {
-    it(`should handle ${setCloudDocBase.type} action for editor mode`, () => {
-      const store = createStore()
-      const getCloudState = () => store.getState().cloud
-
-      const initialEditorDoc = getCloudState().docs.editor
-      expect(initialEditorDoc.baseRev).toBe(0)
-      expect(initialEditorDoc.baseText).toBe('')
-
-      store.dispatch(
-        setCloudDocBase({
-          mode: 'editor',
-          baseRev: 5,
-          baseText: 'Updated editor content',
-        }),
-      )
-
-      const updatedEditorDoc = getCloudState().docs.editor
-      expect(updatedEditorDoc.baseRev).toBe(5)
-      expect(updatedEditorDoc.baseText).toBe('Updated editor content')
-
-      // Should not affect todo doc
-      const todoDoc = getCloudState().docs.todo
-      expect(todoDoc.baseRev).toBe(0)
-      expect(todoDoc.baseText).toBe('')
-    })
-
-    it(`should handle ${setCloudDocBase.type} action for todo mode`, () => {
-      const store = createStore()
-      const getCloudState = () => store.getState().cloud
-
-      store.dispatch(
-        setCloudDocBase({
-          mode: 'todo',
-          baseRev: 3,
-          baseText: '- Todo item 1\n- Todo item 2',
-        }),
-      )
-
-      const todoDoc = getCloudState().docs.todo
-      expect(todoDoc.baseRev).toBe(3)
-      expect(todoDoc.baseText).toBe('- Todo item 1\n- Todo item 2')
-
-      // Should not affect editor doc
-      const editorDoc = getCloudState().docs.editor
-      expect(editorDoc.baseRev).toBe(0)
-      expect(editorDoc.baseText).toBe('')
     })
   })
 
@@ -291,14 +240,7 @@ describe('cloudSlice', () => {
       expect(getCloudState().user).toEqual(userData)
       expect(getCloudState().status).toBe('connected')
 
-      // Sync documents
-      store.dispatch(
-        setCloudDocBase({
-          mode: 'editor',
-          baseRev: 1,
-          baseText: 'Initial content',
-        }),
-      )
+      // Sync documents - update snapshot metadata
       store.dispatch(
         setCloudDocSnapshotMeta({
           mode: 'editor',
@@ -308,8 +250,6 @@ describe('cloudSlice', () => {
       )
 
       const editorDoc = getCloudState().docs.editor
-      expect(editorDoc.baseRev).toBe(1)
-      expect(editorDoc.baseText).toBe('Initial content')
       expect(editorDoc.hasPendingWrites).toBe(false)
       expect(editorDoc.fromCache).toBe(false)
     })

@@ -143,7 +143,7 @@ Security rules (`firestore.rules`) restrict access to a user's own docs.
 1. Open Settings → General.
 2. Toggle "Cloud sync" on.
 3. Sign in with Google.
-4. Edits are saved locally (LocalStorage) and synced to Firestore with a 1s debounce. Remote updates propagate live to the editor.
+4. Edits are saved locally (LocalStorage) and synced to Firestore with a short debounce. Remote updates propagate live to the editor.
 
 ## 📜 License
 

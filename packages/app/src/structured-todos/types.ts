@@ -15,6 +15,7 @@ export interface StructuredTodosState {
   readonly apiKeyIsSet: boolean
   readonly isProcessing: boolean
   readonly lastProcessedAt?: number
+  readonly lastProcessedContentHash?: string // Hash of content that was last processed
   readonly error?: string
 }
 

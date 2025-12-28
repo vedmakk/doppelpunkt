@@ -65,8 +65,6 @@ const TodosList = styled.ul(({ theme }) => ({
   padding: theme.spacing(2),
 }))
 
-const StatusMessage = styled(MutedLabel)({})
-
 const ErrorMessage = styled(MutedLabel)(({ theme }) => ({
   padding: theme.spacing(1),
   borderRadius: '4px',
@@ -83,7 +81,6 @@ export const StructuredTodosList: React.FC<Props> = ({
   upcomingTodos,
   futureTodos,
   noDueDateTodos,
-  isProcessing,
   error,
 }) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -106,14 +103,6 @@ export const StructuredTodosList: React.FC<Props> = ({
     return (
       <Container>
         <ErrorMessage size="tiny">Error: {error}</ErrorMessage>
-      </Container>
-    )
-  }
-
-  if (isProcessing) {
-    return (
-      <Container>
-        <StatusMessage size="tiny">Processing todos...</StatusMessage>
       </Container>
     )
   }

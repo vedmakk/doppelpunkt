@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, mock } from 'bun:test'
 import { StructuredTodosProcessor } from './structuredTodosProcessor'
-import type { DocumentData } from './types'
 
 // Mock the OpenAI module
 const mockOpenAI = {
@@ -38,26 +37,17 @@ describe('StructuredTodosProcessor', () => {
   })
 
   describe('extractTodos', () => {
-    it('should return empty array for empty afterDoc.text', async () => {
-      const afterDoc: DocumentData = {
-        text: '',
-        updatedAt: new Date(),
-        rev: 2,
-      }
-
-      const result = await processor.extractTodos(afterDoc)
+    it('should return empty array for empty text', async () => {
+      const result = await processor.extractTodos('')
       expect(result).toEqual([])
       expect(mockOpenAI.responses.parse).not.toHaveBeenCalled()
     })
 
-    it('should extract todos from valid afterDoc', async () => {
-      const afterDoc: DocumentData = {
-        text: 'I need to buy groceries tomorrow and finish the project by Friday',
-        updatedAt: new Date(),
-        rev: 3,
-      }
+    it('should extract todos from valid text', async () => {
+      const text =
+        'I need to buy groceries tomorrow and finish the project by Friday'
 
-      const result = await processor.extractTodos(afterDoc)
+      const result = await processor.extractTodos(text)
 
       expect(result).toHaveLength(1)
       expect(result[0]).toHaveProperty('id', 'todo-0')
@@ -68,43 +58,11 @@ describe('StructuredTodosProcessor', () => {
       expect(result[0]).toHaveProperty('completed', false)
 
       expect(mockOpenAI.responses.parse).toHaveBeenCalledTimes(1)
-      // Ensure input is messages array containing the afterDoc text
+      // Ensure input is messages array containing the text
       const callArgs = mockOpenAI.responses.parse.mock.calls[0][0]!
       expect(Array.isArray(callArgs.input)).toBe(true)
       expect(callArgs.input[0].role).toBe('user')
-      expect(callArgs.input[0].content).toBe(afterDoc.text)
-    })
-
-    it('should include prevDoc context when provided', async () => {
-      const prevDoc: DocumentData = {
-        text: 'Previous text with tasks: buy milk',
-        updatedAt: new Date(Date.now() - 1000 * 60),
-        rev: 2,
-        structuredTodos: [
-          {
-            id: 'todo-0',
-            description: 'buy milk',
-            completed: false,
-          },
-        ],
-      }
-      const afterDoc: DocumentData = {
-        text: 'Add bread to list and mark milk as done',
-        updatedAt: new Date(),
-        rev: 3,
-      }
-
-      await processor.extractTodos(afterDoc, prevDoc)
-      expect(mockOpenAI.responses.parse).toHaveBeenCalledTimes(1)
-      const callArgs = mockOpenAI.responses.parse.mock.calls[0][0]!
-      expect(Array.isArray(callArgs.input)).toBe(true)
-      expect(callArgs.input).toHaveLength(3)
-      expect(callArgs.input[0].role).toBe('user')
-      expect(callArgs.input[0].content).toBe(prevDoc.text)
-      expect(callArgs.input[1].role).toBe('assistant')
-      expect(typeof callArgs.input[1].content).toBe('string')
-      expect(callArgs.input[2].role).toBe('user')
-      expect(callArgs.input[2].content).toBe(afterDoc.text)
+      expect(callArgs.input[0].content).toBe(text)
     })
 
     it('should handle API errors gracefully', async () => {
@@ -116,13 +74,9 @@ describe('StructuredTodosProcessor', () => {
           new Error('API Error: Invalid request'),
         )
 
-        const afterDoc: DocumentData = {
-          text: 'Test todo text that is long enough to process',
-          updatedAt: new Date(),
-          rev: 1,
-        }
+        const text = 'Test todo text that is long enough to process'
 
-        await expect(processor.extractTodos(afterDoc)).rejects.toThrow()
+        await expect(processor.extractTodos(text)).rejects.toThrow()
         expect(mockOpenAI.responses.parse).toHaveBeenCalledTimes(1)
       } finally {
         console.error = originalConsoleError
@@ -134,15 +88,63 @@ describe('StructuredTodosProcessor', () => {
         output_parsed: { todos: [] },
       })
 
-      const afterDoc: DocumentData = {
-        text: 'Test todo text that is long enough to process',
-        updatedAt: new Date(),
-        rev: 1,
-      }
+      const text = 'Test todo text that is long enough to process'
 
-      const result = await processor.extractTodos(afterDoc)
+      const result = await processor.extractTodos(text)
       expect(result).toEqual([])
       expect(mockOpenAI.responses.parse).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle multiple todos in response', async () => {
+      mockOpenAI.responses.parse.mockResolvedValueOnce({
+        output_parsed: {
+          todos: [
+            {
+              description: 'First todo',
+              priority: 'high',
+              completed: false,
+            },
+            {
+              description: 'Second todo',
+              due: '2024-02-01',
+              completed: true,
+            },
+          ],
+        },
+      })
+
+      const text = 'I have multiple tasks to do'
+
+      const result = await processor.extractTodos(text)
+      expect(result).toHaveLength(2)
+      expect(result[0].id).toBe('todo-0')
+      expect(result[0].description).toBe('First todo')
+      expect(result[1].id).toBe('todo-1')
+      expect(result[1].description).toBe('Second todo')
+    })
+
+    it('should handle null values in optional fields', async () => {
+      mockOpenAI.responses.parse.mockResolvedValueOnce({
+        output_parsed: {
+          todos: [
+            {
+              description: 'Simple todo',
+              due: null,
+              priority: null,
+              completed: null,
+            },
+          ],
+        },
+      })
+
+      const text = 'A simple todo without details'
+
+      const result = await processor.extractTodos(text)
+      expect(result).toHaveLength(1)
+      expect(result[0].description).toBe('Simple todo')
+      expect(result[0].due).toBeUndefined()
+      expect(result[0].priority).toBeUndefined()
+      expect(result[0].completed).toBeUndefined()
     })
   })
 })

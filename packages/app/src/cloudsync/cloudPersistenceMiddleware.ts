@@ -18,8 +18,6 @@ import {
   setCloudUser,
   setTextFromCloud,
   appInitialized,
-  flushDocumentSave,
-  flushAllDocumentSaves,
 } from './cloudSlice'
 
 // Import our manager classes
@@ -200,7 +198,7 @@ cloudListenerMiddleware.startListening({
 
     // Perform initial sync to write local documents to cloud if they don't exist
     try {
-      await documentSyncManager.initialSync(userId, api.getState, api.dispatch)
+      await documentSyncManager.initialSync(userId, api.getState)
     } catch {
       api.dispatch(setCloudError('Failed to perform initial sync'))
     }
@@ -211,7 +209,17 @@ cloudListenerMiddleware.startListening({
 cloudListenerMiddleware.startListening({
   predicate: (_action, currentState, previousState) =>
     isCloudSyncReady(previousState) && !isCloudSyncReady(currentState),
-  effect: async () => {
+  effect: async (_action, api) => {
+    // Flush any pending saves before disconnecting
+    const state: any = api.getState()
+    const userId = state.cloud?.user?.uid
+    if (userId) {
+      await documentSyncManager.flushPendingSaves(
+        userId,
+        api.getState,
+        api.dispatch,
+      )
+    }
     documentSyncManager.stopListening()
   },
 })
@@ -230,7 +238,7 @@ cloudListenerMiddleware.startListening({
 
 // === Document Change Listeners ===
 
-// Handle editor document changes
+// Handle editor document changes - debounced save
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
@@ -261,6 +269,7 @@ cloudListenerMiddleware.startListening({
 
     const userId = state.cloud.user.uid
 
+    // Schedule debounced save (1s)
     documentSyncManager.scheduleDocumentSave(
       userId,
       'editor',
@@ -270,7 +279,7 @@ cloudListenerMiddleware.startListening({
   },
 })
 
-// Handle todo document changes
+// Handle todo document changes - debounced save
 cloudListenerMiddleware.startListening({
   predicate: (action, currentState, previousState) => {
     // Ignore setText actions that came from cloud
@@ -300,41 +309,13 @@ cloudListenerMiddleware.startListening({
 
     const userId = state.cloud.user.uid
 
+    // Schedule debounced save (1s)
     documentSyncManager.scheduleDocumentSave(
       userId,
       'todo',
       api.getState,
       api.dispatch,
     )
-  },
-})
-
-// Centralized flush handler for all lifecycle events
-cloudListenerMiddleware.startListening({
-  matcher: isAnyOf(flushDocumentSave, flushAllDocumentSaves),
-  effect: async (action, api) => {
-    const state: any = api.getState()
-
-    if (!isCloudSyncReady(state)) return
-
-    const userId = state.cloud.user.uid
-
-    if (action.type === flushDocumentSave.type) {
-      const { mode } = (action as any).payload
-      documentSyncManager.flushPendingSave(
-        userId,
-        mode,
-        api.getState,
-        api.dispatch,
-      )
-    } else {
-      // flushAllDocumentSaves
-      documentSyncManager.flushAllPendingSaves(
-        userId,
-        api.getState,
-        api.dispatch,
-      )
-    }
   },
 })
 
@@ -361,27 +342,20 @@ export function hydrateCloudStateFromStorage() {
     cloud: {
       enabled,
       status: 'idle' as const,
-      isUploading: false,
       user: null,
       error: undefined,
       docs: {
         editor: {
-          baseRev: 0,
-          baseText: '',
           hasPendingWrites: false,
           fromCache: false,
         },
         todo: {
-          baseRev: 0,
-          baseText: '',
           hasPendingWrites: false,
           fromCache: false,
         },
       } as Record<
         WritingMode,
         {
-          baseRev: number
-          baseText: string
           hasPendingWrites: boolean
           fromCache: boolean
         }

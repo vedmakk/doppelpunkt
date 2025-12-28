@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 import { z } from 'zod'
 import { zodTextFormat } from 'openai/helpers/zod'
-import { DocumentData, StructuredTodo } from './types'
+import { StructuredTodo } from './types'
 
 // Define the schema for structured output
 const TodoSchema = z.object({
@@ -36,13 +36,10 @@ export class StructuredTodosProcessor {
     this.openai = new OpenAI({ apiKey })
   }
 
-  async extractTodos(
-    afterDoc: DocumentData,
-    prevDoc?: DocumentData,
-  ): Promise<StructuredTodo[]> {
+  async extractTodos(text: string): Promise<StructuredTodo[]> {
     try {
       // Skip processing if text is empty
-      if (!afterDoc.text) {
+      if (!text) {
         return []
       }
 
@@ -66,36 +63,18 @@ Context:
 Current date: ${new Date().toISOString()}
 
 Considerations:
-This task extraction will run every time the user updates the free text in their todo document.
+This task extraction will run when the user requests it after updating their todo document.
 The extracted structured todos will be displayed to the user next to the free text. The free text is
 the user's main source of truth for their todos and the details of each todo. The extracted structured todos should only
 give an overview of the user's todos in the sense of an outline.
-We want to avoid that the structured todos are changing unnecessarily, therefore keep task names consistent with previously extracted structured todo's and only update the tasks that have changed meaningfully, have been removed or added.
 `
 
-      let input: OpenAI.Responses.ResponseInputItem[] = [
+      const input: OpenAI.Responses.ResponseInputItem[] = [
         {
           role: 'user',
-          content: afterDoc.text,
+          content: text,
         },
       ]
-
-      if (prevDoc && prevDoc.text && prevDoc.structuredTodos) {
-        input = [
-          {
-            role: 'user',
-            content: prevDoc.text,
-          },
-          {
-            role: 'assistant',
-            content: JSON.stringify(prevDoc.structuredTodos),
-          },
-          {
-            role: 'user',
-            content: afterDoc.text,
-          },
-        ]
-      }
 
       // Use standard completion API with structured JSON
       const response = await this.openai.responses.parse({
@@ -117,7 +96,7 @@ We want to avoid that the structured todos are changing unnecessarily, therefore
         return []
       }
 
-      // Ensure all todos have valid IDs and filter out undefined values for Firestore
+      // Ensure all todos have valid IDs and filter out undefined values
       return result.todos.map(
         (todo: z.infer<typeof TodoSchema>, index: number): StructuredTodo => {
           const structuredTodo: StructuredTodo = {

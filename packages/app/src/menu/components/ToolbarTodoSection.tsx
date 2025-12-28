@@ -1,18 +1,40 @@
 import React from 'react'
+import styled from '@emotion/styled'
 
 import { SectionTitle } from './SectionTitle'
 import { SectionContainer } from './SectionContainer'
 import { StructuredTodosList } from '../../structured-todos/containers/StructuredTodosList'
 import { MutedLabel } from './MutedLabel'
+import { ProcessingIndicator } from '../../structured-todos/components/ProcessingIndicator'
 
 interface Props {
   structuredTodosEnabled: boolean
+  isProcessing: boolean
 }
 
-const ToolbarTodoSection: React.FC<Props> = ({ structuredTodosEnabled }) => {
+const TitleRow = styled.div(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+}))
+
+const TitleText = styled(SectionTitle)({
+  margin: 0,
+})
+
+const ToolbarTodoSection: React.FC<Props> = ({
+  structuredTodosEnabled,
+  isProcessing,
+}) => {
   return (
     <SectionContainer as="section" aria-label="Todo tools">
-      <SectionTitle>Todo</SectionTitle>
+      <TitleRow>
+        <TitleText>Todo</TitleText>
+        {isProcessing && (
+          <ProcessingIndicator size="small" tooltip="Processing todos..." />
+        )}
+      </TitleRow>
       {structuredTodosEnabled ? (
         <StructuredTodosList />
       ) : (
