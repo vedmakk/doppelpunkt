@@ -88,7 +88,11 @@ export const useStructuredTodos = () => {
   const testOllamaConnection = useCallback(async () => {
     dispatch(setOllamaConnectionStatus('testing'))
     try {
-      const result = await testOllamaConnectionService(ollamaConfig.url)
+      // Pass model to verify it exists on the server
+      const result = await testOllamaConnectionService(
+        ollamaConfig.url,
+        ollamaConfig.model,
+      )
       dispatch(setOllamaConnectionStatus(result.success ? 'success' : 'failed'))
       if (!result.success && result.error) {
         dispatch(setStructuredTodosError(result.error))
@@ -103,7 +107,7 @@ export const useStructuredTodos = () => {
       dispatch(setStructuredTodosError(errorMessage))
       return { success: false, error: errorMessage }
     }
-  }, [dispatch, ollamaConfig.url])
+  }, [dispatch, ollamaConfig.url, ollamaConfig.model])
 
   return {
     enabled,

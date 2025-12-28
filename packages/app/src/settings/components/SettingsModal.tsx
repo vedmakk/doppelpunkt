@@ -57,6 +57,7 @@ interface Props {
   readonly ollamaUrl: string
   readonly ollamaModel: string
   readonly ollamaConnectionStatus: OllamaConnectionStatus
+  readonly ollamaConnectionError?: string
   readonly onChangeProcessingMode: (mode: ProcessingMode) => void
   readonly onUpdateOllamaUrl: (url: string) => void
   readonly onUpdateOllamaModel: (model: string) => void
@@ -227,6 +228,7 @@ export const SettingsModal: React.FC<Props> = ({
   ollamaUrl,
   ollamaModel,
   ollamaConnectionStatus,
+  ollamaConnectionError,
   onChangeProcessingMode,
   onUpdateOllamaUrl,
   onUpdateOllamaModel,
@@ -598,7 +600,7 @@ export const SettingsModal: React.FC<Props> = ({
 
                 <Row>
                   <Col>
-                    <SpaceBetweenRow>
+                    <Row>
                       <Button
                         label={
                           ollamaConnectionStatus === 'testing'
@@ -613,7 +615,13 @@ export const SettingsModal: React.FC<Props> = ({
                       <ConnectionStatus status={ollamaConnectionStatus}>
                         {getConnectionStatusText(ollamaConnectionStatus)}
                       </ConnectionStatus>
-                    </SpaceBetweenRow>
+                    </Row>
+                    {ollamaConnectionStatus === 'failed' &&
+                      ollamaConnectionError && (
+                        <DisabledReasonText>
+                          {ollamaConnectionError}
+                        </DisabledReasonText>
+                      )}
                   </Col>
                 </Row>
 
@@ -624,6 +632,19 @@ export const SettingsModal: React.FC<Props> = ({
                       processed entirely on your machine. Nothing is sent to
                       external servers. Make sure Ollama is running before
                       enabling structured todos.
+                    </MutedLabel>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col>
+                    <MutedLabel size="tiny">
+                      <strong>Troubleshooting:</strong> If you cannot connect to
+                      Ollama running on a different machine or port, you may
+                      need to configure CORS. Start Ollama with the environment
+                      variable <code>OLLAMA_ORIGINS=*</code> (or specify your
+                      app&apos;s origin). Example:{' '}
+                      <code>OLLAMA_ORIGINS=* ollama serve</code>
                     </MutedLabel>
                   </Col>
                 </Row>

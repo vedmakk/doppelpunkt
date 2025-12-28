@@ -77,6 +77,87 @@ describe('ollamaService', () => {
       expect(result.availableModels).toContain('codellama')
       expect(result.availableModels).toContain('mistral')
     })
+
+    it('should return success when specified model exists', async () => {
+      const mockResponse = {
+        ok: true,
+        json: async () => ({
+          models: [{ name: 'llama3.2' }, { name: 'mistral' }],
+        }),
+      }
+
+      spyOn(globalThis, 'fetch').mockResolvedValue(
+        mockResponse as unknown as Response,
+      )
+
+      const result = await testOllamaConnection(
+        'http://localhost:11434',
+        'llama3.2',
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.availableModels).toEqual(['llama3.2', 'mistral'])
+    })
+
+    it('should return success when model matches with tag suffix', async () => {
+      const mockResponse = {
+        ok: true,
+        json: async () => ({
+          models: [{ name: 'llama3.2:latest' }, { name: 'mistral:7b' }],
+        }),
+      }
+
+      spyOn(globalThis, 'fetch').mockResolvedValue(
+        mockResponse as unknown as Response,
+      )
+
+      const result = await testOllamaConnection(
+        'http://localhost:11434',
+        'llama3.2',
+      )
+
+      expect(result.success).toBe(true)
+    })
+
+    it('should return failure when specified model does not exist', async () => {
+      const mockResponse = {
+        ok: true,
+        json: async () => ({
+          models: [{ name: 'llama3.2' }, { name: 'mistral' }],
+        }),
+      }
+
+      spyOn(globalThis, 'fetch').mockResolvedValue(
+        mockResponse as unknown as Response,
+      )
+
+      const result = await testOllamaConnection(
+        'http://localhost:11434',
+        'nonexistent-model',
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Model "nonexistent-model" not found')
+      expect(result.error).toContain('ollama pull nonexistent-model')
+      expect(result.availableModels).toEqual(['llama3.2', 'mistral'])
+    })
+
+    it('should skip model validation when model is empty', async () => {
+      const mockResponse = {
+        ok: true,
+        json: async () => ({
+          models: [{ name: 'llama3.2' }],
+        }),
+      }
+
+      spyOn(globalThis, 'fetch').mockResolvedValue(
+        mockResponse as unknown as Response,
+      )
+
+      const result = await testOllamaConnection('http://localhost:11434', '')
+
+      expect(result.success).toBe(true)
+    })
   })
 
   describe('processWithOllama', () => {

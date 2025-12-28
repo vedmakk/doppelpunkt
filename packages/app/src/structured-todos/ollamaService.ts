@@ -47,11 +47,14 @@ const PROCESS_TIMEOUT_MS = 60000
 const todosJsonSchema = zodToJsonSchema(TodosResponseSchema as any)
 
 /**
- * Test connection to Ollama server
+ * Test connection to Ollama server and optionally verify the model exists
+ * @param url - Ollama server URL
+ * @param model - Optional model name to verify (if provided, checks if model is installed)
  * Returns available models on success
  */
 export async function testOllamaConnection(
   url: string,
+  model?: string,
 ): Promise<OllamaTestResult> {
   try {
     const controller = new AbortController()
@@ -78,6 +81,20 @@ export async function testOllamaConnection(
     const availableModels =
       data.models?.map((m: { name: string }) => m.name) || []
 
+    // If a model was specified, verify it exists
+    if (model && model.trim()) {
+      const modelExists = availableModels.some(
+        (m) => m === model || m.startsWith(`${model}:`),
+      )
+      if (!modelExists) {
+        return {
+          success: false,
+          error: `Model "${model}" not found. Run "ollama pull ${model}" to install it. Available models: ${availableModels.length > 0 ? availableModels.join(', ') : 'none'}`,
+          availableModels,
+        }
+      }
+    }
+
     return {
       success: true,
       availableModels,
@@ -93,7 +110,8 @@ export async function testOllamaConnection(
     if (error instanceof TypeError && error.message.includes('fetch')) {
       return {
         success: false,
-        error: 'Cannot connect to Ollama. Make sure Ollama is running.',
+        error:
+          'Cannot connect to Ollama. Make sure Ollama is running. If Ollama is on a different machine, you may need to set OLLAMA_ORIGINS=* when starting Ollama.',
       }
     }
 
@@ -106,7 +124,7 @@ export async function testOllamaConnection(
       return {
         success: false,
         error:
-          'Cannot connect to Ollama. If Ollama is on a different machine, set OLLAMA_ORIGINS=* when starting Ollama.',
+          'Cannot connect to Ollama. Make sure Ollama is running. If Ollama is on a different machine, you may need to set OLLAMA_ORIGINS=* when starting Ollama.',
       }
     }
 

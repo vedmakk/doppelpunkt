@@ -30,8 +30,28 @@ To use local mode:
 3. Start Ollama (it runs on http://localhost:11434 by default)
 4. In Settings > Structured Todos, select "Local (Ollama)"
 5. Enter the model name you pulled
-6. Click "Test Connection" to verify
+6. Click "Test Connection" to verify (this checks both server connectivity and model availability)
 7. Enable Structured Todos
+
+### Troubleshooting CORS
+
+If you're running Ollama on a different machine or accessing the app from a non-localhost origin, you may encounter CORS (Cross-Origin Resource Sharing) errors. To resolve this:
+
+1. Set the `OLLAMA_ORIGINS` environment variable when starting Ollama:
+
+   ```bash
+   OLLAMA_ORIGINS=* ollama serve
+   ```
+
+   Or specify your app's origin:
+
+   ```bash
+   OLLAMA_ORIGINS=https://doppelpunkt.io ollama serve
+   ```
+
+2. On macOS/Linux, you can also set this in your shell profile or as a system environment variable.
+
+3. The "Test Connection" button will show a helpful error message if CORS is likely the issue.
 
 ## Architecture
 

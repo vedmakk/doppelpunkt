@@ -44,6 +44,7 @@ const SettingsModal: React.FC = () => {
     processingMode,
     ollamaConfig,
     ollamaConnectionStatus,
+    error: ollamaConnectionError,
     setMode: setProcessingMode,
     updateOllamaUrl,
     updateOllamaModel,
@@ -118,6 +119,7 @@ const SettingsModal: React.FC = () => {
       ollamaUrl={ollamaConfig.url}
       ollamaModel={ollamaConfig.model}
       ollamaConnectionStatus={ollamaConnectionStatus}
+      ollamaConnectionError={ollamaConnectionError}
       onChangeProcessingMode={setProcessingMode}
       onUpdateOllamaUrl={updateOllamaUrl}
       onUpdateOllamaModel={updateOllamaModel}
