@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, mock } from 'bun:test'
+import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import {
   mockDeleteDoc,
   mockDoc,
@@ -37,6 +37,13 @@ describe('cloudPersistenceMiddleware', () => {
     clearAllFirebaseMocks()
     deletedDocuments.length = 0
     mockDeleteDocument.mockClear()
+    // Clear localStorage to prevent state leaking between tests
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    // Clean up localStorage after each test
+    localStorage.clear()
   })
 
   describe('requestDeleteUser', () => {
