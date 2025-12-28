@@ -84,9 +84,9 @@ export class StructuredTodosManager {
     const settingsSnap = await getDoc(settingsRef)
     if (settingsSnap.exists()) {
       const settings = settingsSnap.data() as StructuredTodosSettings
-      // Only sync enabled state, not API key
+      // Sync enabled state and hasApiKey flag
       dispatch(setStructuredTodosEnabled(settings.enabled))
-      dispatch(setApiKeyIsSet(!!settings.apiKey))
+      dispatch(setApiKeyIsSet(settings.hasApiKey ?? false))
     }
 
     // Then set up listener for future settings changes
@@ -96,10 +96,9 @@ export class StructuredTodosManager {
 
         log('Received structured todos settings update', settings)
 
-        // Only sync enabled state, not API key
+        // Sync enabled state and hasApiKey flag
         dispatch(setStructuredTodosEnabled(settings.enabled))
-        // Set flag to indicate if API key is set
-        dispatch(setApiKeyIsSet(!!settings.apiKey))
+        dispatch(setApiKeyIsSet(settings.hasApiKey ?? false))
       }
     })
 

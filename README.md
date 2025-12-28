@@ -111,6 +111,12 @@ Here are some additional steps that can't be done in the code:
    - Add production domain to the "Authorized Domains" list
 1. Select the "Blaze" plan in the Firebase console (this is required to make requests to third party services within Cloud Functions)
 1. Make sure to set Budgets & Alerts in the Firebase console for your billing account.
+1. Set up the encryption master key for API key storage (required for Structured Todos):
+   ```bash
+   # Generate a secure 32-byte key and set it as a Firebase secret
+   firebase functions:secrets:set ENCRYPTION_MASTER_KEY
+   # When prompted, enter a secure random string (at least 32 characters)
+   ```
 
 Also, you need to create your `.firebaserc` file in the root of the project and add your project id:
 
@@ -137,6 +143,15 @@ VITE_USE_FIREBASE_EMULATOR=true bun run dev
 ```
 
 Security rules (`firestore.rules`) restrict access to a user's own docs.
+
+To test Structured Todos locally, create a `.secret.local` file in `packages/functions/` with the encryption key:
+
+```bash
+# packages/functions/.secret.local
+ENCRYPTION_MASTER_KEY=your-local-test-key-at-least-32-chars
+```
+
+This file is read by the Firebase emulator and is already in `.gitignore`.
 
 ### Using Cloud Sync
 

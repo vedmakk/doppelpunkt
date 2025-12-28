@@ -21,5 +21,5 @@ export interface StructuredTodosState {
 
 export interface StructuredTodosSettings {
   enabled: boolean
-  apiKey?: string // Optional when reading from firestore (write-only)
+  hasApiKey?: boolean // Indicates if an API key is set (key itself is stored encrypted)
 }

@@ -37,18 +37,32 @@ service cloud.firestore {
                   && request.auth.uid == userId;
 
       // Allow writes for the authenticated user with proper schema validation
+      // Note: Client can only write 'enabled', 'hasApiKey' is managed by cloud functions
       allow write: if request.auth != null
                    && request.auth.uid == userId
                    // Validate that only expected fields are present
-                   && request.resource.data.keys().hasOnly(['enabled', 'apiKey'])
+                   && request.resource.data.keys().hasOnly(['enabled', 'hasApiKey'])
                    // enabled must be a boolean
                    && request.resource.data.enabled is bool
-                   // apiKey is optional but must be a string if present
-                   && (!('apiKey' in request.resource.data) || request.resource.data.apiKey is string);
+                   // hasApiKey is optional but must be a boolean if present
+                   && (!('hasApiKey' in request.resource.data) || request.resource.data.hasApiKey is bool);
 
       // Allow deletes for the authenticated user
       allow delete: if request.auth != null
                    && request.auth.uid == userId;
+    }
+
+    // Rules for encrypted API key storage - SERVER ONLY
+    // Only Cloud Functions (Admin SDK) can access these documents
+    match /users/{userId}/secrets/{secretId} {
+      // Block ALL client reads
+      allow read: if false;
+
+      // Block ALL client writes
+      allow write: if false;
+
+      // Block ALL client deletes
+      allow delete: if false;
     }
 
     // Rules for structured todos data (synced todos + hash)

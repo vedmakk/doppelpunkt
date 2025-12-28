@@ -12,7 +12,12 @@ import { StructuredTodosSettings, StructuredTodosState } from './types'
 import { StructuredTodosManager } from './StructuredTodosManager'
 import { safeLocalStorage } from '../shared/storage'
 import { setCloudEnabled } from '../cloudsync/cloudSlice'
-import { processTodos, generateContentHash } from './structuredTodosService'
+import {
+  processTodos,
+  generateContentHash,
+  setApiKeyToCloud,
+  clearApiKeyFromCloud,
+} from './structuredTodosService'
 
 const STRUCTURED_TODOS_KEY = 'structuredTodos'
 const STRUCTURED_TODOS_ENABLED_KEY = `${STRUCTURED_TODOS_KEY}.enabled`
@@ -138,10 +143,10 @@ structuredTodosListenerMiddleware.startListening({
   },
 })
 
-// Listen for settings changes and sync to Firestore
+// Listen for enabled setting changes and sync to Firestore
 structuredTodosListenerMiddleware.startListening({
-  matcher: isAnyOf(setStructuredTodosEnabled, setApiKey, clearApiKey),
-  effect: async (action, listenerApi) => {
+  matcher: isAnyOf(setStructuredTodosEnabled),
+  effect: async (_action, listenerApi) => {
     const state: any = listenerApi.getState()
     const cloudUser = state.cloud?.user
 
@@ -154,16 +159,41 @@ structuredTodosListenerMiddleware.startListening({
         enabled: state.structuredTodos.enabled,
       }
 
-      // Only include API key if it's set (write-only)
-      if (state.structuredTodos.apiKey) {
-        settings.apiKey = state.structuredTodos.apiKey
-      } else if (action.type === clearApiKey.type) {
-        settings.apiKey = ''
-      }
-
       await structuredTodosManager.saveSettings(cloudUser.uid, settings)
     } catch (error) {
       console.error('Failed to sync structured todos settings:', error)
+    }
+  },
+})
+
+// Listen for API key changes and route through cloud functions
+// This ensures the key is encrypted server-side before storage
+structuredTodosListenerMiddleware.startListening({
+  matcher: isAnyOf(setApiKey, clearApiKey),
+  effect: async (action, listenerApi) => {
+    const state: any = listenerApi.getState()
+    const cloudUser = state.cloud?.user
+
+    if (!cloudUser || !state.cloud?.enabled) {
+      return
+    }
+
+    try {
+      if (action.type === setApiKey.type) {
+        const apiKey = state.structuredTodos.apiKey
+        if (apiKey) {
+          await setApiKeyToCloud(apiKey)
+        }
+      } else if (action.type === clearApiKey.type) {
+        await clearApiKeyFromCloud()
+      }
+    } catch (error) {
+      console.error('Failed to update API key:', error)
+      listenerApi.dispatch(
+        setStructuredTodosError(
+          error instanceof Error ? error.message : 'Failed to update API key',
+        ),
+      )
     }
   },
 })

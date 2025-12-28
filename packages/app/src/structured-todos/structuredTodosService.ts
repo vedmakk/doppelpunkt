@@ -53,3 +53,64 @@ export async function generateContentHash(text: string): Promise<string> {
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 }
+
+export interface SetApiKeyResult {
+  success: boolean
+}
+
+export interface ClearApiKeyResult {
+  success: boolean
+}
+
+/**
+ * Securely store an API key via cloud function
+ * The key is encrypted server-side before storage
+ */
+export async function setApiKeyToCloud(
+  apiKey: string,
+): Promise<SetApiKeyResult> {
+  const { app } = await getFirebase()
+  const functions = getFunctions(app, 'europe-west1')
+
+  // Connect to emulator in development if not already connected
+  if (
+    import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true' &&
+    !functionsEmulatorConnected
+  ) {
+    connectFunctionsEmulator(functions, 'localhost', 5005)
+    functionsEmulatorConnected = true
+  }
+
+  const setApiKeyFn = httpsCallable<{ apiKey: string }, SetApiKeyResult>(
+    functions,
+    'setApiKey',
+  )
+
+  const result = await setApiKeyFn({ apiKey })
+  return result.data
+}
+
+/**
+ * Clear the stored API key via cloud function
+ */
+export async function clearApiKeyFromCloud(): Promise<ClearApiKeyResult> {
+  const { app } = await getFirebase()
+  const functions = getFunctions(app, 'europe-west1')
+
+  // Connect to emulator in development if not already connected
+  if (
+    import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true' &&
+    !functionsEmulatorConnected
+  ) {
+    connectFunctionsEmulator(functions, 'localhost', 5005)
+    functionsEmulatorConnected = true
+  }
+
+  const clearApiKeyFn = httpsCallable<void, ClearApiKeyResult>(
+    functions,
+    'clearApiKey',
+  )
+
+  const result = await clearApiKeyFn()
+  return result.data
+}
