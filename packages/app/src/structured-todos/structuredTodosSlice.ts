@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {
+  DEFAULT_OLLAMA_MODEL,
+  DEFAULT_OLLAMA_URL,
   OllamaConnectionStatus,
   ProcessingMode,
   StructuredTodo,
@@ -14,8 +16,8 @@ const initialState: StructuredTodosState = {
   apiKey: null, // Never loaded from storage (write-only)
   apiKeyIsSet: false,
   ollamaConfig: {
-    url: 'http://localhost:11434',
-    model: '',
+    url: DEFAULT_OLLAMA_URL,
+    model: DEFAULT_OLLAMA_MODEL,
   },
   ollamaConnectionStatus: 'untested',
   isProcessing: false,
@@ -102,8 +104,8 @@ const structuredTodosSlice = createSlice({
       state.apiKey = null
       state.apiKeyIsSet = false
       state.ollamaConfig = {
-        url: 'http://localhost:11434',
-        model: '',
+        url: DEFAULT_OLLAMA_URL,
+        model: DEFAULT_OLLAMA_MODEL,
       }
       state.ollamaConnectionStatus = 'untested'
       state.isProcessing = false

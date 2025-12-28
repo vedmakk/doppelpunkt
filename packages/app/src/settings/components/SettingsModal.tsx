@@ -175,12 +175,16 @@ const RadioLabel = styled.label<{ disabled?: boolean }>(
     opacity: disabled ? 0.5 : 1,
     fontSize: theme.fontSize.small,
     fontFamily: 'Fira Code, monospace',
+    lineHeight: 1,
   }),
 )
 
 const RadioInput = styled.input(({ theme }) => ({
   cursor: 'pointer',
   accentColor: theme.colors.primary,
+  margin: 0,
+  width: '16px',
+  height: '16px',
 }))
 
 const ConnectionStatus = styled.span<{
@@ -433,11 +437,13 @@ export const SettingsModal: React.FC<Props> = ({
                     disabled={!structuredTodosDependencyStatus.canEnable}
                     size={24}
                   />
-                  {!structuredTodosDependencyStatus.canEnable && (
-                    <DisabledReasonText>
-                      {structuredTodosDependencyStatus.disabledReason}
-                    </DisabledReasonText>
-                  )}
+                  {/* Only show cloud-related errors here; model error shown under model field */}
+                  {!structuredTodosDependencyStatus.canEnable &&
+                    processingMode === 'cloud' && (
+                      <DisabledReasonText>
+                        {structuredTodosDependencyStatus.disabledReason}
+                      </DisabledReasonText>
+                    )}
                 </div>
                 <MutedLabel size="tiny">
                   {processingMode === 'cloud'
@@ -550,7 +556,7 @@ export const SettingsModal: React.FC<Props> = ({
             )}
 
             {/* Local Mode Settings */}
-            {processingMode === 'local' && (
+            {structuredTodosEnabled && processingMode === 'local' && (
               <>
                 <Row>
                   <Col>
@@ -587,6 +593,11 @@ export const SettingsModal: React.FC<Props> = ({
                         placeholder="llama3.2"
                         aria-label="Ollama Model"
                       />
+                      {!ollamaModel && (
+                        <DisabledReasonText>
+                          Please specify an Ollama model
+                        </DisabledReasonText>
+                      )}
                     </InputContainer>
                   </Col>
                 </Row>

@@ -4,6 +4,10 @@
 import type { StructuredTodo as SharedStructuredTodo } from '@doppelpunkt/shared'
 export type StructuredTodo = SharedStructuredTodo
 
+// Default Ollama configuration values
+export const DEFAULT_OLLAMA_URL = 'http://localhost:11434'
+export const DEFAULT_OLLAMA_MODEL = 'ministral-3:3b'
+
 // Processing mode: cloud uses OpenAI via Firebase, local uses Ollama
 export type ProcessingMode = 'cloud' | 'local'
 

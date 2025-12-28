@@ -15,7 +15,12 @@ import {
   setOllamaModel,
   setOllamaConnectionStatus,
 } from './structuredTodosSlice'
-import { StructuredTodosState, StructuredTodo } from './types'
+import {
+  DEFAULT_OLLAMA_MODEL,
+  DEFAULT_OLLAMA_URL,
+  StructuredTodosState,
+  StructuredTodo,
+} from './types'
 
 describe('structuredTodosSlice', () => {
   let initialState: StructuredTodosState
@@ -28,8 +33,8 @@ describe('structuredTodosSlice', () => {
       apiKey: null,
       apiKeyIsSet: false,
       ollamaConfig: {
-        url: 'http://localhost:11434',
-        model: '',
+        url: DEFAULT_OLLAMA_URL,
+        model: DEFAULT_OLLAMA_MODEL,
       },
       ollamaConnectionStatus: 'untested',
       isProcessing: false,
@@ -271,8 +276,8 @@ describe('structuredTodosSlice', () => {
       expect(state.processingMode).toBe('cloud')
       expect(state.apiKey).toBeNull()
       expect(state.apiKeyIsSet).toBe(false)
-      expect(state.ollamaConfig.url).toBe('http://localhost:11434')
-      expect(state.ollamaConfig.model).toBe('')
+      expect(state.ollamaConfig.url).toBe(DEFAULT_OLLAMA_URL)
+      expect(state.ollamaConfig.model).toBe(DEFAULT_OLLAMA_MODEL)
       expect(state.ollamaConnectionStatus).toBe('untested')
       expect(state.isProcessing).toBe(false)
       expect(state.error).toBeUndefined()

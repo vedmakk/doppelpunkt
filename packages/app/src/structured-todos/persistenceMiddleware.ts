@@ -12,6 +12,8 @@ import {
   setOllamaModel,
 } from './structuredTodosSlice'
 import {
+  DEFAULT_OLLAMA_MODEL,
+  DEFAULT_OLLAMA_URL,
   ProcessingMode,
   StructuredTodosSettings,
   StructuredTodosState,
@@ -61,9 +63,10 @@ export function hydrateStructuredTodosStateFromStorage(): {
     const processingMode: ProcessingMode = storedProcessingMode || 'cloud'
     const ollamaUrl =
       safeLocalStorage.getItem(STRUCTURED_TODOS_OLLAMA_URL_KEY) ||
-      'http://localhost:11434'
+      DEFAULT_OLLAMA_URL
     const ollamaModel =
-      safeLocalStorage.getItem(STRUCTURED_TODOS_OLLAMA_MODEL_KEY) || ''
+      safeLocalStorage.getItem(STRUCTURED_TODOS_OLLAMA_MODEL_KEY) ||
+      DEFAULT_OLLAMA_MODEL
 
     const structuredTodos: StructuredTodosState = {
       todos,
@@ -91,8 +94,8 @@ export function hydrateStructuredTodosStateFromStorage(): {
       apiKey: null,
       apiKeyIsSet: false,
       ollamaConfig: {
-        url: 'http://localhost:11434',
-        model: '',
+        url: DEFAULT_OLLAMA_URL,
+        model: DEFAULT_OLLAMA_MODEL,
       },
       ollamaConnectionStatus: 'untested',
       isProcessing: false,
