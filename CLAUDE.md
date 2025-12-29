@@ -66,7 +66,15 @@ Text changes follow this flow:
 
 ### Cloud Sync
 
-Firebase integration is lazily loaded when enabled. Uses Firestore with last-write-wins semantics (300ms debounced saves, no conflict resolution). Auth supports Google sign-in. Documents synced: `users/{userId}/doc/editor` and `users/{userId}/doc/todo`. Sync status UI shows 4 states: disabled, connected, pending (has pending writes), disconnected.
+Firebase integration is lazily loaded when enabled. Uses Firestore with last-write-wins semantics (300ms debounced saves, no conflict resolution). Auth supports Google sign-in. Documents synced: `users/{userId}/doc/editor` and `users/{userId}/doc/todo`. Sync status UI shows 5 states: disabled, connected (with tick icon), pending (pulsing), disconnected, error (with cross icon). The status appears in both the menu toolbar and the editor status bar (top-right, when menu is closed).
+
+### Editor Status Bar
+
+The editor displays a transient status bar in the top-right corner showing:
+- Tab capture status (keyboard users only): appears on toggle, fades after 2s
+- Cloud sync status (when menu is closed): appears on status change, stays pinned for pending/error/disconnected states
+
+Uses `TransientStatusIndicator` component for appear/disappear/pin logic.
 
 ### Cloud Functions
 

@@ -18,9 +18,10 @@ import { setText, setCaptureTab } from '../editorSlice'
 import { useWritingMode } from '../../mode/hooks'
 
 import { HotkeyId, HotkeyScope } from '../../hotkeys/registry'
-import { useCustomHotkey } from '../../hotkeys/hooks'
+import { useCustomHotkey, useHasKeyboard } from '../../hotkeys/hooks'
 
 import MarkdownEditorComponent from '../components/MarkdownEditor'
+import { EditorCloudSyncStatus } from './EditorCloudSyncStatus'
 
 const MarkdownEditor: React.FC = () => {
   const [charsPerLine, setCharsPerLine] = useState<number>(80)
@@ -29,6 +30,7 @@ const MarkdownEditor: React.FC = () => {
 
   const captureTab = useCaptureTabEnabled()
   const mode = useWritingMode()
+  const hasKeyboard = useHasKeyboard()
 
   const { enableScope, disableScope } = useHotkeysContext()
 
@@ -233,6 +235,8 @@ const MarkdownEditor: React.FC = () => {
       onBlur={handleBlur}
       onFocus={handleFocus}
       containerRef={containerRef}
+      showTabStatus={hasKeyboard}
+      statusIndicators={<EditorCloudSyncStatus />}
     />
   )
 }
