@@ -18,6 +18,8 @@ const ENCRYPTION_MASTER_KEY = defineSecret('ENCRYPTION_MASTER_KEY')
 initializeApp()
 const db = getFirestore()
 
+const cors = ['https://doppelpunkt-d2972.web.app/', 'https://doppelpunkt.io']
+
 export interface ProcessTodosRequest {
   todoText: string
 }
@@ -42,7 +44,7 @@ export const processTodos = onCall<ProcessTodosRequest>(
     region: 'europe-west1',
     maxInstances: 10,
     secrets: [ENCRYPTION_MASTER_KEY],
-    cors: [/doppelpunkt\.io$/, /localhost/],
+    cors,
   },
   async (request): Promise<ProcessTodosResponse> => {
     const userId = request.auth?.uid
@@ -163,7 +165,7 @@ export const setApiKey = onCall<SetApiKeyRequest>(
   {
     region: 'europe-west1',
     secrets: [ENCRYPTION_MASTER_KEY],
-    cors: [/doppelpunkt\.io$/, /localhost/],
+    cors,
   },
   async (request): Promise<SetApiKeyResponse> => {
     const userId = request.auth?.uid
@@ -238,7 +240,7 @@ export const setApiKey = onCall<SetApiKeyRequest>(
 export const clearApiKey = onCall(
   {
     region: 'europe-west1',
-    cors: [/doppelpunkt\.io$/, /localhost/],
+    cors,
   },
   async (request): Promise<ClearApiKeyResponse> => {
     const userId = request.auth?.uid
