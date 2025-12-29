@@ -1,18 +1,17 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import styled from '@emotion/styled'
-import { useTheme, keyframes } from '@emotion/react'
+import { useTheme } from '@emotion/react'
 
 import 'prismjs/components/prism-markdown'
 
 import editorDarkTheme from '../themes/prism-material-dark.css?inline'
 import editorLightTheme from '../themes/prism-material-light.css?inline'
 
-import { useHasKeyboard } from '../../hotkeys/hooks'
-
 import { Label } from '../../app/components/Label'
 import { LogoAlignContainer } from '../../menu/components/Logo'
+import { TransientStatusIndicator } from '../../shared/components/TransientStatusIndicator'
 
 interface Props {
   content: string
@@ -26,6 +25,10 @@ interface Props {
   onBlur?: () => void
   onFocus?: () => void
   containerRef: React.RefObject<HTMLDivElement | null>
+  /** Additional status indicators to show in the status bar */
+  statusIndicators?: ReactNode
+  /** Whether to show the tab capture status */
+  showTabStatus?: boolean
 }
 
 const EditorContainer = styled.div(({ theme }) => ({
@@ -124,30 +127,24 @@ const CodeEditor = styled(Editor)(({ theme }) => ({
   },
 }))
 
-// keyframes for fade-in/out
-const fadeInOut = keyframes`
-  0% { opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { opacity: 0; }
-`
-
-// styled label that animates on mount
-const CaptureLabel = styled(Label)(({ theme }) => ({
+// styled label for status indicators
+const StatusLabel = styled(Label)(({ theme }) => ({
   background: theme.colors.paper,
   color: theme.colors.primary,
   padding: theme.spacing(0.5),
   borderRadius: theme.spacing(0.5),
   transition: `background-color ${theme.animations.transition}, color ${theme.animations.transition}`,
-  opacity: 0,
-  animation: `${fadeInOut} 2s ease-in-out`,
 }))
 
-const StyledLogoAlignContainer = styled(LogoAlignContainer)(({ theme }) => ({
+const StatusBar = styled(LogoAlignContainer)(({ theme }) => ({
   position: 'absolute',
   top: theme.spacing(2),
   right: theme.spacing(2.5),
   zIndex: 2,
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing(1),
 }))
 
 const MarkdownEditor: React.FC<Props> = ({
@@ -159,13 +156,15 @@ const MarkdownEditor: React.FC<Props> = ({
   onBlur,
   onFocus,
   containerRef,
+  statusIndicators,
+  showTabStatus = true,
 }) => {
   const theme = useTheme()
 
-  const hasKeyboard = useHasKeyboard()
-
   const highlight = (code: string) =>
     Prism.highlight(code, Prism.languages.markdown, 'markdown')
+
+  const hasStatusContent = showTabStatus || statusIndicators
 
   return (
     <>
@@ -175,12 +174,20 @@ const MarkdownEditor: React.FC<Props> = ({
         <style>{editorLightTheme}</style>
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
-        {hasKeyboard && (
-          <StyledLogoAlignContainer>
-            <CaptureLabel key={String(captureTab)} size="tiny">
-              {captureTab ? 'Capturing tab' : 'Ignoring tab'}
-            </CaptureLabel>
-          </StyledLogoAlignContainer>
+        {hasStatusContent && (
+          <StatusBar>
+            {showTabStatus && (
+              <TransientStatusIndicator
+                statusKey={String(captureTab)}
+                displayDuration={2000}
+              >
+                <StatusLabel size="tiny">
+                  {captureTab ? 'Capturing tab' : 'Ignoring tab'}
+                </StatusLabel>
+              </TransientStatusIndicator>
+            )}
+            {statusIndicators}
+          </StatusBar>
         )}
         <label htmlFor="markdown-editor-input" className="sr-only">
           Markdown editor

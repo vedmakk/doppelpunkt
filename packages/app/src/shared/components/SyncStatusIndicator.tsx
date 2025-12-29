@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import { css } from '@emotion/react'
+import { css, keyframes } from '@emotion/react'
 
 import { CloudSyncUiStatus } from '../../cloudsync/selectors'
 
@@ -15,6 +15,11 @@ interface IndicatorStyleProps {
   size: NonNullable<Props['size']>
 }
 
+const pulse = keyframes`
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+`
+
 const StatusIndicator = styled.span<IndicatorStyleProps>`
   ${({ theme, status, size }) => {
     const sizeMap = {
@@ -28,17 +33,61 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
       disconnected: theme.colors.secondary,
       pending: theme.colors.primary,
       connected: theme.colors.primary,
+      error: theme.colors.error,
     }
 
     return css`
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: ${sizeMap[size]};
       height: ${sizeMap[size]};
       border-radius: 50%;
       background-color: ${colorMap[status]};
       transition: background-color ${theme.animations.transition};
       flex-shrink: 0;
-      opacity: ${status === 'pending' ? 0.4 : 1};
+      ${status === 'pending' &&
+      css`
+        animation: ${pulse} 1.5s ease-in-out infinite;
+      `}
+    `
+  }}
+`
+
+// SVG icon for checkmark (tick)
+const TickIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
+  ${({ theme, size }) => {
+    const iconSizeMap = {
+      small: '6px',
+      medium: '9px',
+      large: '12px',
+    }
+
+    return css`
+      width: ${iconSizeMap[size]};
+      height: ${iconSizeMap[size]};
+      stroke: ${theme.colors.page};
+      stroke-width: 2.5;
+      fill: none;
+    `
+  }}
+`
+
+// SVG icon for cross (x)
+const CrossIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
+  ${({ theme, size }) => {
+    const iconSizeMap = {
+      small: '5px',
+      medium: '7px',
+      large: '10px',
+    }
+
+    return css`
+      width: ${iconSizeMap[size]};
+      height: ${iconSizeMap[size]};
+      stroke: ${theme.colors.page};
+      stroke-width: 2.5;
+      fill: none;
     `
   }}
 `
@@ -75,6 +124,8 @@ const getStatusTooltip = (status: CloudSyncUiStatus): string => {
       return 'Syncing changes...'
     case 'connected':
       return 'Synced with cloud'
+    case 'error':
+      return 'Cloud sync error'
     default:
       return 'Unknown sync status'
   }
@@ -90,9 +141,35 @@ const getStatusText = (status: CloudSyncUiStatus): string => {
       return 'Syncing'
     case 'connected':
       return 'Synced'
+    case 'error':
+      return 'Error'
     default:
       return 'Unknown'
   }
+}
+
+const StatusIcon: React.FC<{
+  status: CloudSyncUiStatus
+  size: NonNullable<Props['size']>
+}> = ({ status, size }) => {
+  if (status === 'connected') {
+    return (
+      <TickIcon size={size} viewBox="0 0 12 12" aria-hidden="true">
+        <polyline points="2,6 5,9 10,3" />
+      </TickIcon>
+    )
+  }
+
+  if (status === 'error') {
+    return (
+      <CrossIcon size={size} viewBox="0 0 12 12" aria-hidden="true">
+        <line x1="2" y1="2" x2="10" y2="10" />
+        <line x1="10" y1="2" x2="2" y2="10" />
+      </CrossIcon>
+    )
+  }
+
+  return null
 }
 
 export const SyncStatusIndicator: React.FC<Props> = ({
@@ -105,7 +182,9 @@ export const SyncStatusIndicator: React.FC<Props> = ({
 
   return (
     <Container title={tooltip}>
-      <StatusIndicator status={status} size={size} />
+      <StatusIndicator status={status} size={size}>
+        <StatusIcon status={status} size={size} />
+      </StatusIndicator>
       {!onlyIcon && <StatusText size={size}>{statusText}</StatusText>}
     </Container>
   )

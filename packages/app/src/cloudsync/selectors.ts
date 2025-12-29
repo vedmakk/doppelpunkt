@@ -23,12 +23,13 @@ export const selectCloudDocMetas = createSelector(
   (s) => s.docs,
 )
 
-// Cloud sync UI status - simplified to 4 states
+// Cloud sync UI status - simplified to 5 states
 export type CloudSyncUiStatus =
   | 'disabled'
   | 'connected'
   | 'pending'
   | 'disconnected'
+  | 'error'
 
 // Derived selectors for sync status indicators
 export const selectCloudHasPendingWrites = createSelector(
@@ -45,6 +46,7 @@ export const selectCloudSyncStatus = createSelector(
   [selectCloudEnabled, selectCloudStatus, selectCloudHasPendingWrites],
   (enabled, status, hasPending): CloudSyncUiStatus => {
     if (!enabled) return 'disabled'
+    if (status === 'error') return 'error'
     if (status !== 'connected') return 'disconnected'
     if (hasPending) return 'pending'
     return 'connected'
