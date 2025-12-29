@@ -2,8 +2,8 @@
   "name": "functions",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
-    "build": "bun build ./src/index.ts --outdir ./lib --target node --format esm --external firebase-functions --external firebase-admin --external firebase-functions/params",
-    "build:watch": "bun build ./src/index.ts --outdir ./lib --target node --format esm --external firebase-functions --external firebase-admin --external firebase-functions/params --watch",
+    "build": "bun build ./src/index.ts --outdir ./lib --target node --format esm --external firebase-functions --external firebase-admin --external openai",
+    "build:watch": "bun build ./src/index.ts --outdir ./lib --target node --format esm --external firebase-functions --external firebase-admin --external openai --watch",
     "serve": "bun run build && firebase emulators:start --only functions",
     "shell": "bun run build && firebase functions:shell",
     "start": "bun run shell",
