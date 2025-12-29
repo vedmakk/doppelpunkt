@@ -175,7 +175,7 @@ const MarkdownEditor: React.FC<Props> = ({
       )}
       <EditorContainer className="editor-container" ref={containerRef}>
         {hasStatusContent && (
-          <StatusBar>
+          <StatusBar role="status" aria-live="polite">
             {showTabStatus && (
               <TransientStatusIndicator
                 statusKey={String(captureTab)}
