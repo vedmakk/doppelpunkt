@@ -125,6 +125,14 @@ bun run build
 
 Builds the functions to the `lib` directory.
 
+The build uses Bun's bundler to create a single bundled file. This is necessary because:
+
+- Firebase Cloud Functions deployment uses npm, which doesn't support Bun/pnpm workspace protocols (`workspace:*`)
+- Bundling inlines all local dependencies (`@doppelpunkt/shared`) and npm packages (`openai`, `zod`) into a single file
+- Only `firebase-admin` and `firebase-functions` are kept external (provided by Firebase at runtime)
+
+This approach eliminates the `EUNSUPPORTEDPROTOCOL` error that would otherwise occur during deployment.
+
 ### Deploying
 
 ```bash
