@@ -25,6 +25,10 @@ export const Pending = () => {
   return <SyncStatusIndicator status="pending" />
 }
 
+export const Error = () => {
+  return <SyncStatusIndicator status="error" />
+}
+
 export const SmallSize = () => {
   return <SyncStatusIndicator status="connected" size="small" />
 }
@@ -43,6 +47,7 @@ export const AllStatesSmall = () => {
     'connected',
     'pending',
     'disconnected',
+    'error',
   ]
 
   return (
@@ -60,6 +65,7 @@ export const AllStatesMedium = () => {
     'connected',
     'pending',
     'disconnected',
+    'error',
   ]
 
   return (
@@ -77,6 +83,7 @@ export const AllStatesLarge = () => {
     'connected',
     'pending',
     'disconnected',
+    'error',
   ]
 
   return (
@@ -94,6 +101,7 @@ export const AllStatesOnlyIcon = () => {
     'connected',
     'pending',
     'disconnected',
+    'error',
   ]
 
   return (

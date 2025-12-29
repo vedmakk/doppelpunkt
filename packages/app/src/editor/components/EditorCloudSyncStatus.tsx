@@ -38,7 +38,7 @@ export const EditorCloudSyncStatus: React.FC<Props> = ({
       pinned={shouldPin(status)}
       displayDuration={2000}
     >
-      <SyncStatusIndicator status={status} size="small" onlyIcon />
+      <SyncStatusIndicator status={status} size="large" onlyIcon />
     </TransientStatusIndicator>
   )
 }
