@@ -36,6 +36,7 @@ Sync your `editor` and `todo` documents across devices using Firebase Auth + Fir
 Automatically extract and organize todos from your todo document using AI. The app intelligently parses your natural language tasks, assigns due dates, and displays them in an organized list. Tasks are grouped by "Today", "Upcoming" (next 7 days), and "More" for better task management.
 
 Two processing modes are available:
+
 - **Cloud (OpenAI)**: Uses OpenAI API via Firebase Cloud Functions. Requires cloud sync and your own API key.
 - **Local (Ollama)**: Uses a local Ollama instance on your machine. No cloud required, completely private.
 
@@ -122,6 +123,12 @@ Here are some additional steps that can't be done in the code:
    firebase functions:secrets:set ENCRYPTION_MASTER_KEY
    # When prompted, enter a secure random string (at least 32 characters)
    ```
+1. Allow unauthenticated invocation for the Gen2 function’s underlying Cloud Run service in Google Cloud Console:
+   - Go to Google Cloud Console → Cloud Run
+   - Find the service that corresponds to your function (usually named similar to the function)
+   - Permissions
+   - Add principal: allUsers
+   - Grant role: Cloud Run Invoker
 
 Also, you need to create your `.firebaserc` file in the root of the project and add your project id:
 

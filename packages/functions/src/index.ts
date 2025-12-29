@@ -18,7 +18,7 @@ const ENCRYPTION_MASTER_KEY = defineSecret('ENCRYPTION_MASTER_KEY')
 initializeApp()
 const db = getFirestore()
 
-const cors = ['https://doppelpunkt-d2972.web.app/', 'https://doppelpunkt.io']
+const cors = ['https://doppelpunkt-d2972.web.app', 'https://doppelpunkt.io']
 
 export interface ProcessTodosRequest {
   todoText: string
