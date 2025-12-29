@@ -42,6 +42,7 @@ export const processTodos = onCall<ProcessTodosRequest>(
     region: 'europe-west1',
     maxInstances: 10,
     secrets: [ENCRYPTION_MASTER_KEY],
+    cors: [/doppelpunkt\.io$/, /localhost/],
   },
   async (request): Promise<ProcessTodosResponse> => {
     const userId = request.auth?.uid
@@ -162,6 +163,7 @@ export const setApiKey = onCall<SetApiKeyRequest>(
   {
     region: 'europe-west1',
     secrets: [ENCRYPTION_MASTER_KEY],
+    cors: [/doppelpunkt\.io$/, /localhost/],
   },
   async (request): Promise<SetApiKeyResponse> => {
     const userId = request.auth?.uid
@@ -236,6 +238,7 @@ export const setApiKey = onCall<SetApiKeyRequest>(
 export const clearApiKey = onCall(
   {
     region: 'europe-west1',
+    cors: [/doppelpunkt\.io$/, /localhost/],
   },
   async (request): Promise<ClearApiKeyResponse> => {
     const userId = request.auth?.uid
