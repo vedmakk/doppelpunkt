@@ -42,10 +42,13 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
       justify-content: center;
       width: ${sizeMap[size]};
       height: ${sizeMap[size]};
+      min-width: ${sizeMap[size]};
+      min-height: ${sizeMap[size]};
       border-radius: 50%;
       background-color: ${colorMap[status]};
       transition: background-color ${theme.animations.transition};
       flex-shrink: 0;
+      vertical-align: middle;
       ${status === 'pending' &&
       css`
         animation: ${pulse} 1.5s ease-in-out infinite;
@@ -69,6 +72,9 @@ const TickIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
       stroke: ${theme.colors.page};
       stroke-width: 2.5;
       fill: none;
+      flex-shrink: 0;
+      display: block;
+      vertical-align: middle;
     `
   }}
 `
@@ -77,9 +83,9 @@ const TickIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
 const CrossIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
   ${({ theme, size }) => {
     const iconSizeMap = {
-      small: '5px',
-      medium: '7px',
-      large: '10px',
+      small: '6px',
+      medium: '9px',
+      large: '12px',
     }
 
     return css`
@@ -88,6 +94,9 @@ const CrossIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
       stroke: ${theme.colors.page};
       stroke-width: 2.5;
       fill: none;
+      flex-shrink: 0;
+      display: block;
+      vertical-align: middle;
     `
   }}
 `
@@ -96,6 +105,8 @@ const Container = styled.span(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
+  verticalAlign: 'middle',
+  lineHeight: 1,
 }))
 
 const StatusText = styled.span<{ size: NonNullable<Props['size']> }>(
@@ -169,7 +180,18 @@ const StatusIcon: React.FC<{
     )
   }
 
-  return null
+  // Return an empty span to maintain consistent layout when no icon is shown
+  return (
+    <span
+      style={{
+        width: 0,
+        height: 0,
+        display: 'block',
+        flexShrink: 0,
+      }}
+      aria-hidden="true"
+    />
+  )
 }
 
 export const SyncStatusIndicator: React.FC<Props> = ({
