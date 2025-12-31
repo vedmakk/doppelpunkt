@@ -151,6 +151,7 @@ export const CyclingStates = () => {
           border: '1px solid #ddd',
           borderRadius: '4px',
           position: 'relative',
+          display: 'flex',
         }}
       >
         <div

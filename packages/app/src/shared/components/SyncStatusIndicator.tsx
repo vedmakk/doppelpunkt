@@ -23,7 +23,7 @@ const pulse = keyframes`
 const StatusIndicator = styled.span<IndicatorStyleProps>`
   ${({ theme, status, size }) => {
     const sizeMap = {
-      small: theme.spacing(1),
+      small: theme.spacing(1.25),
       medium: theme.spacing(1.5),
       large: theme.spacing(2),
     }
@@ -37,18 +37,13 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
     }
 
     return css`
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
       width: ${sizeMap[size]};
       height: ${sizeMap[size]};
-      min-width: ${sizeMap[size]};
-      min-height: ${sizeMap[size]};
       border-radius: 50%;
       background-color: ${colorMap[status]};
       transition: background-color ${theme.animations.transition};
       flex-shrink: 0;
-      vertical-align: middle;
       ${status === 'pending' &&
       css`
         animation: ${pulse} 1.5s ease-in-out infinite;
@@ -57,46 +52,24 @@ const StatusIndicator = styled.span<IndicatorStyleProps>`
   }}
 `
 
-// SVG icon for checkmark (tick)
-const TickIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
+const IconSvg = styled.svg<{ size: NonNullable<Props['size']> }>`
   ${({ theme, size }) => {
     const iconSizeMap = {
-      small: '6px',
+      small: '7px',
       medium: '9px',
       large: '12px',
     }
 
     return css`
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       width: ${iconSizeMap[size]};
       height: ${iconSizeMap[size]};
       stroke: ${theme.colors.page};
       stroke-width: 2.5;
       fill: none;
-      flex-shrink: 0;
-      display: block;
-      vertical-align: middle;
-    `
-  }}
-`
-
-// SVG icon for cross (x)
-const CrossIcon = styled.svg<{ size: NonNullable<Props['size']> }>`
-  ${({ theme, size }) => {
-    const iconSizeMap = {
-      small: '6px',
-      medium: '9px',
-      large: '12px',
-    }
-
-    return css`
-      width: ${iconSizeMap[size]};
-      height: ${iconSizeMap[size]};
-      stroke: ${theme.colors.page};
-      stroke-width: 2.5;
-      fill: none;
-      flex-shrink: 0;
-      display: block;
-      vertical-align: middle;
     `
   }}
 `
@@ -105,8 +78,6 @@ const Container = styled.span(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   gap: theme.spacing(0.5),
-  verticalAlign: 'middle',
-  lineHeight: 1,
 }))
 
 const StatusText = styled.span<{ size: NonNullable<Props['size']> }>(
@@ -117,7 +88,17 @@ const StatusText = styled.span<{ size: NonNullable<Props['size']> }>(
       large: theme.fontSize.normal,
     }
 
+    // Match height to indicator for consistent alignment
+    const heightMap = {
+      small: theme.spacing(1.25),
+      medium: theme.spacing(1.5),
+      large: theme.spacing(2),
+    }
+
     return {
+      display: 'flex',
+      alignItems: 'center',
+      height: heightMap[size],
       fontSize: fontSizeMap[size],
       color: theme.colors.secondary,
       fontFamily: 'Fira Code, monospace',
@@ -163,34 +144,17 @@ const StatusIcon: React.FC<{
   status: CloudSyncUiStatus
   size: NonNullable<Props['size']>
 }> = ({ status, size }) => {
-  if (status === 'connected') {
-    return (
-      <TickIcon size={size} viewBox="0 0 12 12" aria-hidden="true">
-        <polyline points="2,6 5,9 10,3" />
-      </TickIcon>
-    )
-  }
-
-  if (status === 'error') {
-    return (
-      <CrossIcon size={size} viewBox="0 0 12 12" aria-hidden="true">
-        <line x1="2" y1="2" x2="10" y2="10" />
-        <line x1="10" y1="2" x2="2" y2="10" />
-      </CrossIcon>
-    )
-  }
-
-  // Return an empty span to maintain consistent layout when no icon is shown
+  // Always render SVG for consistent layout across all states
   return (
-    <span
-      style={{
-        width: 0,
-        height: 0,
-        display: 'block',
-        flexShrink: 0,
-      }}
-      aria-hidden="true"
-    />
+    <IconSvg size={size} viewBox="0 0 12 12" aria-hidden="true">
+      {status === 'connected' && <polyline points="2,6 5,9 10,3" />}
+      {status === 'error' && (
+        <>
+          <line x1="2" y1="2" x2="10" y2="10" />
+          <line x1="10" y1="2" x2="2" y2="10" />
+        </>
+      )}
+    </IconSvg>
   )
 }
 
