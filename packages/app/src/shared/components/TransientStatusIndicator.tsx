@@ -61,18 +61,24 @@ const Container = styled.div<{ visibilityState: VisibilityState }>`
 
     if (visibilityState === 'fading') {
       return css`
+        display: flex;
+        align-items: 'center';
         animation: ${fadeOut} ${FADE_DURATION}ms ease-out forwards;
       `
     }
 
     if (visibilityState === 'appearing') {
       return css`
+        display: flex;
+        align-items: 'center';
         animation: ${fadeIn} ${FADE_DURATION}ms ease-in forwards;
       `
     }
 
     // 'visible' state - no animation, fully opaque
     return css`
+      display: flex;
+      align-items: 'center';
       opacity: 1;
     `
   }}
@@ -156,5 +162,9 @@ export const TransientStatusIndicator: React.FC<Props> = ({
     return null
   }
 
-  return <Container visibilityState={visibilityState}>{children}</Container>
+  return (
+    <Container visibilityState={visibilityState} css={{ alignItems: 'center' }}>
+      {children}
+    </Container>
+  )
 }
