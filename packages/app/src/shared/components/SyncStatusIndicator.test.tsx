@@ -41,9 +41,11 @@ test('renders with pending status without icon', () => {
   expect(screen.getByText('Syncing')).toBeInTheDocument()
   expect(screen.getByTitle('Syncing changes...')).toBeInTheDocument()
 
-  // No SVG icon for pending status
+  // SVG is rendered but empty (no paths) for pending status
   const svg = document.querySelector('svg')
-  expect(svg).toBeNull()
+  expect(svg).toBeInTheDocument()
+  expect(svg?.querySelector('polyline')).toBeNull()
+  expect(svg?.querySelector('line')).toBeNull()
 })
 
 test('renders with disconnected status without icon', () => {
@@ -52,9 +54,11 @@ test('renders with disconnected status without icon', () => {
   expect(screen.getByText('Connecting')).toBeInTheDocument()
   expect(screen.getByTitle('Connecting to cloud...')).toBeInTheDocument()
 
-  // No SVG icon for disconnected status
+  // SVG is rendered but empty (no paths) for disconnected status
   const svg = document.querySelector('svg')
-  expect(svg).toBeNull()
+  expect(svg).toBeInTheDocument()
+  expect(svg?.querySelector('polyline')).toBeNull()
+  expect(svg?.querySelector('line')).toBeNull()
 })
 
 test('renders with disabled status without icon', () => {
@@ -63,9 +67,11 @@ test('renders with disabled status without icon', () => {
   expect(screen.getByText('Disabled')).toBeInTheDocument()
   expect(screen.getByTitle('Cloud sync is disabled')).toBeInTheDocument()
 
-  // No SVG icon for disabled status
+  // SVG is rendered but empty (no paths) for disabled status
   const svg = document.querySelector('svg')
-  expect(svg).toBeNull()
+  expect(svg).toBeInTheDocument()
+  expect(svg?.querySelector('polyline')).toBeNull()
+  expect(svg?.querySelector('line')).toBeNull()
 })
 
 test('renders only icon when onlyIcon is true', () => {
